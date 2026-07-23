@@ -11,16 +11,13 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route
+   <Route
           path="/"
           element={
             <Layout>
-              <p className="text-xl font-bold">Home page </p>
             </Layout>
           }
         />
-       
-
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
