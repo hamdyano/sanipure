@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import whyImage from "../assets/why section image.jpg";
+import whyImage from "../assets/whySanipure.jpeg";
 
 const WhySanipure = () => {
   return (
@@ -12,7 +12,7 @@ const WhySanipure = () => {
           Premium sanitary ware designed for modern living.
         </p>
 
-        <p className="mt-8 max-w-md text-base leading-relaxed text-white /80">
+        <p className="mt-8 max-w-md text-base leading-relaxed text-white/80">
           Built from high-quality materials with elegant, contemporary
           designs, Sanipure offers a wide range of bathroom collections
           trusted by homeowners, architects, and contractors alike — all
@@ -21,13 +21,13 @@ const WhySanipure = () => {
 
         <Link
           to="/products"
-          className="mt-10 w-fit border border-black px-8 py-3 text-sm font-medium uppercase tracking-wide text-black transition-colors hover:bg-black hover:text-white"
+          className="mt-10 w-fit border border-white px-8 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black"
         >
           Explore Our Collections
         </Link>
       </div>
 
-      <div className="mx-auto h-[320px] w-full max-w-sm lg:h-[480px]">
+      <div className="h-[320px] w-full lg:h-[480px]">
         <img
           src={whyImage}
           alt="Sanipure bathroom interior"

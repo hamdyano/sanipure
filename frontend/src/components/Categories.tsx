@@ -40,8 +40,8 @@ const categories = [
 
 const Categories = () => {
   return (
-    <section className="mb-20  md:mb-28">
-      <h2 className="px-6 pb-10 pt-16 text-center text-4xl font-semibold text-black md:text-5xl">
+    <section className="mb-20 bg-[#080808] md:mb-28">
+      <h2 className="px-6 pb-8 pt-12 text-center text-4xl font-semibold text-white md:text-5xl">
         Our Category
       </h2>
       <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
