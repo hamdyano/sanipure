@@ -5,16 +5,18 @@ import {
   Navigate,
 } from "react-router-dom";
 import Layout from "./layouts/Layout";
+import HomePage from "./pages/HomePage";
 
 const App = () => {
 
   return (
     <Router>
       <Routes>
-   <Route
+        <Route
           path="/"
           element={
             <Layout>
+              <HomePage />
             </Layout>
           }
         />
