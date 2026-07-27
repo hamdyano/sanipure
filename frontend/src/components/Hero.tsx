@@ -3,7 +3,7 @@ import heroVideo from "../assets/hero  video.mp4";
 
 const Hero = () => {
   return (
-    <section className="relative h-[85vh] w-full overflow-hidden bg-black">
+    <section className="relative h-screen w-full overflow-hidden bg-black">
       <video
         className="absolute inset-0 h-full w-full object-cover"
         src={heroVideo}

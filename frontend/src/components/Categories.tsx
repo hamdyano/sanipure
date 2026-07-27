@@ -1,40 +1,40 @@
 import { Link } from "react-router-dom";
+import washbasinsImage from "../assets/categories photos/Washbasins photo.jpg";
+import toiletsImage from "../assets/categories photos/Toilets photo.jpg";
+import bathtubsImage from "../assets/categories photos/Bathtubs photo.jpg";
+import accessoriesImage from "../assets/categories photos/Accessories photo.jpg";
+import publicBathroomsImage from "../assets/categories photos/Public Bathrooms photo.jpg";
 
 const categories = [
   {
     name: "Washbasins",
     cta: "Shop Washbasins",
     to: "/products/washbasins",
-    image:
-      "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=1200&q=80",
+    image: washbasinsImage,
   },
   {
     name: "Toilets",
     cta: "Shop Toilets",
     to: "/products/toilets",
-    image:
-      "https://images.unsplash.com/photo-1560448075-bb485b067938?auto=format&fit=crop&w=1200&q=80",
+    image: toiletsImage,
   },
   {
     name: "Bathtubs",
     cta: "Shop Bathtubs",
     to: "/products/bathtubs",
-    image:
-      "https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=1200&q=80",
+    image: bathtubsImage,
   },
   {
     name: "Accessories",
     cta: "Shop Accessories",
     to: "/products/accessories",
-    image:
-      "https://images.unsplash.com/photo-1685084844860-5d94e6c82939?auto=format&fit=crop&w=1200&q=80",
+    image: accessoriesImage,
   },
   {
     name: "Public Bathrooms",
     cta: "Shop Public Bathrooms",
     to: "/products/public-bathrooms",
-    image:
-      "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=1600&q=80",
+    image: publicBathroomsImage,
   },
 ];
 

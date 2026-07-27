@@ -3,7 +3,7 @@ import designVideo from "../assets/design video.mp4";
 
 const DesignSection = () => {
   return (
-    <section className="relative mb-20 h-[85vh] w-full overflow-hidden bg-black md:mb-28">
+    <section className="relative mb-20 h-screen w-full overflow-hidden bg-black md:mb-28">
       <video
         className="absolute inset-0 h-full w-full object-cover"
         src={designVideo}
