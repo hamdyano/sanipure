@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { motion } from "motion/react";
 import heroVideo from "../assets/hero  video.mp4";
 
 const Hero = () => {
@@ -13,9 +14,19 @@ const Hero = () => {
         playsInline
       />
 
-      <div className="absolute inset-0 bg-black/30" />
+      <motion.div
+        className="absolute inset-0 bg-black/30"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      />
 
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+      <motion.div
+        className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
+      >
         <h1 className="max-w-3xl text-4xl font-semibold text-white md:text-6xl">
           Find Your Next Sanitary Ware &amp; Bath Fittings
         </h1>
@@ -36,7 +47,7 @@ const Hero = () => {
             Explore Sanipure
           </Link>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 };

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import RevealSection from "./shared/RevealSection";
 import designVideo from "../assets/design video.mp4";
 
 const DesignSection = () => {
@@ -15,7 +16,10 @@ const DesignSection = () => {
 
       <div className="absolute inset-0 bg-black/40" />
 
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+      <RevealSection
+        delay={0.3}
+        className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
+      >
         <h2 className="max-w-3xl text-4xl font-light text-white md:text-6xl">
           Design Changes Everything
         </h2>
@@ -37,7 +41,7 @@ const DesignSection = () => {
             Shop Collections
           </Link>
         </div>
-      </div>
+      </RevealSection>
     </section>
   );
 };
