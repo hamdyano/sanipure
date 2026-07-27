@@ -117,7 +117,7 @@ const Footer = () => {
           <img src={logo} alt="Sanipure" className="h-8 w-auto" />
 
           <h2 className="mt-8 text-2xl font-semibold text-white">
-            Let&apos;s Make Things Happen — Contact Us!
+            Shaping places around the world — Contact Us !
           </h2>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">
             Premium sanitary ware and bath fittings for homes, hotels and
