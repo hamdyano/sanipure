@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import RevealSection from "./shared/RevealSection";
+import DirectionalReveal from "./shared/DirectionalReveal";
 import article1 from "../assets/articles photos/article 1.jpg";
 import article2 from "../assets/articles photos/article 2.jpg";
 import article3 from "../assets/articles photos/article 3.jpg";
@@ -38,6 +39,14 @@ const articles = [
 
 const date = "July 24, 2026";
 
+// Outer cards slide in from their nearer edge, inner cards rise from below.
+const cardDirections: Array<"left" | "right" | "up"> = [
+  "left",
+  "up",
+  "up",
+  "right",
+];
+
 const Articles = () => {
   return (
     <section className="mb-20 bg-[oklch(21.8%_0.008_223.9)] px-6 py-20 md:mb-28 lg:px-16">
@@ -73,9 +82,14 @@ const Articles = () => {
 
       <div className="mx-auto mt-12 grid max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {articles.map((article, index) => {
-          const cardDelay = index * 0.25;
+          const cardDelay = index * 0.12;
           return (
-            <RevealSection key={article.title} delay={cardDelay} className="h-full">
+            <DirectionalReveal
+              key={article.title}
+              direction={cardDirections[index % cardDirections.length]}
+              delay={cardDelay}
+              className="h-full"
+            >
               <article className="flex h-full flex-col bg-black">
                 <img
                   src={article.image}
@@ -83,7 +97,7 @@ const Articles = () => {
                   className="h-56 w-full object-cover"
                 />
                 <RevealSection
-                  delay={cardDelay + 0.2}
+                  delay={cardDelay + 0.1}
                   className="flex flex-1 flex-col gap-3 p-5"
                 >
                   <div className="flex items-center gap-4 text-xs text-white/60">
@@ -130,7 +144,7 @@ const Articles = () => {
                   </Link>
                 </RevealSection>
               </article>
-            </RevealSection>
+            </DirectionalReveal>
           );
         })}
       </div>

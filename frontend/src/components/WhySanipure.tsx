@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
-import RevealSection from "./shared/RevealSection";
+import DirectionalReveal from "./shared/DirectionalReveal";
 import whyImage from "../assets/whySanipure.jpeg";
 
 const WhySanipure = () => {
   return (
     <section className="my-20 grid grid-cols-1 items-center bg-black md:my-28 lg:grid-cols-2">
-      <RevealSection
-        delay={0.25}
+      <DirectionalReveal
+        direction="left"
+        delay={0.12}
         className="flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24"
       >
         <h2 className="text-4xl font-semibold text-white md:text-5xl">
@@ -29,15 +30,18 @@ const WhySanipure = () => {
         >
           Explore Our Collections
         </Link>
-      </RevealSection>
+      </DirectionalReveal>
 
-      <RevealSection className="h-[320px] w-full lg:h-[480px]">
+      <DirectionalReveal
+        direction="right"
+        className="h-[320px] w-full lg:h-[480px]"
+      >
         <img
           src={whyImage}
           alt="Sanipure bathroom interior"
           className="h-full w-full object-cover"
         />
-      </RevealSection>
+      </DirectionalReveal>
     </section>
   );
 };

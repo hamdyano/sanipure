@@ -17,7 +17,7 @@ const DesignSection = () => {
       <div className="absolute inset-0 bg-black/40" />
 
       <RevealSection
-        delay={0.3}
+        delay={0.12}
         className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
       >
         <h2 className="max-w-3xl text-4xl font-light text-white md:text-6xl">

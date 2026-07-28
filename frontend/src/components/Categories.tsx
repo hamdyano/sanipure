@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import RevealSection from "./shared/RevealSection";
+import DirectionalReveal from "./shared/DirectionalReveal";
 import washbasinsImage from "../assets/categories photos/Washbasins photo.jpg";
 import toiletsImage from "../assets/categories photos/Toilets photo.jpg";
 import bathtubsImage from "../assets/categories photos/Bathtubs photo.jpg";
@@ -39,6 +40,16 @@ const categories = [
   },
 ];
 
+// Left-column cards slide in from the left, right-column from the right,
+// converging toward center; the full-width last row rises from below.
+const cardDirections: Array<"left" | "right" | "up"> = [
+  "left",
+  "right",
+  "left",
+  "right",
+  "up",
+];
+
 const Categories = () => {
   return (
     <section className="mb-20 bg-[#080808] md:mb-28">
@@ -49,10 +60,11 @@ const Categories = () => {
       </RevealSection>
       <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
         {categories.map((category, index) => {
-          const cardDelay = index * 0.15;
+          const cardDelay = index * 0.08;
           return (
-            <RevealSection
+            <DirectionalReveal
               key={category.name}
+              direction={cardDirections[index % cardDirections.length]}
               delay={cardDelay}
               className={
                 index === categories.length - 1 ? "sm:col-span-2" : ""
@@ -69,7 +81,7 @@ const Categories = () => {
                 />
                 <div className="absolute inset-0 bg-black/25 transition-colors group-hover:bg-black/35" />
                 <RevealSection
-                  delay={cardDelay + 0.25}
+                  delay={cardDelay + 0.12}
                   className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center"
                 >
                   <h3 className="text-2xl font-medium text-white md:text-3xl">
@@ -80,7 +92,7 @@ const Categories = () => {
                   </span>
                 </RevealSection>
               </Link>
-            </RevealSection>
+            </DirectionalReveal>
           );
         })}
       </div>
