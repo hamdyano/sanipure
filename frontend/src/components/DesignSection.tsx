@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import RevealSection from "./shared/RevealSection";
+import DirectionalReveal from "./shared/DirectionalReveal";
 import designVideo from "../assets/design video.mp4";
 
 const DesignSection = () => {
@@ -16,7 +16,8 @@ const DesignSection = () => {
 
       <div className="absolute inset-0 bg-black/40" />
 
-      <RevealSection
+      <DirectionalReveal
+        direction="up"
         delay={0.12}
         className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
       >
@@ -41,7 +42,7 @@ const DesignSection = () => {
             Shop Collections
           </Link>
         </div>
-      </RevealSection>
+      </DirectionalReveal>
     </section>
   );
 };

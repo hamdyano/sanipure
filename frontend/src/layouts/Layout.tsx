@@ -10,7 +10,7 @@ interface Props {
 
 const Layout = ({ children }: Props) => {
   return (
-    <div className="flex min-h-screen flex-col bg-[oklch(21.8%_0.008_223.9)]">
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-[oklch(21.8%_0.008_223.9)]">
       <Header />
       <Hero />
 
