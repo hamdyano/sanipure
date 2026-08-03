@@ -14,21 +14,28 @@ const WhySanipure = () => {
           Why Sanipure?
         </h2>
         <p className="mt-4 text-lg text-white/70">
-          Premium sanitary ware designed for modern living.
+          Sanipure is the best choice for homeowners and professionals
         </p>
 
         <p className="mt-8 max-w-md text-base leading-relaxed text-white/80">
-          Built from high-quality materials with elegant, contemporary
-          designs, Sanipure offers a wide range of bathroom collections
-          trusted by homeowners, architects, and contractors alike — all
-          backed by reliable after-sales support.
+          Sanipure combines advanced manufacturing, contemporary design, and
+          premium materials to deliver bathroom solutions trusted across homes,
+          hospitality, and commercial projects in Egypt and 14 international
+          markets. Our Rimless Technology improves hygiene and makes cleaning up
+          to 70% easier, while HydroJet innovation and our water-saving system
+          provide powerful performance with only 4.5 liters per flush. Every
+          product is manufactured to first-grade quality standards for
+          exceptional durability and long-lasting performance. Backed by
+          sustainable manufacturing practices and a Lifetime Guarantee against
+          manufacturing defects, Sanipure creates bathrooms built to perform
+          beautifully for years to come.
         </p>
 
         <Link
           to="/products"
           className="mt-10 w-fit border border-white px-8 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black"
         >
-          Explore Our Collections
+          Learn More
         </Link>
       </DirectionalReveal>
 

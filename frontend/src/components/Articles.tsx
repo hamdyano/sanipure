@@ -54,13 +54,12 @@ const Articles = () => {
         <div className="flex items-center gap-2 md:pt-2">
           <span className="h-2 w-2 flex-none bg-white" />
           <span className="text-sm font-medium uppercase tracking-wide text-white">
-            Our Article
+           Latest News & Updates
           </span>
         </div>
 
         <h2 className="max-w-2xl text-3xl font-medium text-white md:text-4xl">
-          Get inspired by creative bathroom design ideas that blend style
-          with comfort
+         Stay informed with our latest news and décor tips.
         </h2>
 
         <Link
@@ -76,7 +75,7 @@ const Articles = () => {
           >
             <path d="M7 17 17 7M9 7h8v8" />
           </svg>
-          Learn More
+          Read More
         </Link>
       </RevealSection>
 
@@ -140,7 +139,7 @@ const Articles = () => {
                     to={article.to}
                     className="mt-auto w-fit bg-white px-4 py-2 text-xs font-medium uppercase tracking-wide text-black transition-colors hover:bg-white/90"
                   >
-                    Learn more
+                    Read More
                   </Link>
                 </RevealSection>
               </article>

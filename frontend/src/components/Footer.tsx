@@ -15,10 +15,13 @@ const quickLinks = [
   { label: "Contact Us", to: "/contact-us" },
 ];
 
-const serviceLinks = [
+const productLinks = [
+  { label: "Bathroom Collections", to: "/products/bathroom-collection" },
+  { label: "Toilets", to: "/products/toilets" },
   { label: "Washbasins", to: "/products/washbasins" },
   { label: "Bathtubs", to: "/products/bathtubs" },
-  { label: "Toilets", to: "/products/toilets" },
+  { label: "Shower Trays", to: "/products/shower-trays" },
+  { label: "Public Toilets", to: "/products/public-toilets" },
   { label: "Accessories", to: "/products/accessories" },
 ];
 
@@ -47,8 +50,17 @@ const contactDetails = [
         <path d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" />
       </svg>
     ),
-    label: "Cairo, Egypt",
-    description: "Visit our showroom for a live product experience.",
+    label: "Factory Location",
+    description: "Visit our production facility to see how our products are made.",
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+        <path d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" />
+      </svg>
+    ),
+    label: "Head Quarters' Location",
+    description: "Visit our head office for partnership and business inquiries.",
   },
 ];
 
@@ -77,6 +89,33 @@ const socialLinks = [
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
         <path d="M21.6 7.6a2.7 2.7 0 0 0-1.9-1.9C18 5.2 12 5.2 12 5.2s-6 0-7.7.5A2.7 2.7 0 0 0 2.4 7.6 28 28 0 0 0 2 12a28 28 0 0 0 .4 4.4 2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9c.3-1.5.4-3 .4-4.4a28 28 0 0 0-.4-4.4ZM10 15V9l5.2 3-5.2 3Z" />
+      </svg>
+    ),
+  },
+  {
+    label: "TikTok",
+    href: "#",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+        <path d="M16.6 5.82c-.9-.78-1.4-1.9-1.46-3.07h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48Z" />
+      </svg>
+    ),
+  },
+  {
+    label: "LinkedIn",
+    href: "#",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+        <path d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3.5a1.96 1.96 0 1 0 0 3.92 1.96 1.96 0 0 0 0-3.92ZM20.5 20h-3.38v-6.2c0-1.48-.03-3.38-2.06-3.38-2.07 0-2.39 1.62-2.39 3.28V20H9.3V8.5h3.24v1.57h.05c.45-.86 1.56-1.77 3.21-1.77 3.43 0 4.7 2.26 4.7 5.2V20Z" />
+      </svg>
+    ),
+  },
+  {
+    label: "Pinterest",
+    href: "#",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+        <path d="M12 2C6.5 2 3 5.8 3 10c0 3.2 1.9 5.9 4.7 7-.06-.6-.12-1.5.03-2.2.14-.6.9-3.9.9-3.9s-.23-.47-.23-1.16c0-1.1.63-1.9 1.42-1.9.67 0 1 .5 1 1.1 0 .67-.43 1.68-.65 2.6-.19.79.4 1.43 1.17 1.43 1.4 0 2.48-1.48 2.48-3.6 0-1.88-1.35-3.2-3.28-3.2-2.23 0-3.54 1.67-3.54 3.4 0 .67.26 1.39.58 1.78a.24.24 0 0 1 .06.23c-.06.27-.21.85-.24.97-.04.16-.13.19-.3.12-1.11-.52-1.8-2.13-1.8-3.43 0-2.8 2.03-5.37 5.86-5.37 3.08 0 5.47 2.19 5.47 5.13 0 3.06-1.93 5.52-4.61 5.52-.9 0-1.75-.47-2.04-1.02l-.55 2.11c-.2.77-.74 1.73-1.1 2.32.83.26 1.7.4 2.62.4 5.5 0 9.5-3.8 9.5-9 0-4.2-3.5-8-9-8Z" />
       </svg>
     ),
   },
@@ -117,7 +156,7 @@ const Footer = () => {
           <img src={logo} alt="Sanipure" className="h-8 w-auto" />
 
           <h2 className="mt-8 text-2xl font-semibold text-white">
-            Shaping places around the world — Contact Us !
+          Shaping Spaces Worldwide
           </h2>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">
             Premium sanitary ware and bath fittings for homes, hotels and
@@ -141,7 +180,7 @@ const Footer = () => {
 
         <FooterColumn title="Navigation" links={navigationLinks} />
         <FooterColumn title="Quick Link" links={quickLinks} />
-        <FooterColumn title="Services" links={serviceLinks} />
+        <FooterColumn title="Products" links={productLinks} />
       </div>
 
       <div className="container mx-auto mt-16 grid grid-cols-1 gap-8 px-6 sm:grid-cols-3">

@@ -22,25 +22,19 @@ const DesignSection = () => {
         className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
       >
         <h2 className="max-w-3xl text-4xl font-light text-white md:text-6xl">
-          Design Changes Everything
+           Design That Define Excellence
         </h2>
         <p className="mt-6 max-w-xl text-lg font-light text-white/90">
-          Discover how thoughtful design transforms everyday bathrooms into
-          spaces that inspire — crafted with precision, built to last.
+         Our products are featured in leading hospitality, residential, governmental, and commercial developments, delivering exceptional performance across high scale projects.
         </p>
         <div className="mt-8 flex items-center gap-8">
           <Link
             to="/projects"
             className="text-sm font-medium uppercase tracking-wide text-white underline underline-offset-4 hover:text-white/80"
           >
-            Explore Our Projects
+            View All Projects
           </Link>
-          <Link
-            to="/products"
-            className="text-sm font-medium uppercase tracking-wide text-white underline underline-offset-4 hover:text-white/80"
-          >
-            Shop Collections
-          </Link>
+          
         </div>
       </DirectionalReveal>
     </section>

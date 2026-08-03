@@ -6,48 +6,56 @@ import toiletsImage from "../assets/categories photos/Toilets photo.jpg";
 import bathtubsImage from "../assets/categories photos/Bathtubs photo.jpg";
 import accessoriesImage from "../assets/categories photos/Accessories photo.jpg";
 import publicBathroomsImage from "../assets/categories photos/Public Bathrooms photo.jpg";
+import bathroomCollectionImage from "../assets/categories photos/Bathroom collection photo .jpg";
 
 const categories = [
   {
     name: "Washbasins",
-    cta: "Shop Washbasins",
+    cta: "View All Products",
     to: "/products/washbasins",
     image: washbasinsImage,
   },
   {
     name: "Toilets",
-    cta: "Shop Toilets",
+    cta: "View All Products",
     to: "/products/toilets",
     image: toiletsImage,
   },
   {
     name: "Bathtubs",
-    cta: "Shop Bathtubs",
+    cta: "View All Products",
     to: "/products/bathtubs",
     image: bathtubsImage,
   },
   {
     name: "Accessories",
-    cta: "Shop Accessories",
+    cta: "View All Products",
     to: "/products/accessories",
     image: accessoriesImage,
   },
   {
     name: "Public Bathrooms",
-    cta: "Shop Public Bathrooms",
+    cta: "View All Products",
     to: "/products/public-bathrooms",
     image: publicBathroomsImage,
+  },
+  {
+    name: "Bathroom Collection",
+    cta: "View All Products",
+    to: "/products/bathroom-collection",
+    image: bathroomCollectionImage,
   },
 ];
 
 // Left-column cards slide in from the left, right-column from the right,
-// converging toward center; the full-width last row rises from below.
-const cardDirections: Array<"left" | "right" | "up"> = [
+// converging toward center.
+const cardDirections: Array<"left" | "right"> = [
   "left",
   "right",
   "left",
   "right",
-  "up",
+  "left",
+  "right",
 ];
 
 const Categories = () => {
@@ -55,7 +63,7 @@ const Categories = () => {
     <section className="mb-20 bg-[#080808] md:mb-28">
       <RevealSection>
         <h2 className="px-6 pb-8 pt-12 text-center text-4xl font-semibold text-white md:text-5xl">
-          Our Category
+         Discover Our Categories
         </h2>
       </RevealSection>
       <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
@@ -66,9 +74,6 @@ const Categories = () => {
               key={category.name}
               direction={cardDirections[index % cardDirections.length]}
               delay={cardDelay}
-              className={
-                index === categories.length - 1 ? "sm:col-span-2" : ""
-              }
             >
               <Link
                 to={category.to}

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "motion/react";
 import logo from "../assets/RGB_Logo_400_White.png";
+import { useHeaderVisibility } from "../hooks/useHeaderVisibility";
+import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 
 const navItems = [
   { label: "Who We Are", to: "/who-we-are" },
@@ -13,9 +16,20 @@ const navItems = [
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const scrollVisible = useHeaderVisibility();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const visible = isOpen || scrollVisible;
 
   return (
-    <header className="sticky top-0 z-50 bg-black">
+    <motion.header
+      className="sticky top-0 z-50 bg-black"
+      animate={
+        prefersReducedMotion
+          ? { y: 0, opacity: 1 }
+          : { y: visible ? 0 : -100, opacity: visible ? 1 : 0 }
+      }
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
       <div className="container mx-auto flex items-center justify-between px-6 py-5">
         <Link
           to="/"
@@ -90,7 +104,7 @@ const Header = () => {
           ))}
         </ul>
       </nav>
-    </header>
+    </motion.header>
   );
 };
 

@@ -28,23 +28,25 @@ const Hero = () => {
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
       >
         <h1 className="max-w-3xl text-4xl font-semibold text-white md:text-6xl">
-          Find Your Next Sanitary Ware &amp; Bath Fittings
+          Shaping Spaces Worldwide
         </h1>
         <p className="mt-6 max-w-xl text-lg text-white/90">
-          Discover premium bathroom collections designed for modern living.
+          Premium sanitaryware crafted with innovative technology, exceptional
+          quality, and contemporary design for homeowners in addition to the
+          residential and commercial projects.
         </p>
         <div className="mt-8 flex items-center gap-8">
           <Link
             to="/products"
             className="text-sm font-medium uppercase tracking-wide text-white underline underline-offset-4 hover:text-white/80"
           >
-            Shop Now
+            Explore Products
           </Link>
           <Link
             to="/who-we-are"
             className="text-sm font-medium uppercase tracking-wide text-white underline underline-offset-4 hover:text-white/80"
           >
-            Explore Sanipure
+            View Projects
           </Link>
         </div>
       </motion.div>
