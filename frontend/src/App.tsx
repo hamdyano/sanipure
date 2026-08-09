@@ -7,6 +7,7 @@ import {
 import Layout from "./layouts/Layout";
 import HomePage from "./pages/HomePage";
 import WhoWeArePage from "./pages/WhoWeArePage";
+import ProductsPage from "./pages/ProductsPage";
 
 const App = () => {
 
@@ -26,6 +27,14 @@ const App = () => {
           element={
             <Layout>
               <WhoWeArePage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products"
+          element={
+            <Layout>
+              <ProductsPage />
             </Layout>
           }
         />

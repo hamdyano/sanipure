@@ -7,7 +7,7 @@ import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 
 const navItems = [
   { label: "Who We Are", to: "/who-we-are" },
-  { label: "Category", to: "/products" },
+  { label: "Products", to: "/products" },
   { label: "Projects", to: "/projects" },
   { label: "News", to: "/news" },
   { label: "Resources", to: "/resources" },
