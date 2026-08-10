@@ -1,19 +1,44 @@
+import { motion } from "motion/react";
 import RevealSection from "../components/shared/RevealSection";
 import DirectionalReveal from "../components/shared/DirectionalReveal";
 import factoryOne from "../assets/who we are photos/Factory 1.png";
 import factoryTwo from "../assets/who we are photos/Factory 2.png";
+import whoWeAreVideo from "../assets/who we are photos/who we are video.mp4";
 
 const WhoWeArePage = () => {
   return (
     <>
-      <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
-        <h1 className="text-4xl font-semibold text-white md:text-5xl">
-          Who We Are
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
-          Premium sanitary ware, crafted at scale, trusted across Egypt.
-        </p>
-      </RevealSection>
+      <section className="relative h-screen w-full overflow-hidden bg-black">
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          src={whoWeAreVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+
+        <motion.div
+          className="absolute inset-0 bg-black/30"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        />
+
+        <motion.div
+          className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
+        >
+          <h1 className="max-w-3xl text-4xl font-semibold text-white md:text-6xl">
+            Who We Are
+          </h1>
+          <p className="mt-6 max-w-xl text-lg text-white/90">
+            Premium sanitary ware, crafted at scale, trusted across Egypt.
+          </p>
+        </motion.div>
+      </section>
 
       <section className="my-20 grid grid-cols-1 items-center bg-black md:my-28 lg:grid-cols-2">
         <DirectionalReveal
