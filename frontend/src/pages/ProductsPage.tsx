@@ -13,42 +13,42 @@ const categories = [
     image: washbasinsImage,
     headline: "Washbasins",
     description:
-      "Sculpted for everyday use and finished to a lasting shine, our washbasins bring together clean lines and durable ceramics. From compact countertop designs to freestanding pieces, every basin is built to hold its form and finish through years of daily use.",
+      "Explore a diverse range of washbasins made to bring character and elegance to every bathroom. Find the shape, size, and finish that suit your space.",
   },
   {
     name: "Toilets",
     image: toiletsImage,
     headline: "Toilets",
     description:
-      "Engineered for reliable performance and effortless cleaning, our toilet collection pairs efficient flushing systems with refined silhouettes. Each unit is pressure-tested and glazed to resist staining, keeping bathrooms hygienic with minimal upkeep.",
+      "Discover toilets that combine refined design with advanced functionality. From rimless designs to water-saving flushing technologies, find solutions for everyday performance and lasting comfort.",
   },
   {
     name: "Bathtubs",
     image: bathtubsImage,
     headline: "Bathtubs",
     description:
-      "Designed for comfort as much as style, our bathtubs are cast from premium acrylic and reinforced materials that retain heat and resist wear. Whether the space calls for a compact tub or a statement centerpiece, each model is built for lasting comfort.",
+      "Create a space dedicated to relaxation with our bathtubs. Discover a selection of refined forms and premium finishes designed to elevate the bathing experience.",
   },
   {
-    name: "Accessories",
+    name: "Accessories & Furniture",
     image: accessoriesImage,
-    headline: "Accessories",
+    headline: "Accessories & Furniture",
     description:
-      "The finishing touches that complete a bathroom, our accessories range covers everything from fittings to fixtures, all crafted to match the durability and finish of the rest of the Sanipure collection.",
+      "Complete your bathroom with furniture and accessories that bring style and practicality together. Explore functional solutions created to complement your sanitaryware and keep every detail beautifully organized.",
   },
   {
     name: "Public Bathrooms",
     image: publicBathroomsImage,
     headline: "Public Bathrooms",
     description:
-      "Built for high-traffic environments, our public bathroom solutions are engineered for heavy daily use without compromising on hygiene or design. Hotels, malls, and commercial developments trust these fixtures to perform under constant demand.",
+      "Check our durable, practical solutions designed specifically for high-traffic public and commercial spaces. Our range combines reliable performance, hygiene-focused designs, and functionality to meet demanding everyday environments.",
   },
   {
     name: "Bathroom Collection",
     image: bathroomCollectionImage,
     headline: "Bathroom Collection",
     description:
-      "A complete range designed to work together, our bathroom collection brings washbasins, toilets, bathtubs, and accessories into one cohesive line, so every space can be finished with a consistent look and feel.",
+      "Discover complete bathroom collections where every element is designed to work together seamlessly. Explore coordinated designs that create a distinctive bathroom aesthetic.",
   },
 ];
 
