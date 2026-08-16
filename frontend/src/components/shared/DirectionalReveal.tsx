@@ -12,10 +12,10 @@ interface DirectionalRevealProps {
 }
 
 const OFFSET_BY_DIRECTION: Record<Direction, { x?: number; y?: number }> = {
-  left: { x: -80 },
-  right: { x: 80 },
-  up: { y: 80 },
-  down: { y: -80 },
+  left: { x: -120 },
+  right: { x: 120 },
+  up: { y: 120 },
+  down: { y: -120 },
 };
 
 const DirectionalReveal = ({
@@ -35,8 +35,8 @@ const DirectionalReveal = ({
       className={className}
       initial={{ opacity: 0, ...OFFSET_BY_DIRECTION[direction] }}
       whileInView={{ opacity: 1, x: 0, y: 0 }}
-      viewport={{ once: false, amount: 0.3 }}
-      transition={{ type: "tween", ease: "easeOut", duration: 0.6, delay }}
+      viewport={{ once: true, amount: 0.2, margin: "0px 0px -40px 0px" }}
+      transition={{ type: "tween", ease: "easeOut", duration: 0.75, delay }}
     >
       {children}
     </motion.div>
