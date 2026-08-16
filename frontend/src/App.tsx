@@ -38,6 +38,14 @@ const App = () => {
             </Layout>
           }
         />
+        <Route
+          path="/products/:category"
+          element={
+            <Layout>
+              <ProductsPage />
+            </Layout>
+          }
+        />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

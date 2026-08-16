@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
 import DirectionalReveal from "../components/shared/DirectionalReveal";
 import washbasinsImage from "../assets/categories photos/Washbasins photo.jpg";
@@ -10,6 +12,7 @@ import bathroomCollectionImage from "../assets/categories photos/Bathroom collec
 const categories = [
   {
     name: "Washbasins",
+    slug: "washbasins",
     image: washbasinsImage,
     headline: "Washbasins",
     description:
@@ -17,6 +20,7 @@ const categories = [
   },
   {
     name: "Toilets",
+    slug: "toilets",
     image: toiletsImage,
     headline: "Toilets",
     description:
@@ -24,6 +28,7 @@ const categories = [
   },
   {
     name: "Bathtubs",
+    slug: "bathtubs",
     image: bathtubsImage,
     headline: "Bathtubs",
     description:
@@ -31,6 +36,7 @@ const categories = [
   },
   {
     name: "Accessories & Furniture",
+    slug: "accessories",
     image: accessoriesImage,
     headline: "Accessories & Furniture",
     description:
@@ -38,6 +44,7 @@ const categories = [
   },
   {
     name: "Public Bathrooms",
+    slug: "public-bathrooms",
     image: publicBathroomsImage,
     headline: "Public Bathrooms",
     description:
@@ -45,6 +52,7 @@ const categories = [
   },
   {
     name: "Bathroom Collection",
+    slug: "bathroom-collection",
     image: bathroomCollectionImage,
     headline: "Bathroom Collection",
     description:
@@ -53,6 +61,17 @@ const categories = [
 ];
 
 const ProductsPage = () => {
+  const { category: activeSlug } = useParams<{ category?: string }>();
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  useEffect(() => {
+    if (!activeSlug) return;
+    const target = sectionRefs.current[activeSlug];
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [activeSlug]);
+
   return (
     <>
       <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
@@ -67,12 +86,16 @@ const ProductsPage = () => {
 
       {categories.map((category, index) => {
         const imageFirst = index % 2 === 0;
+        const isActive = category.slug === activeSlug;
         return (
           <section
             key={category.name}
-            className={`grid grid-cols-1 items-center bg-black lg:grid-cols-2 ${
+            ref={(el) => {
+              sectionRefs.current[category.slug] = el;
+            }}
+            className={`grid scroll-mt-24 grid-cols-1 items-center bg-black transition-shadow duration-700 lg:grid-cols-2 ${
               index === 0 ? "my-20 md:my-28" : "mb-20 md:mb-28"
-            }`}
+            } ${isActive ? "ring-2 ring-inset ring-white/50" : ""}`}
           >
             {imageFirst ? (
               <>
