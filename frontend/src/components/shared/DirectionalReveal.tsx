@@ -35,7 +35,7 @@ const DirectionalReveal = ({
       className={className}
       initial={{ opacity: 0, ...OFFSET_BY_DIRECTION[direction] }}
       whileInView={{ opacity: 1, x: 0, y: 0 }}
-      viewport={{ once: true, amount: 0.2, margin: "0px 0px -40px 0px" }}
+      viewport={{ once: false, amount: 0.2, margin: "0px 0px -40px 0px" }}
       transition={{ type: "tween", ease: "easeOut", duration: 0.75, delay }}
     >
       {children}
