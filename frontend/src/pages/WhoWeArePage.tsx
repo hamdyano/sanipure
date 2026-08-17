@@ -37,7 +37,7 @@ const WhoWeArePage = () => {
             Who We Are
           </h1>
           <p className="mt-6 max-w-xl text-lg text-white/90">
-            Premium sanitary ware, crafted at scale, trusted across Egypt.
+           Shaping Spaces Worldwide
           </p>
         </motion.div>
       </section>

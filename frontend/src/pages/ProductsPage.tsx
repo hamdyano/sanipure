@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
 import DirectionalReveal from "../components/shared/DirectionalReveal";
 import washbasinsImage from "../assets/categories photos/Washbasins photo.jpg";
@@ -9,7 +9,16 @@ import accessoriesImage from "../assets/categories photos/Accessories photo.jpg"
 import publicBathroomsImage from "../assets/categories photos/Public Bathrooms photo.jpg";
 import bathroomCollectionImage from "../assets/categories photos/Bathroom collection photo .jpg";
 
-const categories = [
+interface Category {
+  name: string;
+  slug: string;
+  image: string;
+  headline: string;
+  description: string;
+  shopPath?: string;
+}
+
+const categories: Category[] = [
   {
     name: "Washbasins",
     slug: "washbasins",
@@ -17,6 +26,7 @@ const categories = [
     headline: "Washbasins",
     description:
       "Explore a diverse range of washbasins made to bring character and elegance to every bathroom. Find the shape, size, and finish that suit your space.",
+    shopPath: "/products/washbasins/shop-washbasins",
   },
   {
     name: "Toilets",
@@ -25,6 +35,7 @@ const categories = [
     headline: "Toilets",
     description:
       "Discover toilets that combine refined design with advanced functionality. From rimless designs to water-saving flushing technologies, find solutions for everyday performance and lasting comfort.",
+    shopPath: "/products/toilets/shop-toilets",
   },
   {
     name: "Bathtubs",
@@ -121,6 +132,14 @@ const ProductsPage = () => {
                   <p className="mt-6 max-w-md text-base leading-relaxed text-white/80">
                     {category.description}
                   </p>
+                  {category.shopPath && (
+                    <Link
+                      to={category.shopPath}
+                      className="mt-8 w-fit border border-white px-8 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black"
+                    >
+                      Shop {category.name}
+                    </Link>
+                  )}
                 </DirectionalReveal>
               </>
             ) : (
@@ -136,6 +155,14 @@ const ProductsPage = () => {
                   <p className="mt-6 max-w-md text-base leading-relaxed text-white/80">
                     {category.description}
                   </p>
+                  {category.shopPath && (
+                    <Link
+                      to={category.shopPath}
+                      className="mt-8 w-fit border border-white px-8 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black"
+                    >
+                      Shop {category.name}
+                    </Link>
+                  )}
                 </DirectionalReveal>
 
                 <DirectionalReveal
