@@ -7,7 +7,7 @@ import toiletsImage from "../assets/categories photos/Toilets photo.jpg";
 import bathtubsImage from "../assets/categories photos/Bathtubs photo.jpg";
 import accessoriesImage from "../assets/categories photos/Accessories photo.jpg";
 import publicBathroomsImage from "../assets/categories photos/Public Bathrooms photo.jpg";
-import bathroomCollectionImage from "../assets/categories photos/Bathroom collection photo .jpg";
+import bathroomCollectionImage from "../assets/categories photos/Bathroom collection photo.jpg";
 
 interface Category {
   name: string;
