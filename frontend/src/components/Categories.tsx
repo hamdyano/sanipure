@@ -28,7 +28,7 @@ const categories = [
     image: bathtubsImage,
   },
   {
-    name: "Accessories",
+    name: "Accessories & Furniture",
     cta: "View All Products",
     to: "/products/accessories",
     image: accessoriesImage,

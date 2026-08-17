@@ -2,6 +2,29 @@ import { useEffect, useState } from "react";
 import RevealSection from "../components/shared/RevealSection";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import toiletsImage from "../assets/categories photos/Toilets photo.jpg";
+import keplerWallMounted from "../assets/toilets shop photos/Kepler Wall Mounted.jpg";
+import keplerCloseCoupled from "../assets/toilets shop photos/Kepler Close Coupled.jpg";
+import titanCloseCoupled from "../assets/toilets shop photos/Titan Close Coupled.jpg";
+import titanWallMounted from "../assets/toilets shop photos/Titan Wall Mounted.jpg";
+import magnus1 from "../assets/toilets shop photos/Magnus 1.jpg";
+import magnus2 from "../assets/toilets shop photos/Magnus 2.jpg";
+import vegaToiletAndBidet from "../assets/toilets shop photos/Vega Toilet and Bidet.png";
+import libra from "../assets/toilets shop photos/Libra.jpg";
+import rosettaWallHung from "../assets/toilets shop photos/Rosetta Wall Hung.png";
+import orion from "../assets/toilets shop photos/Orion.jpg";
+
+const productImages: Record<string, string> = {
+  t1: keplerWallMounted,
+  t2: keplerCloseCoupled,
+  t3: titanCloseCoupled,
+  t4: titanWallMounted,
+  t5: magnus1,
+  t6: magnus2,
+  t7: vegaToiletAndBidet,
+  t8: libra,
+  t9: rosettaWallHung,
+  t10: orion,
+};
 
 interface Filter {
   id: string;
@@ -130,7 +153,7 @@ const ShopToiletsPage = () => {
               <div key={product.id} className="flex flex-col">
                 <div className="h-64 w-full overflow-hidden">
                   <img
-                    src={toiletsImage}
+                    src={productImages[product.id] ?? toiletsImage}
                     alt={product.name}
                     className="h-full w-full object-cover"
                   />

@@ -2,6 +2,29 @@ import { useEffect, useState } from "react";
 import RevealSection from "../components/shared/RevealSection";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import washbasinsImage from "../assets/categories photos/Washbasins photo.jpg";
+import keplerFurniture from "../assets/washbasins shop photos/Kepler Furniture.jpg";
+import ambrus from "../assets/washbasins shop photos/Ambrus.jpg";
+import titanFurniture from "../assets/washbasins shop photos/Titan Furniture.jpg";
+import harmony from "../assets/washbasins shop photos/Harmony.jpg";
+import vegaHalfPedestal from "../assets/washbasins shop photos/Vega Half Pedestal.jpg";
+import libra from "../assets/washbasins shop photos/Libra.jpg";
+import rosettaHalfPedestal from "../assets/washbasins shop photos/Rosetta Half Pedestal.jpg";
+import ondaGrey from "../assets/washbasins shop photos/Onda Grey.jpg";
+import gardner from "../assets/washbasins shop photos/Gardner.jpg";
+import danube from "../assets/washbasins shop photos/Danube.jpg";
+
+const productImages: Record<string, string> = {
+  w1: keplerFurniture,
+  w2: ambrus,
+  w3: titanFurniture,
+  w4: harmony,
+  w5: vegaHalfPedestal,
+  w6: libra,
+  w7: rosettaHalfPedestal,
+  w8: ondaGrey,
+  w9: gardner,
+  w10: danube,
+};
 
 interface Filter {
   id: string;
@@ -125,7 +148,7 @@ const ShopWashbasinsPage = () => {
               <div key={product.id} className="flex flex-col">
                 <div className="h-64 w-full overflow-hidden">
                   <img
-                    src={washbasinsImage}
+                    src={productImages[product.id] ?? washbasinsImage}
                     alt={product.name}
                     className="h-full w-full object-cover"
                   />

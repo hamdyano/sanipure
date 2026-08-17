@@ -2,6 +2,29 @@ import { useEffect, useState } from "react";
 import RevealSection from "../components/shared/RevealSection";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import bathtubsImage from "../assets/categories photos/Bathtubs photo.jpg";
+import aden from "../assets/bathtubs shop photos/Aden.jpg";
+import bali from "../assets/bathtubs shop photos/Bali.jpg";
+import cara from "../assets/bathtubs shop photos/Cara.jpg";
+import claro from "../assets/bathtubs shop photos/Claro.jpg";
+import fiji from "../assets/bathtubs shop photos/Fiji.jpg";
+import flute from "../assets/bathtubs shop photos/Flute.jpg";
+import garda from "../assets/bathtubs shop photos/Garda.jpg";
+import grace from "../assets/bathtubs shop photos/Grace.jpg";
+import halo from "../assets/bathtubs shop photos/Halo.jpg";
+import jarvi from "../assets/bathtubs shop photos/Jarvi.jpg";
+
+const productImages: Record<string, string> = {
+  b1: aden,
+  b2: bali,
+  b3: cara,
+  b4: claro,
+  b5: fiji,
+  b6: flute,
+  b7: garda,
+  b8: grace,
+  b9: halo,
+  b10: jarvi,
+};
 
 interface Filter {
   id: string;
@@ -130,7 +153,7 @@ const ShopBathtubsPage = () => {
               <div key={product.id} className="flex flex-col">
                 <div className="h-64 w-full overflow-hidden">
                   <img
-                    src={bathtubsImage}
+                    src={productImages[product.id] ?? bathtubsImage}
                     alt={product.name}
                     className="h-full w-full object-cover"
                   />
