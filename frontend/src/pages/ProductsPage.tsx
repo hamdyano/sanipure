@@ -44,6 +44,7 @@ const categories: Category[] = [
     headline: "Bathtubs",
     description:
       "Create a space dedicated to relaxation with our bathtubs. Discover a selection of refined forms and premium finishes designed to elevate the bathing experience.",
+    shopPath: "/products/bathtubs/shop-bathtubs",
   },
   {
     name: "Accessories & Furniture",

@@ -10,6 +10,7 @@ import WhoWeArePage from "./pages/WhoWeArePage";
 import ProductsPage from "./pages/ProductsPage";
 import ShopToiletsPage from "./pages/ShopToiletsPage";
 import ShopWashbasinsPage from "./pages/ShopWashbasinsPage";
+import ShopBathtubsPage from "./pages/ShopBathtubsPage";
 
 const App = () => {
 
@@ -61,6 +62,14 @@ const App = () => {
           element={
             <Layout>
               <ShopWashbasinsPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/bathtubs/shop-bathtubs"
+          element={
+            <Layout>
+              <ShopBathtubsPage />
             </Layout>
           }
         />
