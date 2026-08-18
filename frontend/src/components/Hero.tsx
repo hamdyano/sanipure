@@ -43,7 +43,7 @@ const Hero = () => {
             Explore Products
           </Link>
           <Link
-            to="/who-we-are"
+            to="/projects"
             className="rounded-full bg-black px-6 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-black/80"
           >
             View Projects
