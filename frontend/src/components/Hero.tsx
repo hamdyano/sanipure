@@ -15,7 +15,7 @@ const Hero = () => {
       />
 
       <motion.div
-        className="absolute inset-0 bg-black/30"
+        className="absolute inset-0 bg-white/10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
@@ -27,24 +27,24 @@ const Hero = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
       >
-        <h1 className="max-w-3xl text-4xl font-semibold text-white md:text-6xl">
+        <h1 className="max-w-3xl text-4xl font-semibold text-black md:text-6xl">
           Shaping Spaces Worldwide
         </h1>
-        <p className="mt-6 max-w-xl text-lg text-white/90">
+        <p className="mt-6 max-w-xl text-lg text-black/80">
           Premium sanitaryware crafted with innovative technology, exceptional
           quality, and contemporary design for homeowners in addition to the
           residential and commercial projects.
         </p>
-        <div className="mt-8 flex items-center gap-8">
+        <div className="mt-8 flex items-center gap-4">
           <Link
             to="/products"
-            className="text-sm font-medium uppercase tracking-wide text-white underline underline-offset-4 hover:text-white/80"
+            className="rounded-full bg-black px-6 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-black/80"
           >
             Explore Products
           </Link>
           <Link
             to="/who-we-are"
-            className="text-sm font-medium uppercase tracking-wide text-white underline underline-offset-4 hover:text-white/80"
+            className="rounded-full bg-black px-6 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-black/80"
           >
             View Projects
           </Link>

@@ -11,6 +11,7 @@ import ProductsPage from "./pages/ProductsPage";
 import ShopToiletsPage from "./pages/ShopToiletsPage";
 import ShopWashbasinsPage from "./pages/ShopWashbasinsPage";
 import ShopBathtubsPage from "./pages/ShopBathtubsPage";
+import ProjectsPage from "./pages/ProjectsPage";
 
 const App = () => {
 
@@ -70,6 +71,14 @@ const App = () => {
           element={
             <Layout>
               <ShopBathtubsPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/projects"
+          element={
+            <Layout>
+              <ProjectsPage />
             </Layout>
           }
         />
