@@ -12,6 +12,8 @@ import ShopToiletsPage from "./pages/ShopToiletsPage";
 import ShopWashbasinsPage from "./pages/ShopWashbasinsPage";
 import ShopBathtubsPage from "./pages/ShopBathtubsPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import AdminPage from "./pages/AdminPage";
+import DashboardPage from "./pages/DashboardPage";
 
 const App = () => {
 
@@ -79,6 +81,22 @@ const App = () => {
           element={
             <Layout>
               <ProjectsPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <Layout>
+              <AdminPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <Layout>
+              <DashboardPage />
             </Layout>
           }
         />

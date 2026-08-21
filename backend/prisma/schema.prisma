@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Connection URLs live in prisma.config.ts (Prisma 7 moved them out of
+  // schema.prisma) — see datasource.url / datasource.directUrl there.
+}
+
+// One row per shop category: "toilets" | "washbasins" | "bathtubs".
+// Mirrors ToiletsShop.ts / washbasinsShop.ts / BathtubsShop.ts.
+model Category {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  filters   Filter[]
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// One row per filter group within a category, e.g. { id: "shape", label: "Shape",
+// options: ["Square", "Round", "with Bidet"] } from ToiletsShop.ts.
+model Filter {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  key        String // "shape" | "color" | "series" | "type" | "extra" | "material" | "size"
+  label      String
+  options    String[]
+  order      Int      @default(0)
+
+  @@unique([categoryId, key])
+}
+
+// One row per product. Attributes are stored as JSON because the attribute
+// set differs per category (toilets: shape/color/series/type/extra;
+// washbasins add material/size; bathtubs add material) and "extra" can hold
+// multiple values (e.g. ["Soft close", "Hydro jet"]), matching the current
+// Record<string, string | string[]> shape used in the TS stub files.
+model Product {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name       String
+  attributes Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([categoryId])
+}
+
+// Admin sign-up / sign-in accounts.
+model User {
+  id           String   @id @default(cuid())
+  username     String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

@@ -1,9 +1,11 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import path from "path";
 import { washbasinsShop, type CatalogEntry } from "./washbasinsShop";
 import { toiletsShop } from "./ToiletsShop";
 import { bathtubsShop } from "./BathtubsShop";
+import { signIn, signUp } from "./auth";
 
 
 
@@ -48,6 +50,9 @@ app.get("/api/products", async (req, res) => {
   }
   res.json({ category, ...catalog });
 });
+
+app.post("/api/auth/signup", signUp);
+app.post("/api/auth/signin", signIn);
 
 // SPA fallback: any non-API route should load the React app, which then
 // handles routing (e.g. /products/washbasins) on the client via React Router.

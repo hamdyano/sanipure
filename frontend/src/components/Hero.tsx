@@ -31,9 +31,7 @@ const Hero = () => {
           Shaping Spaces Worldwide
         </h1>
         <p className="mt-6 max-w-xl text-lg text-black/80">
-          Premium sanitaryware crafted with innovative technology, exceptional
-          quality, and contemporary design for homeowners in addition to the
-          residential and commercial projects.
+          Premium sanitaryware crafted with innovative technology
         </p>
         <div className="mt-8 flex items-center gap-4">
           <Link
@@ -55,3 +53,9 @@ const Hero = () => {
 };
 
 export default Hero;
+
+
+
+/*exceptional
+          quality, and contemporary design for homeowners in addition to the
+          residential and commercial projects. */
