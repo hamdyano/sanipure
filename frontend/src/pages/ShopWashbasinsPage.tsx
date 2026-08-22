@@ -144,26 +144,40 @@ const ShopWashbasinsPage = () => {
           )}
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredProducts.map((product) => (
-              <div key={product.id} className="flex flex-col">
-                <div className="h-64 w-full overflow-hidden">
-                  <img
-                    src={productImages[product.id] ?? washbasinsImage}
-                    alt={product.name}
-                    className="h-full w-full object-cover"
-                  />
+            {filteredProducts.map((product) => {
+              const topLine = [product.series, product.type].filter(Boolean).join(" · ");
+              const bottomLine = [
+                product.material,
+                product.shape,
+                product.color,
+                product.size ? `${product.size}cm` : undefined,
+              ]
+                .filter(Boolean)
+                .join(" · ");
+
+              return (
+                <div key={product.id} className="flex flex-col">
+                  <div className="h-64 w-full overflow-hidden">
+                    <img
+                      src={product.image || productImages[product.id] || washbasinsImage}
+                      alt={product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <h4 className="mt-4 text-base font-medium text-white">
+                    {product.name}
+                  </h4>
+                  {topLine && (
+                    <p className="mt-1 text-sm text-white/60">{topLine}</p>
+                  )}
+                  {bottomLine && (
+                    <p className="mt-1 text-xs uppercase tracking-wide text-white/40">
+                      {bottomLine}
+                    </p>
+                  )}
                 </div>
-                <h4 className="mt-4 text-base font-medium text-white">
-                  {product.name}
-                </h4>
-                <p className="mt-1 text-sm text-white/60">
-                  {product.series} · {product.type}
-                </p>
-                <p className="mt-1 text-xs uppercase tracking-wide text-white/40">
-                  {product.material} · {product.shape} · {product.color} · {product.size}cm
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

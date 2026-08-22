@@ -46,23 +46,27 @@ model Filter {
 // multiple values (e.g. ["Soft close", "Hydro jet"]), matching the current
 // Record<string, string | string[]> shape used in the TS stub files.
 model Product {
-  id         String   @id @default(cuid())
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  name       String
-  attributes Json
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(cuid())
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name        String
+  attributes  Json
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([categoryId])
+  @@index([createdById])
 }
 
 // Admin sign-up / sign-in accounts.
 model User {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   username     String
-  email        String   @unique
+  email        String    @unique
   passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  products     Product[]
 }

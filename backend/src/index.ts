@@ -6,6 +6,16 @@ import { washbasinsShop, type CatalogEntry } from "./washbasinsShop";
 import { toiletsShop } from "./ToiletsShop";
 import { bathtubsShop } from "./BathtubsShop";
 import { signIn, signUp } from "./auth";
+import { requireAuth } from "./authMiddleware";
+import {
+  UPLOADS_DIR,
+  createProduct,
+  deleteProduct,
+  getDbProducts,
+  getMyProducts,
+  updateProduct,
+  upload,
+} from "./products";
 
 
 
@@ -27,6 +37,7 @@ app.use(
   
 
 app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 
 app.get("/api/test", async (req, res) => {
@@ -48,8 +59,29 @@ app.get("/api/products", async (req, res) => {
     res.status(404).json({ message: `No catalog for category "${category}"` });
     return;
   }
-  res.json({ category, ...catalog });
+
+  const dbProducts = await getDbProducts(category);
+  res.json({
+    category,
+    filters: catalog.filters,
+    products: [...catalog.products, ...dbProducts],
+  });
 });
+
+app.get("/api/products/:category/mine", requireAuth, getMyProducts);
+app.post(
+  "/api/products/:category",
+  requireAuth,
+  upload.single("image"),
+  createProduct
+);
+app.put(
+  "/api/products/:category/:id",
+  requireAuth,
+  upload.single("image"),
+  updateProduct
+);
+app.delete("/api/products/:category/:id", requireAuth, deleteProduct);
 
 app.post("/api/auth/signup", signUp);
 app.post("/api/auth/signin", signIn);

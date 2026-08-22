@@ -7,6 +7,27 @@ const apiClient = axios.create({
   },
 });
 
+// Attach the signed-in user's token to every request automatically, so
+// auth-protected endpoints (creating/editing/deleting products, "my
+// products", etc.) work without each call site having to pass headers.
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) {
+    config.headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  // The instance-level default Content-Type ("application/json") would
+  // otherwise override FormData's auto-detected multipart boundary header,
+  // silently breaking every file upload (create/update product with a
+  // photo) — confirmed live: the request went out as application/json with
+  // no boundary, so the backend never saw the uploaded file.
+  if (config.data instanceof FormData) {
+    config.headers.delete("Content-Type");
+  }
+
+  return config;
+});
+
 export default apiClient;
 
 // ---------------------------------------------------------------------------
