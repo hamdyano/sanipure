@@ -1,13 +1,9 @@
-import apiClient, {
-  type CatalogResponse,
-  type Product,
-  type ProductInput,
-} from "./clientApi";
+import apiClient, { type CatalogResponse, type Product } from "./clientApi";
 
 const CATEGORY = "toilets";
 
 // Read (all) — GET /api/products?category=toilets
-// Live today: this is the only endpoint the backend actually implements.
+// Public, no auth required — this is what ShopToiletsPage uses.
 export const getToilets = async (): Promise<CatalogResponse> => {
   const { data } = await apiClient.get<CatalogResponse>("/products", {
     params: { category: CATEGORY },
@@ -15,48 +11,49 @@ export const getToilets = async (): Promise<CatalogResponse> => {
   return data;
 };
 
-// Read (one) — GET /api/products/toilets/:id
-// Not implemented on the backend yet.
-export const getToiletById = async (id: string): Promise<Product> => {
-  const { data } = await apiClient.get<Product>(`/products/${CATEGORY}/${id}`);
+// Read (mine) — GET /api/products/toilets/mine
+// Auth required. The signed-in user's own toilets, for the dashboard
+// list (with edit/delete actions) above the "Add Toilets" button.
+export const getMyToilets = async (): Promise<Product[]> => {
+  const { data } = await apiClient.get<Product[]>(`/products/${CATEGORY}/mine`);
   return data;
 };
 
 // Create — POST /api/products/toilets
-// Not implemented on the backend yet.
-export const createToilet = async (product: ProductInput): Promise<Product> => {
+// Auth required. Takes a FormData (name, any selected filter attributes,
+// and an optional "image" file) so the admin "Add Toilets" form can
+// upload a photo alongside the product's attributes in one request.
+export const createToilet = async (formData: FormData): Promise<Product> => {
   const { data } = await apiClient.post<Product>(
     `/products/${CATEGORY}`,
-    product,
+    formData,
   );
   return data;
 };
 
 // Update — PUT /api/products/toilets/:id
-// Not implemented on the backend yet.
+// Auth required, and only the product's creator may update it. Same
+// FormData shape as create; omitting "image" keeps the existing photo.
 export const updateToilet = async (
   id: string,
-  product: Partial<ProductInput>,
+  formData: FormData,
 ): Promise<Product> => {
   const { data } = await apiClient.put<Product>(
     `/products/${CATEGORY}/${id}`,
-    product,
+    formData,
   );
   return data;
 };
 
 // Delete — DELETE /api/products/toilets/:id
-// Not implemented on the backend yet.
-export const deleteToilet = async (id: string): Promise<Product> => {
-  const { data } = await apiClient.delete<Product>(
-    `/products/${CATEGORY}/${id}`,
-  );
-  return data;
+// Auth required, and only the product's creator may delete it.
+export const deleteToilet = async (id: string): Promise<void> => {
+  await apiClient.delete(`/products/${CATEGORY}/${id}`);
 };
 
 const toiletsApi = {
   getAll: getToilets,
-  getById: getToiletById,
+  getMine: getMyToilets,
   create: createToilet,
   update: updateToilet,
   remove: deleteToilet,
