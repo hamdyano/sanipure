@@ -1,6 +1,7 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import axios from "axios";
-import type { CatalogResponse, Product } from "../../api/clientApi";
+import type { CatalogResponse, Product, ProductInput } from "../../api/clientApi";
+import { uploadProductImage } from "../../api/clientApi";
 import {
   showErrorToast,
   showSuccessToast,
@@ -16,8 +17,8 @@ interface Filter {
 export interface ProductManagerApi {
   getAll: () => Promise<CatalogResponse>;
   getMine: () => Promise<Product[]>;
-  create: (formData: FormData) => Promise<Product>;
-  update: (id: string, formData: FormData) => Promise<Product>;
+  create: (payload: ProductInput) => Promise<Product>;
+  update: (id: string, payload: ProductInput) => Promise<Product>;
   remove: (id: string) => Promise<void>;
 }
 
@@ -133,22 +134,29 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
       return;
     }
 
-    const formData = new FormData();
-    formData.append("name", name.trim());
-    Object.entries(selected).forEach(([key, value]) => {
-      if (value) formData.append(key, value);
-    });
-    if (imageFile) {
-      formData.append("image", imageFile);
-    }
-
     setSaving(true);
     try {
+      // A newly-picked file needs to go to Supabase Storage first — imagePreview
+      // for a new file is a local blob: URL, not something we can save.
+      // Editing without picking a new file keeps whatever URL was already there.
+      let imageUrl: string | undefined;
+      if (imageFile) {
+        imageUrl = await uploadProductImage(imageFile);
+      } else if (imagePreview) {
+        imageUrl = imagePreview;
+      }
+
+      const payload: ProductInput = {
+        name: name.trim(),
+        ...selected,
+        ...(imageUrl ? { image: imageUrl } : {}),
+      };
+
       if (editingId) {
-        await api.update(editingId, formData);
+        await api.update(editingId, payload);
         showSuccessToast(`${categoryLabel.slice(0, -1)} updated successfully`);
       } else {
-        await api.create(formData);
+        await api.create(payload);
         showSuccessToast(`${categoryLabel.slice(0, -1)} added successfully`);
       }
       resetForm();

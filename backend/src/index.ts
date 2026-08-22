@@ -8,12 +8,12 @@ import { bathtubsShop } from "./BathtubsShop";
 import { signIn, signUp } from "./auth";
 import { requireAuth } from "./authMiddleware";
 import {
-  UPLOADS_DIR,
   createProduct,
   deleteProduct,
   getDbProducts,
   getMyProducts,
   updateProduct,
+  uploadImage,
   upload,
 } from "./products";
 
@@ -37,7 +37,6 @@ app.use(
   
 
 app.use(express.static(path.join(__dirname, "../../frontend/dist")));
-app.use("/uploads", express.static(UPLOADS_DIR));
 
 
 app.get("/api/test", async (req, res) => {
@@ -70,17 +69,13 @@ app.get("/api/products", async (req, res) => {
 
 app.get("/api/products/:category/mine", requireAuth, getMyProducts);
 app.post(
-  "/api/products/:category",
+  "/api/products/upload-image",
   requireAuth,
   upload.single("image"),
-  createProduct
+  uploadImage
 );
-app.put(
-  "/api/products/:category/:id",
-  requireAuth,
-  upload.single("image"),
-  updateProduct
-);
+app.post("/api/products/:category", requireAuth, createProduct);
+app.put("/api/products/:category/:id", requireAuth, updateProduct);
 app.delete("/api/products/:category/:id", requireAuth, deleteProduct);
 
 app.post("/api/auth/signup", signUp);

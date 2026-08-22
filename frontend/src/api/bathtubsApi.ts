@@ -1,4 +1,8 @@
-import apiClient, { type CatalogResponse, type Product } from "./clientApi";
+import apiClient, {
+  type CatalogResponse,
+  type Product,
+  type ProductInput,
+} from "./clientApi";
 
 const CATEGORY = "bathtubs";
 
@@ -20,27 +24,27 @@ export const getMyBathtubs = async (): Promise<Product[]> => {
 };
 
 // Create — POST /api/products/bathtubs
-// Auth required. Takes a FormData (name, any selected filter attributes,
-// and an optional "image" file) so the admin "Add Bathtubs" form can
-// upload a photo alongside the product's attributes in one request.
-export const createBathtub = async (formData: FormData): Promise<Product> => {
+// Auth required. Takes a plain JSON payload (name, any selected filter
+// attributes, and an optional "image" URL already uploaded via
+// uploadProductImage) for the admin "Add Bathtubs" form.
+export const createBathtub = async (payload: ProductInput): Promise<Product> => {
   const { data } = await apiClient.post<Product>(
     `/products/${CATEGORY}`,
-    formData,
+    payload,
   );
   return data;
 };
 
 // Update — PUT /api/products/bathtubs/:id
-// Auth required, and only the product's creator may update it. Same
-// FormData shape as create; omitting "image" keeps the existing photo.
+// Auth required, and only the product's creator may update it. Same JSON
+// shape as create; omitting "image" keeps the existing photo.
 export const updateBathtub = async (
   id: string,
-  formData: FormData,
+  payload: ProductInput,
 ): Promise<Product> => {
   const { data } = await apiClient.put<Product>(
     `/products/${CATEGORY}/${id}`,
-    formData,
+    payload,
   );
   return data;
 };

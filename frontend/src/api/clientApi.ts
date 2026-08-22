@@ -57,6 +57,21 @@ export interface CatalogResponse {
 // Per-category CRUD lives in its own file: washbasinsApi.ts, toiletsApi.ts,
 // bathtubsApi.ts. They all share the apiClient instance and types above.
 
+// Upload — POST /api/products/upload-image
+// Auth required. Uploads a single image file to Supabase Storage and
+// returns its public URL, which the admin form then includes as the
+// "image" attribute when creating/updating a product (a plain string, not
+// a file) — decoupled from create/update so those stay simple JSON calls.
+export const uploadProductImage = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("image", file);
+  const { data } = await apiClient.post<{ url: string }>(
+    "/products/upload-image",
+    formData,
+  );
+  return data.url;
+};
+
 // ---------------------------------------------------------------------------
 // Auth (used by the Admin sign-in / sign-up forms)
 // Not implemented on the backend yet — no /api/auth/* routes exist.

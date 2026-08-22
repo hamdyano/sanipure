@@ -1,22 +1,14 @@
-import fs from "fs";
-import path from "path";
 import multer from "multer";
 import type { Response } from "express";
 import { prisma } from "./prisma";
 import type { AuthedRequest } from "./authMiddleware";
+import { supabase, PRODUCT_IMAGES_BUCKET } from "./supabase";
 
-export const UPLOADS_DIR = path.join(__dirname, "../uploads");
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-  },
-});
-
+// Files are held in memory (not written to local disk) so they can be
+// streamed straight to Supabase Storage — Render's filesystem is ephemeral
+// and wipes local uploads on every redeploy/restart.
 export const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
@@ -30,19 +22,69 @@ const parseAttributes = (rawAttributes: Record<string, unknown>) => {
   return attributes;
 };
 
-const deleteUploadedFile = (imagePath: string) => {
-  const filePath = path.join(UPLOADS_DIR, path.basename(imagePath));
-  fs.unlink(filePath, () => {
-    // best-effort cleanup — a leftover file isn't worth failing the request over
-  });
+// Best-effort cleanup of a previously-uploaded Supabase Storage object when
+// it's replaced or the product is deleted — a leftover file isn't worth
+// failing the request over, so errors here are only logged.
+const deleteStorageObject = async (imageUrl: string) => {
+  const marker = `/object/public/${PRODUCT_IMAGES_BUCKET}/`;
+  const index = imageUrl.indexOf(marker);
+  if (index === -1) return;
+
+  const objectPath = imageUrl.slice(index + marker.length);
+  const { error } = await supabase.storage
+    .from(PRODUCT_IMAGES_BUCKET)
+    .remove([objectPath]);
+  if (error) {
+    console.error("Failed to delete old product image from storage:", error);
+  }
+};
+
+// Uploads a single image file to the product-images Supabase Storage bucket
+// and returns its public URL. Used by the admin product form before
+// create/update, decoupled from saving the product itself.
+export const uploadImage = async (req: AuthedRequest, res: Response) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ message: "No image file was provided" });
+      return;
+    }
+
+    const ext = req.file.originalname.includes(".")
+      ? req.file.originalname.slice(req.file.originalname.lastIndexOf("."))
+      : "";
+    const objectPath = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+
+    const { error } = await supabase.storage
+      .from(PRODUCT_IMAGES_BUCKET)
+      .upload(objectPath, req.file.buffer, {
+        contentType: req.file.mimetype,
+      });
+
+    if (error) {
+      console.error("Supabase Storage upload failed:", error);
+      res.status(500).json({ message: "Failed to upload image" });
+      return;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(objectPath);
+
+    res.status(201).json({ url: publicUrl });
+  } catch (err) {
+    console.error("uploadImage failed:", err);
+    res.status(500).json({ message: "Something went wrong uploading the image" });
+  }
 };
 
 // Creates a product under the given category (from the route param), taking
 // whatever attribute fields were submitted (all optional — filter selects the
 // admin left blank simply won't be present in req.body) plus an optional
-// uploaded image. The category row is created on first use so this works
-// without needing to pre-seed Category rows for every shop category.
-// Requires auth (see requireAuth) so the product is tied to its creator.
+// "image" field, which is a plain Supabase Storage public URL string already
+// uploaded via uploadImage above. The category row is created on first use
+// so this works without needing to pre-seed Category rows for every shop
+// category. Requires auth (see requireAuth) so the product is tied to its
+// creator.
 export const createProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const category = String(req.params.category);
@@ -60,9 +102,6 @@ export const createProduct = async (req: AuthedRequest, res: Response) => {
     });
 
     const attributes = parseAttributes(rawAttributes);
-    if (req.file) {
-      attributes.image = `/uploads/${req.file.filename}`;
-    }
 
     const product = await prisma.product.create({
       data: {
@@ -85,8 +124,9 @@ export const createProduct = async (req: AuthedRequest, res: Response) => {
 };
 
 // Updates a product, but only if the signed-in user is the one who created
-// it. Keeps the existing image unless a new file is uploaded, and cleans up
-// the old file on disk when it's replaced.
+// it. "image" in the body is expected to be either the existing public URL
+// (unchanged) or a new one from uploadImage; if it changed, the old Supabase
+// Storage object is cleaned up.
 export const updateProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const id = String(req.params.id);
@@ -109,13 +149,12 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
     const attributes = parseAttributes(rawAttributes);
     const existingAttributes = existing.attributes as Record<string, string>;
 
-    if (req.file) {
-      attributes.image = `/uploads/${req.file.filename}`;
-      if (existingAttributes.image) {
-        deleteUploadedFile(existingAttributes.image);
-      }
-    } else if (existingAttributes.image) {
-      attributes.image = existingAttributes.image;
+    if (
+      existingAttributes.image &&
+      attributes.image &&
+      attributes.image !== existingAttributes.image
+    ) {
+      await deleteStorageObject(existingAttributes.image);
     }
 
     const updated = await prisma.product.update({
@@ -135,7 +174,7 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
 };
 
 // Deletes a product, but only if the signed-in user is the one who created
-// it. Also removes its uploaded image file, if any.
+// it. Also removes its uploaded image from Supabase Storage, if any.
 export const deleteProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const id = String(req.params.id);
@@ -153,7 +192,7 @@ export const deleteProduct = async (req: AuthedRequest, res: Response) => {
 
     const existingAttributes = existing.attributes as Record<string, string>;
     if (existingAttributes.image) {
-      deleteUploadedFile(existingAttributes.image);
+      await deleteStorageObject(existingAttributes.image);
     }
 
     res.json({ message: "Product deleted" });
