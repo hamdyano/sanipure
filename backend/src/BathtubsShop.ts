@@ -17,7 +17,7 @@ export const bathtubsShop: CatalogEntry = {
     {
       id: "color",
       label: "Colors",
-      options: ["White", "Pergamon", "Color", "Pattern"],
+      options: ["White", "Pergamon", "Pattern"],
     },
     {
       id: "series",
