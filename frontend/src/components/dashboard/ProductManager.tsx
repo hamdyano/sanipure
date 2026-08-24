@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import axios from "axios";
 import type { CatalogResponse, Product, ProductInput } from "../../api/clientApi";
 import { uploadProductImage } from "../../api/clientApi";
@@ -108,6 +108,8 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
     setImagePreview(null);
   };
 
+  const formRef = useRef<HTMLHeadingElement>(null);
+
   const openEditForm = (product: Product) => {
     setEditingId(product.id);
     setName(product.name);
@@ -120,6 +122,7 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
     setSelected(nextSelected);
     setImageFile(null);
     setImagePreview(typeof product.image === "string" ? product.image : null);
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -199,50 +202,56 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
       </div>
 
       {!loadingMine && myProducts.length > 0 && (
-        <div className="mb-10 flex flex-col gap-4">
+        <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {myProducts.map((product) => (
             <div
               key={product.id}
-              className="flex items-center gap-4 rounded-xl border border-white/10 bg-black p-4"
+              className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-black"
             >
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-white/5">
-                {typeof product.image === "string" && (
+              <div className="aspect-square w-full overflow-hidden bg-white/5">
+                {typeof product.image === "string" ? (
                   <img
                     src={product.image}
                     alt={product.name}
                     className="h-full w-full object-cover"
                   />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-xs text-white/30">
+                    No image
+                  </div>
                 )}
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-medium text-white">{product.name}</p>
-                <p className="truncate text-sm text-white/50">
-                  {describeProduct(product, filters) || "No attributes set"}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => openEditForm(product)}
-                  className="rounded-full border border-white/30 px-4 py-2 text-xs font-medium uppercase tracking-wide text-white transition-colors hover:border-white"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(product)}
-                  disabled={deletingId === product.id}
-                  className="rounded-full border border-red-500/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-red-300 transition-colors hover:border-red-400 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {deletingId === product.id ? "Deleting…" : "Delete"}
-                </button>
+              <div className="flex flex-1 flex-col gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-white">{product.name}</p>
+                  <p className="truncate text-xs text-white/50">
+                    {describeProduct(product, filters) || "No attributes set"}
+                  </p>
+                </div>
+                <div className="mt-auto flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => openEditForm(product)}
+                    className="flex-1 rounded-full border border-white/30 px-3 py-2 text-xs font-medium uppercase tracking-wide text-white transition-colors hover:border-white"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(product)}
+                    disabled={deletingId === product.id}
+                    className="flex-1 rounded-full border border-red-500/40 px-3 py-2 text-xs font-medium uppercase tracking-wide text-red-300 transition-colors hover:border-red-400 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {deletingId === product.id ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      <h3 className="mb-4 text-lg font-semibold text-white">
+      <h3 ref={formRef} className="mb-4 scroll-mt-6 text-lg font-semibold text-white">
         {editingId ? `Edit ${categoryLabel.slice(0, -1)}` : `Add ${categoryLabel.slice(0, -1)}`}
       </h3>
 
@@ -298,6 +307,7 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
               No image selected
             </div>
           )}
+          <p className="text-xs text-white/40">JPG, PNG or WEBP · up to 5MB</p>
           <label className="cursor-pointer rounded-full border border-white/30 px-6 py-2 text-sm text-white transition-colors hover:border-white">
             Choose Photo
             <input

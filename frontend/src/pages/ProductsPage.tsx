@@ -138,7 +138,7 @@ const ProductsPage = () => {
                       to={category.shopPath}
                       className="mt-8 w-fit border border-white px-8 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black"
                     >
-                      Shop {category.name}
+                      View {category.name}
                     </Link>
                   )}
                 </DirectionalReveal>
@@ -161,7 +161,7 @@ const ProductsPage = () => {
                       to={category.shopPath}
                       className="mt-8 w-fit border border-white px-8 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black"
                     >
-                      Shop {category.name}
+                      View {category.name}
                     </Link>
                   )}
                 </DirectionalReveal>

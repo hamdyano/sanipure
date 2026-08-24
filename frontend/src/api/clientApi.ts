@@ -11,7 +11,7 @@ const apiClient = axios.create({
 // auth-protected endpoints (creating/editing/deleting products, "my
 // products", etc.) work without each call site having to pass headers.
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY);
+  const token = sessionStorage.getItem(TOKEN_KEY);
   if (token) {
     config.headers.set("Authorization", `Bearer ${token}`);
   }
@@ -110,8 +110,12 @@ const USER_KEY = "sanipure_admin_user";
 export const AUTH_CHANGED_EVENT = "sanipure-auth-changed";
 
 const persistAuth = (token: string, user: AuthUser) => {
-  localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  // sessionStorage (not localStorage) so the sign-in only lasts for this
+  // browser tab/session — closing the site clears it and the next visit
+  // requires signing in again, while reloads/navigation within the same
+  // session keep it.
+  sessionStorage.setItem(TOKEN_KEY, token);
+  sessionStorage.setItem(USER_KEY, JSON.stringify(user));
   window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
 };
 
@@ -128,15 +132,15 @@ export const signUp = async (payload: SignUpInput): Promise<AuthResponse> => {
 };
 
 export const signOut = () => {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(USER_KEY);
   window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
 };
 
-export const getAuthToken = (): string | null => localStorage.getItem(TOKEN_KEY);
+export const getAuthToken = (): string | null => sessionStorage.getItem(TOKEN_KEY);
 
 export const getStoredUser = (): AuthUser | null => {
-  const raw = localStorage.getItem(USER_KEY);
+  const raw = sessionStorage.getItem(USER_KEY);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as AuthUser;

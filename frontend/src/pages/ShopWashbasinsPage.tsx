@@ -2,29 +2,6 @@ import { useEffect, useState } from "react";
 import RevealSection from "../components/shared/RevealSection";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import washbasinsImage from "../assets/categories photos/Washbasins photo.jpg";
-import keplerFurniture from "../assets/washbasins shop photos/Kepler Furniture.jpg";
-import ambrus from "../assets/washbasins shop photos/Ambrus.jpg";
-import titanFurniture from "../assets/washbasins shop photos/Titan Furniture.jpg";
-import harmony from "../assets/washbasins shop photos/Harmony.jpg";
-import vegaHalfPedestal from "../assets/washbasins shop photos/Vega Half Pedestal.jpg";
-import libra from "../assets/washbasins shop photos/Libra.jpg";
-import rosettaHalfPedestal from "../assets/washbasins shop photos/Rosetta Half Pedestal.jpg";
-import ondaGrey from "../assets/washbasins shop photos/Onda Grey.jpg";
-import gardner from "../assets/washbasins shop photos/Gardner.jpg";
-import danube from "../assets/washbasins shop photos/Danube.jpg";
-
-const productImages: Record<string, string> = {
-  w1: keplerFurniture,
-  w2: ambrus,
-  w3: titanFurniture,
-  w4: harmony,
-  w5: vegaHalfPedestal,
-  w6: libra,
-  w7: rosettaHalfPedestal,
-  w8: ondaGrey,
-  w9: gardner,
-  w10: danube,
-};
 
 interface Filter {
   id: string;
@@ -109,7 +86,7 @@ const ShopWashbasinsPage = () => {
     <>
       <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
         <h1 className="text-4xl font-semibold text-white md:text-5xl">
-          Shop Washbasins
+          View Washbasins
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
           Filter by material, shape, color, series, size, and type to find the right fit.
@@ -159,7 +136,7 @@ const ShopWashbasinsPage = () => {
                 <div key={product.id} className="flex flex-col">
                   <div className="h-64 w-full overflow-hidden">
                     <img
-                      src={product.image || productImages[product.id] || washbasinsImage}
+                      src={product.image || washbasinsImage}
                       alt={product.name}
                       className="h-full w-full object-cover"
                     />
