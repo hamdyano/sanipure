@@ -39,6 +39,13 @@ const articles = [
 
 const date = "July 24, 2026";
 
+// "Read More" buttons throughout this section share a distinctive
+// ticket-stub look: straight horizontal borders top/bottom, with the two
+// vertical edges replaced by short skewed bars so they read as diagonal
+// slashes instead of a plain rectangle.
+const slashButtonClasses =
+  "relative inline-flex items-center justify-center border-y border-current px-6 py-2.5 text-xs font-semibold uppercase tracking-wide text-white transition-opacity hover:opacity-70 before:absolute before:left-0 before:top-0 before:h-full before:w-px before:-skew-x-[20deg] before:bg-current before:content-[''] after:absolute after:right-0 after:top-0 after:h-full after:w-px after:-skew-x-[20deg] after:bg-current after:content-['']";
+
 // Outer cards slide in from their nearer edge, inner cards rise from below.
 const cardDirections: Array<"left" | "right" | "up"> = [
   "left",
@@ -49,37 +56,30 @@ const cardDirections: Array<"left" | "right" | "up"> = [
 
 const Articles = () => {
   return (
-    <section className="mb-20 bg-[oklch(21.8%_0.008_223.9)] px-6 py-20 md:mb-28 lg:px-16">
-      <RevealSection className="mx-auto flex max-w-7xl flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-8">
-        <div className="flex items-center gap-2 md:pt-2">
-          <span className="h-2 w-2 flex-none bg-white" />
-          <span className="text-sm font-medium uppercase tracking-wide text-white">
-           Latest News & Updates
-          </span>
-        </div>
+    <section className="mb-32 md:mb-44">
+      <RevealSection className="bg-[#3a3a3a] px-6 py-10 md:px-16 md:py-12">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
+          <div className="flex items-center gap-2 justify-self-start">
+            <span className="h-2 w-2 flex-none bg-white" />
+            <span className="text-sm font-medium uppercase tracking-wide text-white">
+              Latest News & Updates
+            </span>
+          </div>
 
-        <h2 className="max-w-2xl text-3xl font-medium text-white md:text-4xl">
-         Stay informed with our latest news and décor tips.
-        </h2>
+          <h2 className="max-w-2xl text-center text-2xl font-bold text-white md:text-3xl">
+            Stay informed with our latest news and décor tips.
+          </h2>
 
-        <Link
-          to="/news"
-          className="inline-flex w-fit items-center gap-2 bg-black px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-black/80"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            className="h-4 w-4"
+          <Link
+            to="/news"
+            className={`${slashButtonClasses} justify-self-start md:justify-self-end`}
           >
-            <path d="M7 17 17 7M9 7h8v8" />
-          </svg>
-          Read More
-        </Link>
+            Read More
+          </Link>
+        </div>
       </RevealSection>
 
-      <div className="mx-auto mt-12 grid max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {articles.map((article, index) => {
           const cardDelay = index * 0.12;
           return (
@@ -87,62 +87,39 @@ const Articles = () => {
               key={article.title}
               direction={cardDirections[index % cardDirections.length]}
               delay={cardDelay}
-              className="h-full"
             >
-              <article className="flex h-full flex-col bg-black">
+              <Link
+                to={article.to}
+                className="group relative block h-[420px] overflow-hidden md:h-[500px] lg:h-[560px]"
+              >
                 <img
                   src={article.image}
                   alt={article.title}
-                  className="h-56 w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+
                 <RevealSection
                   delay={cardDelay + 0.1}
-                  className="flex flex-1 flex-col gap-3 p-5"
+                  className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5 md:p-6"
                 >
-                  <div className="flex items-center gap-4 text-xs text-white/60">
-                    <span className="flex items-center gap-1.5">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        className="h-3.5 w-3.5"
-                      >
-                        <circle cx="12" cy="8" r="3.5" />
-                        <path d="M5 20c1.5-3.5 4.5-5 7-5s5.5 1.5 7 5" />
-                      </svg>
-                      Sanipure
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        className="h-3.5 w-3.5"
-                      >
-                        <rect x="3" y="5" width="18" height="16" rx="1" />
-                        <path d="M3 10h18M8 3v4M16 3v4" />
-                      </svg>
-                      {date}
-                    </span>
+                  <div className="flex items-center justify-between text-xs text-white/70">
+                    <span>Sanipure</span>
+                    <span>{date}</span>
                   </div>
 
                   <h3 className="text-lg font-semibold text-white">
                     {article.title}
                   </h3>
-                  <p className="text-sm leading-relaxed text-white/70">
+                  <p className="text-sm leading-relaxed text-white/80">
                     {article.excerpt}
                   </p>
 
-                  <Link
-                    to={article.to}
-                    className="mt-auto w-fit bg-white px-4 py-2 text-xs font-medium uppercase tracking-wide text-black transition-colors hover:bg-white/90"
-                  >
+                  <span className={`${slashButtonClasses} mt-3 w-fit`}>
                     Read More
-                  </Link>
+                  </span>
                 </RevealSection>
-              </article>
+              </Link>
             </DirectionalReveal>
           );
         })}

@@ -82,13 +82,13 @@ const Header = () => {
           <img src={logo} alt="Sanipure" className="h-8 w-auto" />
         </Link>
 
-        <nav className="hidden md:block">
-          <ul className="flex items-center gap-8">
+        <nav className="hidden md:block font-brand">
+          <ul className="flex items-center gap-6">
             {navItems.map((item) => (
               <li key={item.to}>
                 <Link
                   to={item.to}
-                  className="text-xs font-medium uppercase tracking-[0.12em] text-white/90 transition-colors hover:text-white"
+                  className="whitespace-nowrap text-sm font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
                 >
                   {item.label}
                 </Link>
@@ -102,7 +102,7 @@ const Header = () => {
                     type="button"
                     onClick={() => setDropdownOpen((prev) => !prev)}
                     aria-expanded={dropdownOpen}
-                    className="text-xs font-medium uppercase tracking-[0.12em] text-white/90 transition-colors hover:text-white"
+                    className="whitespace-nowrap text-sm font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
                   >
                     {user.username}
                   </button>
@@ -111,14 +111,14 @@ const Header = () => {
                       <Link
                         to="/dashboard"
                         onClick={() => setDropdownOpen(false)}
-                        className="block px-4 py-2 text-xs font-medium uppercase tracking-[0.1em] text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                        className="block px-4 py-2 text-sm font-medium uppercase tracking-[0.02em] text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                       >
                         Dashboard
                       </Link>
                       <button
                         type="button"
                         onClick={handleSignOut}
-                        className="block w-full px-4 py-2 text-left text-xs font-medium uppercase tracking-[0.1em] text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                        className="block w-full px-4 py-2 text-left text-sm font-medium uppercase tracking-[0.02em] text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                       >
                         Sign Out
                       </button>
@@ -128,7 +128,7 @@ const Header = () => {
               ) : (
                 <Link
                   to="/admin"
-                  className="text-xs font-medium uppercase tracking-[0.12em] text-white/90 transition-colors hover:text-white"
+                  className="whitespace-nowrap text-sm font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
                 >
                   Admin
                 </Link>
@@ -169,7 +169,7 @@ const Header = () => {
       </div>
 
       <nav
-        className={`overflow-hidden bg-black transition-[max-height] duration-300 ease-in-out md:hidden ${
+        className={`overflow-hidden bg-black font-brand transition-[max-height] duration-300 ease-in-out md:hidden ${
           isOpen ? "max-h-[32rem]" : "max-h-0"
         }`}
       >
@@ -179,7 +179,7 @@ const Header = () => {
               <Link
                 to={item.to}
                 onClick={() => setIsOpen(false)}
-                className="block py-4 text-sm font-medium uppercase tracking-[0.12em] text-white/90 transition-colors hover:text-white"
+                className="block py-4 text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
               >
                 {item.label}
               </Link>
@@ -189,7 +189,7 @@ const Header = () => {
           {user ? (
             <>
               <li className="border-b border-white/10">
-                <span className="block py-4 text-sm font-medium uppercase tracking-[0.12em] text-white/50">
+                <span className="block py-4 text-base font-medium uppercase tracking-[0.02em] text-white/50">
                   {user.username}
                 </span>
               </li>
@@ -197,7 +197,7 @@ const Header = () => {
                 <Link
                   to="/dashboard"
                   onClick={() => setIsOpen(false)}
-                  className="block py-4 text-sm font-medium uppercase tracking-[0.12em] text-white/90 transition-colors hover:text-white"
+                  className="block py-4 text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
                 >
                   Dashboard
                 </Link>
@@ -206,7 +206,7 @@ const Header = () => {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="block w-full py-4 text-left text-sm font-medium uppercase tracking-[0.12em] text-white/90 transition-colors hover:text-white"
+                  className="block w-full py-4 text-left text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
                 >
                   Sign Out
                 </button>
@@ -217,7 +217,7 @@ const Header = () => {
               <Link
                 to="/admin"
                 onClick={() => setIsOpen(false)}
-                className="block py-4 text-sm font-medium uppercase tracking-[0.12em] text-white/90 transition-colors hover:text-white"
+                className="block py-4 text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
               >
                 Admin
               </Link>

@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* The Fira Sans Condensed <link> lives in index.html, not here: Tailwind's
+   Vite plugin fully expands `@import "tailwindcss"` in place, which pushes
+   any @import below it past the "must be the first rule in the file"
+   point — Lightning CSS then silently drops it, so no font ever loads. */
+@theme {
+  --font-brand: "Fira Sans Condensed", ui-sans-serif, system-ui, sans-serif;
+}
+
 html,
 body {
   overflow-x: hidden;

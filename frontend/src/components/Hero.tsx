@@ -27,10 +27,10 @@ const Hero = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
       >
-        <h1 className="max-w-3xl text-4xl font-semibold text-black md:text-6xl">
+        <h1 className="whitespace-normal font-brand text-[clamp(32px,5vw,64px)] font-medium uppercase tracking-normal text-black min-[601px]:whitespace-nowrap">
           Shaping Spaces Worldwide
         </h1>
-        <p className="mt-6 max-w-xl text-lg text-black/80">
+        <p className="mt-6 max-w-xl font-brand text-xl text-black/80">
           Premium sanitaryware crafted with innovative technology
         </p>
         <div className="mt-8 flex items-center gap-4">
