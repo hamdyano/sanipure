@@ -210,10 +210,10 @@ const Categories = () => {
               />
               <div className="absolute inset-0 bg-black/25 transition-colors group-hover:bg-black/35" />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center">
-                <h3 className="text-xl font-bold text-white md:text-2xl">
+                <h3 className="font-brand text-xl font-medium uppercase text-white md:text-2xl">
                   {category.name}
                 </h3>
-                <span className="text-sm font-medium text-white underline underline-offset-4">
+                <span className="font-brand text-sm text-white underline underline-offset-4">
                   {category.cta}
                 </span>
               </div>

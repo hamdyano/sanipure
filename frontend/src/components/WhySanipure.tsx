@@ -15,14 +15,14 @@ const WhySanipure = () => {
   return (
     <section className="bg-black">
       <RevealSection className="mx-auto max-w-3xl px-6 pb-14 pt-16 text-center md:pb-16 md:pt-20">
-        <h2 className="text-3xl font-bold text-white md:text-4xl">
+        <h2 className="font-brand text-3xl font-bold text-white md:text-4xl">
           Why Sanipure?
         </h2>
-        <p className="mt-2 text-base font-semibold text-white/90 md:text-lg">
+        <p className="mt-2 font-brand text-base font-semibold text-white/90 md:text-lg">
           Sanipure is the best choice for homeowners and professionals
         </p>
 
-        <p className="mx-auto mt-6 max-w-2xl text-sm font-medium leading-relaxed text-white/80 md:text-base">
+        <p className="mx-auto mt-6 max-w-2xl font-brand text-sm font-medium leading-relaxed text-white/80 md:text-base">
           Sanipure combines advanced manufacturing, contemporary design, and
           premium materials to deliver bathroom solutions trusted across homes,
           hospitality, and commercial projects in Egypt and 14 international

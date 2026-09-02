@@ -150,7 +150,7 @@ const Header = () => {
               fill="none"
               stroke="currentColor"
               strokeWidth={2}
-              className="h-6 w-6"
+              className="h-16 w-16"
             >
               <path d="M6 6l12 12M18 6 6 18" />
             </svg>
@@ -160,7 +160,7 @@ const Header = () => {
               fill="none"
               stroke="currentColor"
               strokeWidth={2}
-              className="h-6 w-6"
+              className="h-16 w-16"
             >
               <path d="M4 7h16M4 12h16M4 17h16" />
             </svg>
