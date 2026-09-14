@@ -65,6 +65,7 @@ const DashboardPage = () => {
             categoryLabel={activeConfig.label}
             api={activeConfig.api}
             onClose={() => setActiveCategory(null)}
+            showDisplaySection={activeConfig.slug === "toilets"}
           />
         )}
       </section>

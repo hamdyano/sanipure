@@ -1,5 +1,5 @@
 import multer from "multer";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import { prisma } from "./prisma";
 import type { AuthedRequest } from "./authMiddleware";
 import { supabase, PRODUCT_IMAGES_BUCKET } from "./supabase";
@@ -12,6 +12,15 @@ export const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
+// Larger limit for the "For Display" product spec sheet upload — real
+// design/spec PDFs (often with embedded diagrams or scans) run bigger than
+// a single photo. Reuses the same uploadImage handler below — it just reads
+// req.file, so field name/mimetype don't matter to it.
+export const uploadFile = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 },
+});
+
 const parseAttributes = (rawAttributes: Record<string, unknown>) => {
   const attributes: Record<string, string> = {};
   for (const [key, value] of Object.entries(rawAttributes)) {
@@ -20,6 +29,72 @@ const parseAttributes = (rawAttributes: Record<string, unknown>) => {
     }
   }
   return attributes;
+};
+
+// The "For Display" section's shape: full spec-sheet data shown on a
+// product's public detail page, distinct from the top-level filter
+// attributes above (which only ever hold single strings). Stored under
+// attributes.display so it rides along in the same Json column.
+export interface ProductDisplayColor {
+  name: string;
+  image?: string;
+}
+
+export interface ProductDisplay {
+  productCode?: string;
+  description?: string;
+  colors?: ProductDisplayColor[];
+  images?: string[];
+  types?: string[];
+  sizes?: string[];
+  designFile?: string;
+}
+
+const sanitizeDisplay = (raw: unknown): ProductDisplay | undefined => {
+  if (!raw || typeof raw !== "object") return undefined;
+  const src = raw as Record<string, unknown>;
+  const display: ProductDisplay = {};
+
+  if (typeof src.productCode === "string" && src.productCode.trim()) {
+    display.productCode = src.productCode.trim();
+  }
+  if (typeof src.description === "string" && src.description.trim()) {
+    display.description = src.description.trim();
+  }
+
+  if (Array.isArray(src.colors)) {
+    const colors = src.colors
+      .filter((c): c is Record<string, unknown> => !!c && typeof c === "object")
+      .map((c) => ({
+        name: typeof c.name === "string" ? c.name.trim() : "",
+        ...(typeof c.image === "string" && c.image.trim() ? { image: c.image.trim() } : {}),
+      }))
+      .filter((c) => c.name || c.image);
+    if (colors.length) display.colors = colors;
+  }
+
+  if (Array.isArray(src.images)) {
+    const images = src.images
+      .filter((i): i is string => typeof i === "string" && i.trim() !== "")
+      .slice(0, 5);
+    if (images.length) display.images = images;
+  }
+
+  if (Array.isArray(src.types)) {
+    const types = src.types.filter((t): t is string => typeof t === "string" && t.trim() !== "");
+    if (types.length) display.types = types;
+  }
+
+  if (Array.isArray(src.sizes)) {
+    const sizes = src.sizes.filter((s): s is string => typeof s === "string" && s.trim() !== "");
+    if (sizes.length) display.sizes = sizes;
+  }
+
+  if (typeof src.designFile === "string" && src.designFile.trim()) {
+    display.designFile = src.designFile.trim();
+  }
+
+  return Object.keys(display).length ? display : undefined;
 };
 
 // Best-effort cleanup of a previously-uploaded Supabase Storage object when
@@ -88,7 +163,7 @@ export const uploadImage = async (req: AuthedRequest, res: Response) => {
 export const createProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const category = String(req.params.category);
-    const { name, ...rawAttributes } = req.body ?? {};
+    const { name, display: rawDisplay, ...rawAttributes } = req.body ?? {};
 
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ message: "Product name is required" });
@@ -101,13 +176,16 @@ export const createProduct = async (req: AuthedRequest, res: Response) => {
       create: { slug: category, name: category },
     });
 
-    const attributes = parseAttributes(rawAttributes);
+    const attributes: Record<string, unknown> = parseAttributes(rawAttributes);
+    const display = sanitizeDisplay(rawDisplay);
+    if (display) attributes.display = display;
 
     const product = await prisma.product.create({
       data: {
         categoryId: categoryRecord.id,
         name: name.trim(),
-        attributes,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        attributes: attributes as any,
         createdById: req.userId,
       },
     });
@@ -115,7 +193,7 @@ export const createProduct = async (req: AuthedRequest, res: Response) => {
     res.status(201).json({
       id: product.id,
       name: product.name,
-      ...(product.attributes as Record<string, string>),
+      ...(product.attributes as Record<string, unknown>),
     });
   } catch (err) {
     console.error("createProduct failed:", err);
@@ -140,13 +218,16 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
       return;
     }
 
-    const { name, ...rawAttributes } = req.body ?? {};
+    const { name, display: rawDisplay, ...rawAttributes } = req.body ?? {};
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ message: "Product name is required" });
       return;
     }
 
-    const attributes = parseAttributes(rawAttributes);
+    const attributes: Record<string, unknown> = parseAttributes(rawAttributes);
+    const display = sanitizeDisplay(rawDisplay);
+    if (display) attributes.display = display;
+
     const existingAttributes = existing.attributes as Record<string, string>;
 
     if (
@@ -159,13 +240,14 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
 
     const updated = await prisma.product.update({
       where: { id },
-      data: { name: name.trim(), attributes },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: { name: name.trim(), attributes: attributes as any },
     });
 
     res.json({
       id: updated.id,
       name: updated.name,
-      ...(updated.attributes as Record<string, string>),
+      ...(updated.attributes as Record<string, unknown>),
     });
   } catch (err) {
     console.error("updateProduct failed:", err);
@@ -224,12 +306,48 @@ export const getMyProducts = async (req: AuthedRequest, res: Response) => {
       rows.map((row) => ({
         id: row.id,
         name: row.name,
-        ...(row.attributes as Record<string, string>),
+        ...(row.attributes as Record<string, unknown>),
       }))
     );
   } catch (err) {
     console.error("getMyProducts failed:", err);
     res.status(500).json({ message: "Something went wrong loading your products" });
+  }
+};
+
+// A single product's full record — public, no auth — for the product detail
+// page a shop grid card links to. Includes the "display" spec-sheet data
+// (colors, gallery images, types, sizes, design file) alongside the filter
+// attributes, since the detail page renders both.
+export const getProductById = async (req: Request, res: Response) => {
+  try {
+    const category = String(req.params.category);
+    const id = String(req.params.id);
+
+    const categoryRecord = await prisma.category.findUnique({
+      where: { slug: category },
+    });
+    if (!categoryRecord) {
+      res.status(404).json({ message: "Product not found" });
+      return;
+    }
+
+    const product = await prisma.product.findFirst({
+      where: { id, categoryId: categoryRecord.id },
+    });
+    if (!product) {
+      res.status(404).json({ message: "Product not found" });
+      return;
+    }
+
+    res.json({
+      id: product.id,
+      name: product.name,
+      ...(product.attributes as Record<string, unknown>),
+    });
+  } catch (err) {
+    console.error("getProductById failed:", err);
+    res.status(500).json({ message: "Something went wrong loading the product" });
   }
 };
 
@@ -250,6 +368,6 @@ export const getDbProducts = async (categorySlug: string) => {
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
-    ...(row.attributes as Record<string, string>),
+    ...(row.attributes as Record<string, unknown>),
   }));
 };

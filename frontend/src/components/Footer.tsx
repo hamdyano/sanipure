@@ -187,7 +187,7 @@ const Footer = () => {
         {contactDetails.map((detail) => (
           <div key={detail.label}>
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center bg-white text-black">
+              <span className="flex h-9 w-9 items-center justify-center border border-white/20 bg-black text-white">
                 {detail.icon}
               </span>
               <span className="text-base font-semibold text-white">

@@ -40,10 +40,29 @@ export interface ProductFilter {
   options: string[];
 }
 
+// The "For Display" section's data — a product's full spec sheet, shown on
+// its public detail page. Separate from the top-level filter attributes
+// (which only ever hold single strings for the shop grid's filter sidebar).
+export interface ProductDisplayColor {
+  name: string;
+  image?: string;
+}
+
+export interface ProductDisplay {
+  productCode?: string;
+  description?: string;
+  colors?: ProductDisplayColor[];
+  images?: string[];
+  types?: string[];
+  sizes?: string[];
+  designFile?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
-  [attribute: string]: string | string[];
+  display?: ProductDisplay;
+  [attribute: string]: string | string[] | ProductDisplay | undefined;
 }
 
 export type ProductInput = Omit<Product, "id">;
@@ -70,6 +89,32 @@ export const uploadProductImage = async (file: File): Promise<string> => {
     formData,
   );
   return data.url;
+};
+
+// Upload — POST /api/products/upload-file
+// Auth required. Uploads any file (used for the "For Display" section's
+// downloadable PDF design file) to Supabase Storage and returns its public
+// URL, the same way uploadProductImage does for photos.
+export const uploadProductFile = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data } = await apiClient.post<{ url: string }>(
+    "/products/upload-file",
+    formData,
+  );
+  return data.url;
+};
+
+// Read (one) — GET /api/products/:category/:id
+// Public, no auth required — powers a product's public detail page (linked
+// from its shop grid card), which shows the "For Display" spec-sheet data
+// alongside its filter attributes.
+export const getProduct = async (
+  category: string,
+  id: string,
+): Promise<Product> => {
+  const { data } = await apiClient.get<Product>(`/products/${category}/${id}`);
+  return data;
 };
 
 // ---------------------------------------------------------------------------

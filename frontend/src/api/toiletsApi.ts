@@ -1,4 +1,5 @@
 import apiClient, {
+  getProduct,
   type CatalogResponse,
   type Product,
   type ProductInput,
@@ -14,6 +15,11 @@ export const getToilets = async (): Promise<CatalogResponse> => {
   });
   return data;
 };
+
+// Read (one) — GET /api/products/toilets/:id
+// Public, no auth required — powers the toilet product detail page.
+export const getToiletById = async (id: string): Promise<Product> =>
+  getProduct(CATEGORY, id);
 
 // Read (mine) — GET /api/products/toilets/mine
 // Auth required. The signed-in user's own toilets, for the dashboard
@@ -57,6 +63,7 @@ export const deleteToilet = async (id: string): Promise<void> => {
 
 const toiletsApi = {
   getAll: getToilets,
+  getById: getToiletById,
   getMine: getMyToilets,
   create: createToilet,
   update: updateToilet,

@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express from "express";
+import type { NextFunction, Request, Response } from "express";
 import cors from "cors";
+import multer from "multer";
 import path from "path";
 import { washbasinsShop, type CatalogEntry } from "./washbasinsShop";
 import { toiletsShop } from "./ToiletsShop";
@@ -12,9 +14,11 @@ import {
   deleteProduct,
   getDbProducts,
   getMyProducts,
+  getProductById,
   updateProduct,
   uploadImage,
   upload,
+  uploadFile,
 } from "./products";
 
 
@@ -74,7 +78,14 @@ app.post(
   upload.single("image"),
   uploadImage
 );
+app.post(
+  "/api/products/upload-file",
+  requireAuth,
+  uploadFile.single("file"),
+  uploadImage
+);
 app.post("/api/products/:category", requireAuth, createProduct);
+app.get("/api/products/:category/:id", getProductById);
 app.put("/api/products/:category/:id", requireAuth, updateProduct);
 app.delete("/api/products/:category/:id", requireAuth, deleteProduct);
 
@@ -85,6 +96,31 @@ app.post("/api/auth/signin", signIn);
 // handles routing (e.g. /products/washbasins) on the client via React Router.
 app.get(/^\/(?!api\/).*$/, (req, res) => {
   res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
+});
+
+// Without this, an error thrown/passed to next() before reaching a route's
+// own try/catch (e.g. Multer rejecting an oversized upload) falls through to
+// Express's default handler, which renders an HTML error page. The frontend
+// only ever expects JSON (it reads err.response.data.message), so that HTML
+// page was silently swallowed into a generic "Something went wrong" toast —
+// this turns it back into a real, specific message.
+app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+
+  if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+    res.status(413).json({ message: "That file is too large. Please choose a smaller one." });
+    return;
+  }
+  if (err instanceof multer.MulterError) {
+    res.status(400).json({ message: "Something went wrong uploading that file." });
+    return;
+  }
+
+  console.error("Unhandled error:", err);
+  res.status(500).json({ message: "Something went wrong. Please try again." });
 });
 
 const PORT = process.env.PORT || 7000;

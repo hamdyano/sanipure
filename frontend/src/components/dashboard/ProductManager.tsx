@@ -1,12 +1,34 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import axios from "axios";
-import type { CatalogResponse, Product, ProductInput } from "../../api/clientApi";
-import { uploadProductImage } from "../../api/clientApi";
+import type {
+  CatalogResponse,
+  Product,
+  ProductDisplay,
+  ProductInput,
+} from "../../api/clientApi";
+import { uploadProductFile, uploadProductImage } from "../../api/clientApi";
 import {
   showErrorToast,
   showSuccessToast,
   showUnexpectedErrorToast,
 } from "../../lib/toast";
+
+const MAX_GALLERY_IMAGES = 5;
+const MAX_COLORS = 8;
+
+interface ColorSlot {
+  name: string;
+  file: File | null;
+  preview: string | null;
+}
+
+interface ImageSlot {
+  file: File | null;
+  preview: string | null;
+}
+
+const emptyImageSlots = (): ImageSlot[] =>
+  Array.from({ length: MAX_GALLERY_IMAGES }, () => ({ file: null, preview: null }));
 
 interface Filter {
   id: string;
@@ -26,6 +48,11 @@ interface ProductManagerProps {
   categoryLabel: string;
   api: ProductManagerApi;
   onClose: () => void;
+  // Renders the "For Display" section below the filter attributes — the
+  // full spec-sheet data (colors, gallery photos, types, sizes, design
+  // file) shown on the product's public detail page. Only toilets use this
+  // today; other categories keep the plain filter-attributes form.
+  showDisplaySection?: boolean;
 }
 
 const inputClasses =
@@ -57,7 +84,12 @@ const describeProduct = (product: Product, filters: Filter[]) =>
     .filter((value): value is string => typeof value === "string" && value.length > 0)
     .join(" · ");
 
-const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) => {
+const ProductManager = ({
+  categoryLabel,
+  api,
+  onClose,
+  showDisplaySection = false,
+}: ProductManagerProps) => {
   const [myProducts, setMyProducts] = useState<Product[]>([]);
   const [loadingMine, setLoadingMine] = useState(true);
 
@@ -71,6 +103,18 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // "For Display" section state — see showDisplaySection above.
+  const [productCode, setProductCode] = useState("");
+  const [description, setDescription] = useState("");
+  const [colors, setColors] = useState<ColorSlot[]>([]);
+  const [galleryImages, setGalleryImages] = useState<ImageSlot[]>(emptyImageSlots());
+  const [types, setTypes] = useState<string[]>([]);
+  const [typeInput, setTypeInput] = useState("");
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [sizeInput, setSizeInput] = useState("");
+  const [designFile, setDesignFile] = useState<File | null>(null);
+  const [designFileUrl, setDesignFileUrl] = useState<string | null>(null);
 
   const loadMine = async () => {
     setLoadingMine(true);
@@ -106,6 +150,16 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
     setSelected({});
     setImageFile(null);
     setImagePreview(null);
+    setProductCode("");
+    setDescription("");
+    setColors([]);
+    setGalleryImages(emptyImageSlots());
+    setTypes([]);
+    setTypeInput("");
+    setSizes([]);
+    setSizeInput("");
+    setDesignFile(null);
+    setDesignFileUrl(null);
   };
 
   const formRef = useRef<HTMLHeadingElement>(null);
@@ -122,6 +176,31 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
     setSelected(nextSelected);
     setImageFile(null);
     setImagePreview(typeof product.image === "string" ? product.image : null);
+
+    const display = (product.display as ProductDisplay | undefined) ?? {};
+    setProductCode(display.productCode ?? "");
+    setDescription(display.description ?? "");
+    setColors(
+      (display.colors ?? []).map((color) => ({
+        name: color.name,
+        file: null,
+        preview: color.image ?? null,
+      }))
+    );
+    const existingImages = display.images ?? [];
+    setGalleryImages(
+      emptyImageSlots().map((slot, index) => ({
+        ...slot,
+        preview: existingImages[index] ?? null,
+      }))
+    );
+    setTypes(display.types ?? []);
+    setTypeInput("");
+    setSizes(display.sizes ?? []);
+    setSizeInput("");
+    setDesignFile(null);
+    setDesignFileUrl(display.designFile ?? null);
+
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -129,6 +208,78 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
     const file = event.target.files?.[0] ?? null;
     setImageFile(file);
     if (file) setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleColorCountChange = (nextCount: number) => {
+    setColors((prev) => {
+      if (nextCount <= prev.length) return prev.slice(0, nextCount);
+      const additions = Array.from({ length: nextCount - prev.length }, () => ({
+        name: "",
+        file: null,
+        preview: null,
+      }));
+      return [...prev, ...additions];
+    });
+  };
+
+  const updateColorName = (index: number, value: string) => {
+    setColors((prev) =>
+      prev.map((color, i) => (i === index ? { ...color, name: value } : color))
+    );
+  };
+
+  const handleColorImageChange = (index: number, event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    if (!file) return;
+    setColors((prev) =>
+      prev.map((color, i) =>
+        i === index ? { ...color, file, preview: URL.createObjectURL(file) } : color
+      )
+    );
+  };
+
+  const handleGalleryImageChange = (index: number, event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    if (!file) return;
+    setGalleryImages((prev) =>
+      prev.map((slot, i) =>
+        i === index ? { file, preview: URL.createObjectURL(file) } : slot
+      )
+    );
+  };
+
+  const clearGalleryImage = (index: number) => {
+    setGalleryImages((prev) =>
+      prev.map((slot, i) => (i === index ? { file: null, preview: null } : slot))
+    );
+  };
+
+  const addType = () => {
+    const value = typeInput.trim();
+    if (!value) return;
+    setTypes((prev) => [...prev, value]);
+    setTypeInput("");
+  };
+
+  const removeType = (index: number) => {
+    setTypes((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addSize = () => {
+    const value = sizeInput.trim();
+    if (!value) return;
+    setSizes((prev) => [...prev, value]);
+    setSizeInput("");
+  };
+
+  const removeSize = (index: number) => {
+    setSizes((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDesignFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    if (!file) return;
+    setDesignFile(file);
   };
 
   const handleSave = async () => {
@@ -149,10 +300,59 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
         imageUrl = imagePreview;
       }
 
+      let display: ProductDisplay | undefined;
+      if (showDisplaySection) {
+        const resolvedColors = (
+          await Promise.all(
+            colors.map(async (color) => ({
+              name: color.name.trim(),
+              image: color.file ? await uploadProductImage(color.file) : color.preview ?? undefined,
+            }))
+          )
+        ).filter((color) => color.name || color.image);
+
+        const resolvedImages = (
+          await Promise.all(
+            galleryImages.map((slot) =>
+              slot.file
+                ? uploadProductImage(slot.file)
+                : Promise.resolve(slot.preview ?? undefined)
+            )
+          )
+        ).filter((url): url is string => Boolean(url));
+
+        let resolvedDesignFile = designFileUrl ?? undefined;
+        if (designFile) {
+          resolvedDesignFile = await uploadProductFile(designFile);
+        }
+
+        // A value typed into the Types/Sizes box counts even if "Add" was
+        // never clicked — Save shouldn't silently drop it just because the
+        // admin didn't take that extra step.
+        const pendingType = typeInput.trim();
+        const finalTypes =
+          pendingType && !types.includes(pendingType) ? [...types, pendingType] : types;
+        const pendingSize = sizeInput.trim();
+        const finalSizes =
+          pendingSize && !sizes.includes(pendingSize) ? [...sizes, pendingSize] : sizes;
+
+        const candidate: ProductDisplay = {
+          ...(productCode.trim() ? { productCode: productCode.trim() } : {}),
+          ...(description.trim() ? { description: description.trim() } : {}),
+          ...(resolvedColors.length ? { colors: resolvedColors } : {}),
+          ...(resolvedImages.length ? { images: resolvedImages } : {}),
+          ...(finalTypes.length ? { types: finalTypes } : {}),
+          ...(finalSizes.length ? { sizes: finalSizes } : {}),
+          ...(resolvedDesignFile ? { designFile: resolvedDesignFile } : {}),
+        };
+        if (Object.keys(candidate).length) display = candidate;
+      }
+
       const payload: ProductInput = {
         name: name.trim(),
         ...selected,
         ...(imageUrl ? { image: imageUrl } : {}),
+        ...(display ? { display } : {}),
       };
 
       if (editingId) {
@@ -266,6 +466,12 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
         />
       </div>
 
+      {showDisplaySection && (
+        <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white/60">
+          For Filtering
+        </h4>
+      )}
+
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div className="flex flex-col gap-4">
           <h4 className="text-sm font-semibold uppercase tracking-wide text-white/60">
@@ -319,6 +525,258 @@ const ProductManager = ({ categoryLabel, api, onClose }: ProductManagerProps) =>
           </label>
         </div>
       </div>
+
+      {showDisplaySection && (
+        <div className="mt-10 border-t border-white/10 pt-8">
+          <h4 className="mb-6 text-sm font-semibold uppercase tracking-wide text-white/60">
+            For Display
+          </h4>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-sm text-white/70">Product Code</label>
+              <input
+                type="text"
+                value={productCode}
+                onChange={(e) => setProductCode(e.target.value)}
+                className={inputClasses}
+                placeholder="e.g. K-3814-0"
+              />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="mb-1 block text-sm text-white/70">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+              className={`${inputClasses} resize-none`}
+              placeholder="Full product description shown on the product's detail page"
+            />
+          </div>
+
+          <div className="mt-8">
+            <label className="mb-1 block text-sm text-white/70">Colors</label>
+            <select
+              value={colors.length}
+              onChange={(e) => handleColorCountChange(Number(e.target.value))}
+              className={`${selectClasses} max-w-xs`}
+            >
+              {Array.from({ length: MAX_COLORS + 1 }, (_, i) => i).map((count) => (
+                <option key={count} value={count} className={optionClasses}>
+                  {count === 0 ? "No colors" : `${count} color${count > 1 ? "s" : ""}`}
+                </option>
+              ))}
+            </select>
+
+            {colors.length > 0 && (
+              <div className="mt-4 flex flex-col gap-4">
+                {colors.map((color, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col gap-3 rounded-lg border border-white/10 p-4 sm:flex-row sm:items-center"
+                  >
+                    <input
+                      type="text"
+                      value={color.name}
+                      onChange={(e) => updateColorName(index, e.target.value)}
+                      className={inputClasses}
+                      placeholder={`Color ${index + 1} name`}
+                    />
+                    <div className="flex shrink-0 items-center gap-3">
+                      {color.preview ? (
+                        <img
+                          src={color.preview}
+                          alt=""
+                          className="h-14 w-14 rounded object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-14 w-14 items-center justify-center rounded border border-white/10 text-[10px] text-white/30">
+                          No photo
+                        </div>
+                      )}
+                      <label className="cursor-pointer whitespace-nowrap rounded-full border border-white/30 px-4 py-2 text-xs text-white transition-colors hover:border-white">
+                        Choose Photo
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleColorImageChange(index, e)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-8">
+            <label className="mb-3 block text-sm text-white/70">
+              Images (up to {MAX_GALLERY_IMAGES})
+            </label>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              {galleryImages.map((slot, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-white/20 p-3"
+                >
+                  {slot.preview ? (
+                    <img
+                      src={slot.preview}
+                      alt=""
+                      className="h-20 w-20 rounded object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded border border-white/10 text-[10px] text-white/30">
+                      Empty
+                    </div>
+                  )}
+                  <label className="cursor-pointer text-center text-[11px] text-white/70 underline underline-offset-2 hover:text-white">
+                    {slot.preview ? "Replace" : "Add"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleGalleryImageChange(index, e)}
+                      className="hidden"
+                    />
+                  </label>
+                  {slot.preview && (
+                    <button
+                      type="button"
+                      onClick={() => clearGalleryImage(index)}
+                      className="text-[11px] text-white/40 hover:text-white/70"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-sm text-white/70">Types</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={typeInput}
+                  onChange={(e) => setTypeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addType();
+                    }
+                  }}
+                  className={inputClasses}
+                  placeholder="e.g. One-piece"
+                />
+                <button
+                  type="button"
+                  onClick={addType}
+                  className="shrink-0 rounded-full border border-white/30 px-5 text-sm text-white transition-colors hover:border-white"
+                >
+                  Add
+                </button>
+              </div>
+              {types.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {types.map((type, index) => (
+                    <span
+                      key={`${type}-${index}`}
+                      className="flex items-center gap-2 border border-white/30 px-3 py-1 text-xs text-white/80"
+                    >
+                      {type}
+                      <button
+                        type="button"
+                        onClick={() => removeType(index)}
+                        aria-label={`Remove ${type}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm text-white/70">Sizes</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={sizeInput}
+                  onChange={(e) => setSizeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addSize();
+                    }
+                  }}
+                  className={inputClasses}
+                  placeholder="e.g. Standard height"
+                />
+                <button
+                  type="button"
+                  onClick={addSize}
+                  className="shrink-0 rounded-full border border-white/30 px-5 text-sm text-white transition-colors hover:border-white"
+                >
+                  Add
+                </button>
+              </div>
+              {sizes.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {sizes.map((size, index) => (
+                    <span
+                      key={`${size}-${index}`}
+                      className="flex items-center gap-2 border border-white/30 px-3 py-1 text-xs text-white/80"
+                    >
+                      {size}
+                      <button
+                        type="button"
+                        onClick={() => removeSize(index)}
+                        aria-label={`Remove ${size}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <label className="mb-1 block text-sm text-white/70">Design File (PDF)</label>
+            <div className="flex flex-wrap items-center gap-3">
+              {designFileUrl && !designFile && (
+                <a
+                  href={designFileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-white underline underline-offset-2"
+                >
+                  Current file
+                </a>
+              )}
+              {designFile && (
+                <span className="text-sm text-white/70">{designFile.name}</span>
+              )}
+              <label className="cursor-pointer rounded-full border border-white/30 px-6 py-2 text-sm text-white transition-colors hover:border-white">
+                {designFileUrl || designFile ? "Replace File" : "Choose File"}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handleDesignFileChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 flex justify-center gap-4">
         {editingId && (

@@ -35,7 +35,7 @@ const categories: Category[] = [
     headline: "Toilets",
     description:
       "Discover toilets that combine refined design with advanced functionality. From rimless designs to water-saving flushing technologies, find solutions for everyday performance and lasting comfort.",
-    shopPath: "/products/toilets/shop-toilets",
+    shopPath: "/products/toilets/categories",
   },
   {
     name: "Bathtubs",

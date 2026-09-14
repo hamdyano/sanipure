@@ -8,7 +8,9 @@ import Layout from "./layouts/Layout";
 import HomePage from "./pages/HomePage";
 import WhoWeArePage from "./pages/WhoWeArePage";
 import ProductsPage from "./pages/ProductsPage";
+import ToiletsCategoriesPage from "./pages/ToiletsCategoriesPage";
 import ShopToiletsPage from "./pages/ShopToiletsPage";
+import ToiletProductPage from "./pages/ToiletProductPage";
 import ShopWashbasinsPage from "./pages/ShopWashbasinsPage";
 import ShopBathtubsPage from "./pages/ShopBathtubsPage";
 import ProjectsPage from "./pages/ProjectsPage";
@@ -53,10 +55,26 @@ const App = () => {
           }
         />
         <Route
+          path="/products/toilets/categories"
+          element={
+            <Layout>
+              <ToiletsCategoriesPage />
+            </Layout>
+          }
+        />
+        <Route
           path="/products/toilets/shop-toilets"
           element={
             <Layout>
               <ShopToiletsPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/toilets/shop-toilets/:id"
+          element={
+            <Layout>
+              <ToiletProductPage />
             </Layout>
           }
         />
