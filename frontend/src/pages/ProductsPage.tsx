@@ -26,7 +26,7 @@ const categories: Category[] = [
     headline: "Washbasins",
     description:
       "Explore a diverse range of washbasins made to bring character and elegance to every bathroom. Find the shape, size, and finish that suit your space.",
-    shopPath: "/products/washbasins/shop-washbasins",
+    shopPath: "/products/washbasins/categories",
   },
   {
     name: "Toilets",
@@ -44,7 +44,7 @@ const categories: Category[] = [
     headline: "Bathtubs",
     description:
       "Create a space dedicated to relaxation with our bathtubs. Discover a selection of refined forms and premium finishes designed to elevate the bathing experience.",
-    shopPath: "/products/bathtubs/shop-bathtubs",
+    shopPath: "/products/bathtubs/categories",
   },
   {
     name: "Accessories & Furniture",

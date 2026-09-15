@@ -1,4 +1,5 @@
 import apiClient, {
+  getProduct,
   type CatalogResponse,
   type Product,
   type ProductInput,
@@ -14,6 +15,11 @@ export const getBathtubs = async (): Promise<CatalogResponse> => {
   });
   return data;
 };
+
+// Read (one) — GET /api/products/bathtubs/:id
+// Public, no auth required — powers the bathtub product detail page.
+export const getBathtubById = async (id: string): Promise<Product> =>
+  getProduct(CATEGORY, id);
 
 // Read (mine) — GET /api/products/bathtubs/mine
 // Auth required. The signed-in user's own bathtubs, for the dashboard
@@ -57,6 +63,7 @@ export const deleteBathtub = async (id: string): Promise<void> => {
 
 const bathtubsApi = {
   getAll: getBathtubs,
+  getById: getBathtubById,
   getMine: getMyBathtubs,
   create: createBathtub,
   update: updateBathtub,

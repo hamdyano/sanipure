@@ -1,4 +1,5 @@
 import apiClient, {
+  getProduct,
   type CatalogResponse,
   type Product,
   type ProductInput,
@@ -14,6 +15,11 @@ export const getWashbasins = async (): Promise<CatalogResponse> => {
   });
   return data;
 };
+
+// Read (one) — GET /api/products/washbasins/:id
+// Public, no auth required — powers the washbasin product detail page.
+export const getWashbasinById = async (id: string): Promise<Product> =>
+  getProduct(CATEGORY, id);
 
 // Read (mine) — GET /api/products/washbasins/mine
 // Auth required. The signed-in user's own washbasins, for the dashboard
@@ -57,6 +63,7 @@ export const deleteWashbasin = async (id: string): Promise<void> => {
 
 const washbasinsApi = {
   getAll: getWashbasins,
+  getById: getWashbasinById,
   getMine: getMyWashbasins,
   create: createWashbasin,
   update: updateWashbasin,

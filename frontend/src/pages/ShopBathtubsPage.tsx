@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import bathtubsImage from "../assets/categories photos/Bathtubs photo.jpg";
+import type { ProductDisplay } from "../api/clientApi";
 
 interface Filter {
   id: string;
@@ -12,7 +14,8 @@ interface Filter {
 interface Product {
   id: string;
   name: string;
-  [attribute: string]: string | string[];
+  display?: ProductDisplay;
+  [attribute: string]: string | string[] | ProductDisplay | undefined;
 }
 
 interface CatalogResponse {
@@ -22,6 +25,8 @@ interface CatalogResponse {
 }
 
 const ShopBathtubsPage = () => {
+  const [searchParams] = useSearchParams();
+  const subcategoryName = searchParams.get("subcategory");
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +96,7 @@ const ShopBathtubsPage = () => {
     <>
       <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
         <h1 className="text-4xl font-semibold text-white md:text-5xl">
-          View Bathtubs
+          {subcategoryName || "View Bathtubs"}
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
           Filter by material, shape, color, series, type, and extras to find the right fit.
@@ -126,28 +131,61 @@ const ShopBathtubsPage = () => {
           )}
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredProducts.map((product) => (
-              <div key={product.id} className="flex flex-col">
-                <div className="h-64 w-full overflow-hidden">
-                  <img
-                    src={typeof product.image === "string" ? product.image : bathtubsImage}
-                    alt={product.name}
-                    className="h-full w-full object-cover"
-                  />
+            {filteredProducts.map((product) => {
+              const colors = product.display?.colors ?? [];
+              return (
+                <div key={product.id} className="flex flex-col">
+                  <Link
+                    to={`/products/bathtubs/shop-bathtubs/${product.id}`}
+                    className="flex flex-col"
+                  >
+                    <div className="h-64 w-full overflow-hidden">
+                      <img
+                        src={typeof product.image === "string" ? product.image : bathtubsImage}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                      />
+                    </div>
+                    <h4 className="mt-4 text-base font-medium text-white">
+                      {product.name}
+                    </h4>
+                    <p className="mt-1 text-sm text-white/60">
+                      {product.series} · {product.type} · {product.shape} · {product.color}
+                    </p>
+                    {Array.isArray(product.extra) && product.extra.length > 0 && (
+                      <p className="mt-1 text-xs uppercase tracking-wide text-white/40">
+                        {product.extra.join(" · ")}
+                      </p>
+                    )}
+                  </Link>
+
+                  {colors.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {colors.map((color, index) => (
+                        <Link
+                          key={`${color.name}-${index}`}
+                          to={`/products/bathtubs/shop-bathtubs/${product.id}?color=${encodeURIComponent(color.name)}`}
+                          title={color.name}
+                          className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-white/20 transition-colors hover:border-white"
+                        >
+                          {color.image ? (
+                            <img
+                              src={color.image}
+                              alt={color.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center bg-white/10 text-[8px] text-white/60">
+                              {color.name.slice(0, 2)}
+                            </span>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <h4 className="mt-4 text-base font-medium text-white">
-                  {product.name}
-                </h4>
-                <p className="mt-1 text-sm text-white/60">
-                  {product.series} · {product.type} · {product.shape} · {product.color}
-                </p>
-                {Array.isArray(product.extra) && product.extra.length > 0 && (
-                  <p className="mt-1 text-xs uppercase tracking-wide text-white/40">
-                    {product.extra.join(" · ")}
-                  </p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

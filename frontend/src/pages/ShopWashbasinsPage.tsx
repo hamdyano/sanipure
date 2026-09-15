@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import washbasinsImage from "../assets/categories photos/Washbasins photo.jpg";
+import type { ProductDisplay } from "../api/clientApi";
 
 interface Filter {
   id: string;
@@ -12,7 +14,8 @@ interface Filter {
 interface Product {
   id: string;
   name: string;
-  [attribute: string]: string;
+  display?: ProductDisplay;
+  [attribute: string]: string | ProductDisplay | undefined;
 }
 
 interface CatalogResponse {
@@ -22,6 +25,8 @@ interface CatalogResponse {
 }
 
 const ShopWashbasinsPage = () => {
+  const [searchParams] = useSearchParams();
+  const subcategoryName = searchParams.get("subcategory");
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +73,7 @@ const ShopWashbasinsPage = () => {
     Object.entries(activeSelected).every(([filterId, options]) => {
       if (filterId === excludeFilterId) return true;
       if (options.length === 0) return true;
-      return options.includes(product[filterId]);
+      return options.includes(product[filterId] as string);
     });
 
   const filteredProducts =
@@ -86,7 +91,7 @@ const ShopWashbasinsPage = () => {
     <>
       <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
         <h1 className="text-4xl font-semibold text-white md:text-5xl">
-          View Washbasins
+          {subcategoryName || "View Washbasins"}
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
           Filter by material, shape, color, series, size, and type to find the right fit.
@@ -132,25 +137,57 @@ const ShopWashbasinsPage = () => {
                 .filter(Boolean)
                 .join(" · ");
 
+              const colors = product.display?.colors ?? [];
+
               return (
                 <div key={product.id} className="flex flex-col">
-                  <div className="h-64 w-full overflow-hidden">
-                    <img
-                      src={product.image || washbasinsImage}
-                      alt={product.name}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <h4 className="mt-4 text-base font-medium text-white">
-                    {product.name}
-                  </h4>
-                  {topLine && (
-                    <p className="mt-1 text-sm text-white/60">{topLine}</p>
-                  )}
-                  {bottomLine && (
-                    <p className="mt-1 text-xs uppercase tracking-wide text-white/40">
-                      {bottomLine}
-                    </p>
+                  <Link
+                    to={`/products/washbasins/shop-washbasins/${product.id}`}
+                    className="flex flex-col"
+                  >
+                    <div className="h-64 w-full overflow-hidden">
+                      <img
+                        src={(product.image as string) || washbasinsImage}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                      />
+                    </div>
+                    <h4 className="mt-4 text-base font-medium text-white">
+                      {product.name}
+                    </h4>
+                    {topLine && (
+                      <p className="mt-1 text-sm text-white/60">{topLine}</p>
+                    )}
+                    {bottomLine && (
+                      <p className="mt-1 text-xs uppercase tracking-wide text-white/40">
+                        {bottomLine}
+                      </p>
+                    )}
+                  </Link>
+
+                  {colors.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {colors.map((color, index) => (
+                        <Link
+                          key={`${color.name}-${index}`}
+                          to={`/products/washbasins/shop-washbasins/${product.id}?color=${encodeURIComponent(color.name)}`}
+                          title={color.name}
+                          className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-white/20 transition-colors hover:border-white"
+                        >
+                          {color.image ? (
+                            <img
+                              src={color.image}
+                              alt={color.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center bg-white/10 text-[8px] text-white/60">
+                              {color.name.slice(0, 2)}
+                            </span>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
                   )}
                 </div>
               );

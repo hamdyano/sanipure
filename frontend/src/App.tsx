@@ -11,8 +11,12 @@ import ProductsPage from "./pages/ProductsPage";
 import ToiletsCategoriesPage from "./pages/ToiletsCategoriesPage";
 import ShopToiletsPage from "./pages/ShopToiletsPage";
 import ToiletProductPage from "./pages/ToiletProductPage";
+import WashbasinsCategoriesPage from "./pages/WashbasinsCategoriesPage";
 import ShopWashbasinsPage from "./pages/ShopWashbasinsPage";
+import WashbasinProductPage from "./pages/WashbasinProductPage";
+import BathtubsCategoriesPage from "./pages/BathtubsCategoriesPage";
 import ShopBathtubsPage from "./pages/ShopBathtubsPage";
+import BathtubProductPage from "./pages/BathtubProductPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import AdminPage from "./pages/AdminPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -79,6 +83,14 @@ const App = () => {
           }
         />
         <Route
+          path="/products/washbasins/categories"
+          element={
+            <Layout>
+              <WashbasinsCategoriesPage />
+            </Layout>
+          }
+        />
+        <Route
           path="/products/washbasins/shop-washbasins"
           element={
             <Layout>
@@ -87,10 +99,34 @@ const App = () => {
           }
         />
         <Route
+          path="/products/washbasins/shop-washbasins/:id"
+          element={
+            <Layout>
+              <WashbasinProductPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/bathtubs/categories"
+          element={
+            <Layout>
+              <BathtubsCategoriesPage />
+            </Layout>
+          }
+        />
+        <Route
           path="/products/bathtubs/shop-bathtubs"
           element={
             <Layout>
               <ShopBathtubsPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/bathtubs/shop-bathtubs/:id"
+          element={
+            <Layout>
+              <BathtubProductPage />
             </Layout>
           }
         />

@@ -302,24 +302,24 @@ const ProductManager = ({
 
       let display: ProductDisplay | undefined;
       if (showDisplaySection) {
-        const resolvedColors = (
-          await Promise.all(
-            colors.map(async (color) => ({
-              name: color.name.trim(),
-              image: color.file ? await uploadProductImage(color.file) : color.preview ?? undefined,
-            }))
-          )
-        ).filter((color) => color.name || color.image);
+        // Uploaded one at a time, not via Promise.all — firing 5-10 large
+        // multipart uploads at once turned out to be enough to make one of
+        // them fail on an ordinary connection, which surfaced as a generic
+        // "Something went wrong" with no indication of which file it was.
+        const resolvedColorsRaw: Array<{ name: string; image?: string }> = [];
+        for (const color of colors) {
+          resolvedColorsRaw.push({
+            name: color.name.trim(),
+            image: color.file ? await uploadProductImage(color.file) : color.preview ?? undefined,
+          });
+        }
+        const resolvedColors = resolvedColorsRaw.filter((color) => color.name || color.image);
 
-        const resolvedImages = (
-          await Promise.all(
-            galleryImages.map((slot) =>
-              slot.file
-                ? uploadProductImage(slot.file)
-                : Promise.resolve(slot.preview ?? undefined)
-            )
-          )
-        ).filter((url): url is string => Boolean(url));
+        const resolvedImagesRaw: Array<string | undefined> = [];
+        for (const slot of galleryImages) {
+          resolvedImagesRaw.push(slot.file ? await uploadProductImage(slot.file) : slot.preview ?? undefined);
+        }
+        const resolvedImages = resolvedImagesRaw.filter((url): url is string => Boolean(url));
 
         let resolvedDesignFile = designFileUrl ?? undefined;
         if (designFile) {

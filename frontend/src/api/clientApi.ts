@@ -76,34 +76,53 @@ export interface CatalogResponse {
 // Per-category CRUD lives in its own file: washbasinsApi.ts, toiletsApi.ts,
 // bathtubsApi.ts. They all share the apiClient instance and types above.
 
+// A product form can involve uploading half a dozen files back to back
+// before the admin can hit Save — a single transient network hiccup on any
+// one of them shouldn't force retyping the whole form. Retries only when
+// there's no response at all (dropped connection/timeout) or the server
+// errored (5xx); a 4xx (e.g. file too large) means trying again would just
+// fail the same way, so that's returned to the caller immediately.
+const withUploadRetry = async (attempt: () => Promise<string>): Promise<string> => {
+  try {
+    return await attempt();
+  } catch (err) {
+    const shouldRetry =
+      axios.isAxiosError(err) && (!err.response || err.response.status >= 500);
+    if (!shouldRetry) throw err;
+    return attempt();
+  }
+};
+
 // Upload — POST /api/products/upload-image
 // Auth required. Uploads a single image file to Supabase Storage and
 // returns its public URL, which the admin form then includes as the
 // "image" attribute when creating/updating a product (a plain string, not
 // a file) — decoupled from create/update so those stay simple JSON calls.
-export const uploadProductImage = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append("image", file);
-  const { data } = await apiClient.post<{ url: string }>(
-    "/products/upload-image",
-    formData,
-  );
-  return data.url;
-};
+export const uploadProductImage = async (file: File): Promise<string> =>
+  withUploadRetry(async () => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const { data } = await apiClient.post<{ url: string }>(
+      "/products/upload-image",
+      formData,
+    );
+    return data.url;
+  });
 
 // Upload — POST /api/products/upload-file
 // Auth required. Uploads any file (used for the "For Display" section's
 // downloadable PDF design file) to Supabase Storage and returns its public
 // URL, the same way uploadProductImage does for photos.
-export const uploadProductFile = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append("file", file);
-  const { data } = await apiClient.post<{ url: string }>(
-    "/products/upload-file",
-    formData,
-  );
-  return data.url;
-};
+export const uploadProductFile = async (file: File): Promise<string> =>
+  withUploadRetry(async () => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const { data } = await apiClient.post<{ url: string }>(
+      "/products/upload-file",
+      formData,
+    );
+    return data.url;
+  });
 
 // Read (one) — GET /api/products/:category/:id
 // Public, no auth required — powers a product's public detail page (linked
