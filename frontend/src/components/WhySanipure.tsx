@@ -49,16 +49,14 @@ const WhySanipure = () => {
 
         <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-3 items-center gap-4 px-6 md:gap-8 md:px-10">
           {images.map((image, index) => (
-            <DirectionalReveal
-              key={image.alt}
-              direction="up"
-              delay={index * 0.1}
-            >
-              <img
-                src={image.src}
-                alt={image.alt}
-                className={`w-full ${image.height} rounded-2xl object-cover shadow-2xl`}
-              />
+            <DirectionalReveal key={image.alt} direction="up" delay={index * 0.1}>
+              <div className="relative cursor-pointer transition-transform duration-500 ease-out hover:z-20 hover:scale-110">
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  className={`w-full ${image.height} rounded-2xl object-cover shadow-2xl`}
+                />
+              </div>
             </DirectionalReveal>
           ))}
         </div>

@@ -5,6 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import Layout from "./layouts/Layout";
+import ScrollToTop from "./components/shared/ScrollToTop";
 import HomePage from "./pages/HomePage";
 import WhoWeArePage from "./pages/WhoWeArePage";
 import ProductsPage from "./pages/ProductsPage";
@@ -25,6 +26,7 @@ const App = () => {
 
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route
           path="/"
