@@ -34,6 +34,7 @@ const contactDetails = [
     ),
     label: "15684",
     description: "Call our hotline for support and product inquiries.",
+    href: "tel:15684",
   },
   {
     icon: (
@@ -43,6 +44,7 @@ const contactDetails = [
     ),
     label: "info@sanipure-eg.com",
     description: "Send us your questions and we'll get back to you.",
+    href: "mailto:info@sanipure-eg.com",
   },
   {
     icon: (
@@ -52,6 +54,7 @@ const contactDetails = [
     ),
     label: "Factory Location",
     description: "Visit our production facility to see how our products are made.",
+    href: "https://maps.app.goo.gl/YC6qkUwULUoKTP359",
   },
   {
     icon: (
@@ -61,13 +64,14 @@ const contactDetails = [
     ),
     label: "Head Quarters' Location",
     description: "Visit our head office for partnership and business inquiries.",
+    href: "https://maps.app.goo.gl/SH1X8QyuMLeNyZ3J9",
   },
 ];
 
 const socialLinks = [
   {
     label: "Facebook",
-    href: "#",
+    href: "http://www.facebook.com/sanipure.eg",
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
         <path d="M13.5 21v-7.5H16l.5-3h-3V8.4c0-.9.3-1.5 1.6-1.5H16.5V4.2C16.2 4.1 15.3 4 14.2 4c-2.3 0-3.9 1.4-3.9 4v2.5H7.8v3h2.5V21h3.2Z" />
@@ -76,7 +80,7 @@ const socialLinks = [
   },
   {
     label: "Instagram",
-    href: "#",
+    href: "http://www.instagram.com/sanipure.eg",
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
         <path d="M12 7.2a4.8 4.8 0 1 0 0 9.6 4.8 4.8 0 0 0 0-9.6Zm0 7.9a3.1 3.1 0 1 1 0-6.2 3.1 3.1 0 0 1 0 6.2Zm6.1-8.1a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0ZM21.9 7.4a5.5 5.5 0 0 0-1.5-3.9 5.5 5.5 0 0 0-3.9-1.5c-1.5-.1-6.1-.1-7.6 0a5.5 5.5 0 0 0-3.9 1.5 5.5 5.5 0 0 0-1.5 3.9c-.1 1.5-.1 6.1 0 7.6a5.5 5.5 0 0 0 1.5 3.9 5.5 5.5 0 0 0 3.9 1.5c1.5.1 6.1.1 7.6 0a5.5 5.5 0 0 0 3.9-1.5 5.5 5.5 0 0 0 1.5-3.9c.1-1.5.1-6.1 0-7.6Zm-1.9 9.2a3.1 3.1 0 0 1-1.8 1.8c-1.2.5-4.2.4-5.6.4s-4.3.1-5.6-.4a3.1 3.1 0 0 1-1.8-1.8c-.5-1.2-.4-4.2-.4-5.6s-.1-4.3.4-5.6A3.1 3.1 0 0 1 7 3.6c1.2-.5 4.2-.4 5.6-.4s4.3-.1 5.6.4a3.1 3.1 0 0 1 1.8 1.8c.5 1.2.4 4.2.4 5.6s.1 4.3-.4 5.6Z" />
@@ -85,7 +89,7 @@ const socialLinks = [
   },
   {
     label: "YouTube",
-    href: "#",
+    href: "https://www.youtube.com/@sanipureeg",
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
         <path d="M21.6 7.6a2.7 2.7 0 0 0-1.9-1.9C18 5.2 12 5.2 12 5.2s-6 0-7.7.5A2.7 2.7 0 0 0 2.4 7.6 28 28 0 0 0 2 12a28 28 0 0 0 .4 4.4 2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9c.3-1.5.4-3 .4-4.4a28 28 0 0 0-.4-4.4ZM10 15V9l5.2 3-5.2 3Z" />
@@ -94,7 +98,7 @@ const socialLinks = [
   },
   {
     label: "TikTok",
-    href: "#",
+    href: "https://www.tiktok.com/@sanipure.eg",
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
         <path d="M16.6 5.82c-.9-.78-1.4-1.9-1.46-3.07h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48Z" />
@@ -103,7 +107,7 @@ const socialLinks = [
   },
   {
     label: "LinkedIn",
-    href: "#",
+    href: "https://www.linkedin.com/company/sanipure-eg/",
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
         <path d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3.5a1.96 1.96 0 1 0 0 3.92 1.96 1.96 0 0 0 0-3.92ZM20.5 20h-3.38v-6.2c0-1.48-.03-3.38-2.06-3.38-2.07 0-2.39 1.62-2.39 3.28V20H9.3V8.5h3.24v1.57h.05c.45-.86 1.56-1.77 3.21-1.77 3.43 0 4.7 2.26 4.7 5.2V20Z" />
@@ -112,7 +116,7 @@ const socialLinks = [
   },
   {
     label: "Pinterest",
-    href: "#",
+    href: "https://www.pinterest.com/sanipureeg/",
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
         <path d="M12 2C6.5 2 3 5.8 3 10c0 3.2 1.9 5.9 4.7 7-.06-.6-.12-1.5.03-2.2.14-.6.9-3.9.9-3.9s-.23-.47-.23-1.16c0-1.1.63-1.9 1.42-1.9.67 0 1 .5 1 1.1 0 .67-.43 1.68-.65 2.6-.19.79.4 1.43 1.17 1.43 1.4 0 2.48-1.48 2.48-3.6 0-1.88-1.35-3.2-3.28-3.2-2.23 0-3.54 1.67-3.54 3.4 0 .67.26 1.39.58 1.78a.24.24 0 0 1 .06.23c-.06.27-.21.85-.24.97-.04.16-.13.19-.3.12-1.11-.52-1.8-2.13-1.8-3.43 0-2.8 2.03-5.37 5.86-5.37 3.08 0 5.47 2.19 5.47 5.13 0 3.06-1.93 5.52-4.61 5.52-.9 0-1.75-.47-2.04-1.02l-.55 2.11c-.2.77-.74 1.73-1.1 2.32.83.26 1.7.4 2.62.4 5.5 0 9.5-3.8 9.5-9 0-4.2-3.5-8-9-8Z" />
@@ -169,8 +173,10 @@ const Footer = () => {
               <a
                 key={social.label}
                 href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label={social.label}
-                className="flex h-9 w-9 items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors"
+                className="flex h-9 w-9 items-center justify-center text-white/70 hover:text-white transition-colors"
               >
                 {social.icon}
               </a>
@@ -185,9 +191,19 @@ const Footer = () => {
 
       <div className="container mx-auto mt-16 grid grid-cols-1 gap-8 px-6 sm:grid-cols-3">
         {contactDetails.map((detail) => (
-          <div key={detail.label}>
+          <a
+            key={detail.label}
+            href={detail.href}
+            target={detail.href.startsWith("http") ? "_blank" : undefined}
+            rel={
+              detail.href.startsWith("http")
+                ? "noopener noreferrer"
+                : undefined
+            }
+            className="block transition-opacity hover:opacity-80"
+          >
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center border border-white/20 bg-black text-white">
+              <span className="flex h-9 w-9 items-center justify-center text-white">
                 {detail.icon}
               </span>
               <span className="text-base font-semibold text-white">
@@ -197,7 +213,7 @@ const Footer = () => {
             <p className="mt-3 text-sm leading-relaxed text-white/60">
               {detail.description}
             </p>
-          </div>
+          </a>
         ))}
       </div>
 

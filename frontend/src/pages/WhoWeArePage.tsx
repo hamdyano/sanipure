@@ -1,7 +1,5 @@
 import { motion } from "motion/react";
 import RevealSection from "../components/shared/RevealSection";
-import DirectionalReveal from "../components/shared/DirectionalReveal";
-import factoryOne from "../assets/who we are photos/Factory 1.png";
 import factoryThree from "../assets/who we are photos/factory 3.jpg";
 import factoryFour from "../assets/who we are photos/factory 4.jpg";
 import factoryFive from "../assets/who we are photos/factory 5.jpg";
@@ -28,71 +26,61 @@ const WhoWeArePage = () => {
         />
 
         <motion.div
-          className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
+          className="relative z-10 flex h-full flex-col items-start justify-center px-6 text-left sm:px-12 lg:px-20"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
         >
-          <h1 className="max-w-3xl text-4xl font-semibold text-white md:text-6xl">
-            Who We Are
+          <h1 className="font-brand text-[clamp(40px,8vw,96px)] font-medium uppercase leading-[0.95] tracking-normal text-white">
+            Who
+            <br />
+            We Are
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-white/90">
-           Shaping Spaces Worldwide
-          </p>
+          <div className="mt-5 h-[3px] w-24 bg-white" />
         </motion.div>
       </section>
 
-      <section className="my-20 grid grid-cols-1 items-center bg-black md:my-28 lg:grid-cols-2">
-        <DirectionalReveal
-          direction="left"
-          delay={0.12}
-          className="flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24"
-        >
-          <h2 className="text-3xl font-semibold text-white md:text-4xl">
-           Shaping Spaces Worldwide 
-          </h2>
-          <p className="mt-6 max-w-md text-base leading-relaxed text-white/80">
-            Sanipure is one of Egypt's leading sanitaryware manufacturers, creating premium bathroom solutions that combine contemporary design, advanced manufacturing, and uncompromising quality. With a footprint of 80,000 m2 and total build up area of 60,000 m2 with over than 2,000 skilled professionals, we produce more than 1.6 million ceramic, acrylic, and composite products annually for our own brand and as a trusted manufacturing partner for leading international brands. Today, our products are specified in residential, hospitality, and commercial projects and exported to 14 countries, reflecting our commitment to world-class quality, innovation, and sustainable manufacturing
-          </p>
-        </DirectionalReveal>
+      <section className="mt-20 bg-black pb-16 md:mt-28 md:pb-20">
+        <RevealSection className="grid grid-cols-1 gap-1 sm:grid-cols-3">
+          {[
+            {
+              src: factoryThree,
+              alt: "Sanipure rimless toilets and customizable shower trays",
+            },
+            {
+              src: factoryFour,
+              alt: "Sanipure HydroJet water-saving toilet technology",
+            },
+            {
+              src: factoryFive,
+              alt: "Sanipure first grade quality manufacturing",
+            },
+          ].map((image) => (
+            <div
+              key={image.src}
+              className="relative aspect-[3/4] w-full cursor-pointer transition-transform duration-500 ease-out hover:z-20 hover:scale-110 hover:shadow-2xl"
+            >
+              <img
+                src={image.src}
+                alt={image.alt}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          ))}
+        </RevealSection>
 
-        <DirectionalReveal
-          direction="right"
-          className="h-[320px] w-full lg:h-[480px]"
+        <RevealSection
+          delay={0.15}
+          className="relative -mt-10 mx-4 rounded-3xl bg-neutral-900 px-6 py-12 sm:-mt-16 sm:mx-8 lg:mx-12 lg:px-16 xl:px-24"
         >
-          <img
-            src={factoryOne}
-            alt="Sanipure factory production line"
-            className="h-full w-full object-cover"
-          />
-        </DirectionalReveal>
-      </section>
-
-      <section className="mb-20 grid grid-cols-1 items-center bg-black md:mb-28 lg:grid-cols-2">
-        <DirectionalReveal
-          direction="left"
-          className="h-[320px] w-full lg:h-[480px]"
-        >
-          <img
-            src={factoryThree}
-            alt="Sanipure rimless toilets and customizable shower trays"
-            className="h-full w-full object-cover"
-          />
-        </DirectionalReveal>
-
-        <DirectionalReveal
-          direction="right"
-          delay={0.12}
-          className="flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24"
-        >
-          <h2 className="text-3xl font-semibold text-white md:text-4xl">
+          <h2 className="text-4xl font-semibold text-white md:text-5xl">
             Design Without Limits & Rimless Technology
           </h2>
 
-          <h3 className="mt-8 text-xl font-semibold text-white">
+          <h3 className="mt-8 text-2xl font-semibold text-white md:text-3xl">
             Tailored to Every Space.
           </h3>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-white/80">
+          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-white/80 md:text-xl">
             An extensive selection of styles, colors, and sizes to
             customizable shower trays tailored with decorative prints and
             flexible cutting options, every detail is created to complement
@@ -102,98 +90,15 @@ const WhoWeArePage = () => {
             effortless installation.
           </p>
 
-          <h3 className="mt-8 text-xl font-semibold text-white">
+          <h3 className="mt-8 text-2xl font-semibold text-white md:text-3xl">
             Cleaner by Design.
           </h3>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-white/80">
+          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-white/80 md:text-xl">
             No rims. No hidden bacteria. Our Rimless toilets improve hygiene
             and make cleaning up to 70% easier, ensuring a cleaner bathroom
             with every flush.
           </p>
-        </DirectionalReveal>
-      </section>
-
-      <section className="mb-20 grid grid-cols-1 items-center bg-black md:mb-28 lg:grid-cols-2">
-        <DirectionalReveal
-          direction="left"
-          delay={0.12}
-          className="flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24"
-        >
-          <h2 className="text-3xl font-semibold text-white md:text-4xl">
-            Water-Saving Performance & HydroJet Innovation
-          </h2>
-
-          <h3 className="mt-8 text-xl font-semibold text-white">
-            Save Water. Every Flush.
-          </h3>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-white/80">
-            Powered by our latest flushing technology, our toilets deliver
-            powerful cleaning performance while using only 4.5 liters per
-            flush, reducing water consumption without compromising
-            efficiency.
-          </p>
-
-          <h3 className="mt-8 text-xl font-semibold text-white">
-            Smarter Flushing Technology.
-          </h3>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-white/80">
-            Our patented HydroJet nozzle technology delivers enhanced
-            flushing performance through optimized water flow, ensuring
-            cleaner and more efficient operation.
-          </p>
-        </DirectionalReveal>
-
-        <DirectionalReveal
-          direction="right"
-          className="h-[320px] w-full lg:h-[480px]"
-        >
-          <img
-            src={factoryFour}
-            alt="Sanipure HydroJet water-saving toilet technology"
-            className="h-full w-full object-cover"
-          />
-        </DirectionalReveal>
-      </section>
-
-      <section className="mb-20 grid grid-cols-1 items-center bg-black md:mb-28 lg:grid-cols-2">
-        <DirectionalReveal
-          direction="left"
-          className="h-[320px] w-full lg:h-[480px]"
-        >
-          <img
-            src={factoryFive}
-            alt="Sanipure first grade quality manufacturing"
-            className="h-full w-full object-cover"
-          />
-        </DirectionalReveal>
-
-        <DirectionalReveal
-          direction="right"
-          delay={0.12}
-          className="flex flex-col justify-center px-6 py-12 lg:px-16 xl:px-24"
-        >
-          <h2 className="text-3xl font-semibold text-white md:text-4xl">
-            First Grade Quality & Lifetime Guarantee
-          </h2>
-
-          <h3 className="mt-8 text-xl font-semibold text-white">
-            Manufactured Without Compromise.
-          </h3>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-white/80">
-            Every Sanipure product is manufactured using premium raw
-            materials and advanced production processes, ensuring consistent
-            quality, durability, and long-lasting performance.
-          </p>
-
-          <h3 className="mt-8 text-xl font-semibold text-white">
-            Confidence That Lasts.
-          </h3>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-white/80">
-            We stand behind the quality of our products with a Lifetime
-            Guarantee against manufacturing defects, giving customers lasting
-            peace of mind.
-          </p>
-        </DirectionalReveal>
+        </RevealSection>
       </section>
     </>
   );
