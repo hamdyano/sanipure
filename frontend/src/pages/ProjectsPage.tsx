@@ -1,5 +1,5 @@
+import { useState } from "react";
 import RevealSection from "../components/shared/RevealSection";
-import DirectionalReveal from "../components/shared/DirectionalReveal";
 import project1 from "../assets/projects photos/project 1.JPG";
 import project2 from "../assets/projects photos/project 2.JPG";
 import project3 from "../assets/projects photos/project 3.JPG";
@@ -32,13 +32,14 @@ const projects = [
   },
 ];
 
-const cardDirections: Array<"left" | "right"> = ["left", "right", "left", "right"];
-
 const ProjectsPage = () => {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selected = projects[selectedIndex];
+
   return (
     <>
-      <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
-        <h1 className="text-4xl font-semibold text-white md:text-5xl">
+      <RevealSection className="bg-black px-6 pb-10 pt-20 text-center md:pt-28">
+        <h1 className="font-brand text-4xl font-semibold uppercase tracking-wide text-white md:text-5xl">
           Projects
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
@@ -47,31 +48,58 @@ const ProjectsPage = () => {
         </p>
       </RevealSection>
 
-      <section className="mx-auto my-12 flex max-w-6xl flex-col gap-6 px-6 md:my-16 lg:px-12">
-        {projects.map((project, index) => (
-          <DirectionalReveal
-            key={project.name}
-            direction={cardDirections[index % cardDirections.length]}
-            delay={(index % 2) * 0.1}
-            className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d] lg:flex-row lg:h-64"
-          >
-            <div className="h-56 w-full overflow-hidden lg:h-full lg:w-2/5">
-              <img
-                src={project.image}
-                alt={project.name}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="flex flex-1 flex-col justify-center gap-3 p-8 lg:p-10">
-              <h3 className="text-2xl font-semibold text-white">
-                {project.name}
-              </h3>
-              <p className="max-w-xl text-base leading-relaxed text-white/70">
-                {project.description}
-              </p>
-            </div>
-          </DirectionalReveal>
-        ))}
+      <section className="bg-black">
+        <RevealSection className="grid grid-cols-2 gap-1 sm:grid-cols-4">
+          {projects.map((project, index) => {
+            const isSelected = index === selectedIndex;
+            return (
+              <button
+                key={project.name}
+                type="button"
+                onClick={() => setSelectedIndex(index)}
+                aria-pressed={isSelected}
+                className="group relative aspect-[3/4] w-full cursor-pointer transition-transform duration-500 ease-out hover:z-20 hover:scale-110 hover:shadow-2xl"
+              >
+                <img
+                  src={project.image}
+                  alt={project.name}
+                  className={`h-full w-full object-cover transition-all duration-500 ${
+                    isSelected
+                      ? "grayscale-0"
+                      : "grayscale group-hover:grayscale-0"
+                  }`}
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent px-3 pb-3 pt-10">
+                  <span className="font-brand text-xs font-semibold uppercase tracking-wide text-white sm:text-sm">
+                    {project.name}
+                  </span>
+                </div>
+                {isSelected && (
+                  <div className="absolute inset-x-0 bottom-0 h-[3px] bg-white" />
+                )}
+              </button>
+            );
+          })}
+        </RevealSection>
+
+        <RevealSection key={selected.name} className="relative">
+          <div className="relative h-[360px] w-full overflow-hidden md:h-[520px]">
+            <img
+              src={selected.image}
+              alt={selected.name}
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+            <h2 className="absolute bottom-6 left-6 font-brand text-3xl font-bold uppercase tracking-wide text-white md:bottom-10 md:left-12 md:text-5xl">
+              {selected.name}
+            </h2>
+          </div>
+          <div className="bg-gradient-to-b from-black to-neutral-700 px-6 py-10 md:px-12 md:py-14">
+            <p className="max-w-3xl text-lg leading-relaxed text-white/80 md:text-xl">
+              {selected.description}
+            </p>
+          </div>
+        </RevealSection>
       </section>
     </>
   );
