@@ -280,10 +280,14 @@ const CategoryCarousel = ({
 
   return (
     <div
-      className={`relative w-full bg-[#2a2f36] py-16 md:py-20 ${className}`}
+      className={`relative w-full bg-black py-16 md:py-20 ${className}`}
       onFocusCapture={pause}
       onBlurCapture={handleBlur}
     >
+      <h2 className="mb-10 px-6 text-center font-brand text-3xl font-extrabold uppercase tracking-tight text-white md:mb-12 md:text-5xl">
+        Discover Our Categories
+      </h2>
+
       <div
         ref={containerRef}
         role="region"
