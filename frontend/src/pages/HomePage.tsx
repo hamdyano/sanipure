@@ -1,6 +1,6 @@
 import Hero from "../components/Hero";
 import WhySanipure from "../components/WhySanipure";
-import Categories from "../components/Categories";
+import CategoryCarousel from "../components/CategoryCarousel";
 import DesignSection from "../components/DesignSection";
 import Articles from "../components/Articles";
 
@@ -9,7 +9,7 @@ const HomePage = () => {
     <>
       <Hero />
       <WhySanipure />
-      <Categories />
+      <CategoryCarousel />
       <DesignSection />
       <Articles />
     </>
