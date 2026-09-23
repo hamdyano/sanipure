@@ -281,8 +281,6 @@ const CategoryCarousel = ({
   return (
     <div
       className={`relative w-full bg-[#2a2f36] py-16 md:py-20 ${className}`}
-      onMouseEnter={pause}
-      onMouseLeave={resume}
       onFocusCapture={pause}
       onBlurCapture={handleBlur}
     >
@@ -358,6 +356,8 @@ const CategoryCarousel = ({
                     handleCardActivate(index, category.href);
                   }
                 }}
+                onMouseEnter={pause}
+                onMouseLeave={resume}
                 className="absolute left-1/2 top-1/2 origin-center cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                 style={{
                   width: `${cardWidth}px`,
@@ -430,29 +430,6 @@ const CategoryCarousel = ({
             );
           })}
         </div>
-      </div>
-
-      <div className="mt-8 flex items-center justify-center gap-6">
-        <button
-          type="button"
-          aria-label="Previous category"
-          onClick={() => stepBy(-1)}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-        >
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          aria-label="Next category"
-          onClick={() => stepBy(1)}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-        >
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-            <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
       </div>
     </div>
   );
