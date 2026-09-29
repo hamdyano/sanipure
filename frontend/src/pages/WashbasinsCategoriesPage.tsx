@@ -1,111 +1,300 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
-import DirectionalReveal from "../components/shared/DirectionalReveal";
-import counterTopImage from "../assets/categories photos/Sub categories photos/washbasins sub category photos/countertop.png";
-import floorStandingImage from "../assets/categories photos/Sub categories photos/washbasins sub category photos/floor standing.jpg";
-import overCounterImage from "../assets/categories photos/Sub categories photos/washbasins sub category photos/over counter.webp";
-import wallMountedImage from "../assets/categories photos/Sub categories photos/washbasins sub category photos/wall mounted.jpg";
-import underCounterImage from "../assets/categories photos/Sub categories photos/washbasins sub category photos/under counter.jpg";
-import pedestalImage from "../assets/categories photos/Sub categories photos/washbasins sub category photos/pedestal.jpg";
-import furnitureImage from "../assets/categories photos/Sub categories photos/washbasins sub category photos/furniture.jpg";
+import FilterSidebar from "../components/shared/FilterSidebar";
+import heroImage from "../assets/washbasins shop photos/hero section.jpg";
+import washbasinsImage from "../assets/categories photos/Washbasins photo.jpg";
+import type { ProductDisplay } from "../api/clientApi";
 
+interface Filter {
+  id: string;
+  label: string;
+  options: string[];
+}
+
+interface Product {
+  id: string;
+  name: string;
+  display?: ProductDisplay;
+  [attribute: string]: string | ProductDisplay | undefined;
+}
+
+interface CatalogResponse {
+  category: string;
+  filters: Filter[];
+  products: Product[];
+}
+
+// The 7 subcategory tabs. `type` is the exact option string the admin
+// dashboard's "Type" dropdown submits (see washbasinsShop.ts filters) so a
+// tab reliably matches products saved with that value, regardless of the
+// friendlier label shown to shoppers.
 const subCategories = [
-  {
-    name: "Counter-Top",
-    image: counterTopImage,
-    description:
-      "Washbasins that sit on top of the counter, adding a striking focal point to any bathroom vanity.",
-    shopPath: "/products/washbasins/shop-washbasins?subcategory=Counter-Top",
-  },
-  {
-    name: "Floor-Standing",
-    image: floorStandingImage,
-    description:
-      "Freestanding washbasins that stand directly on the floor, combining bold design with practical stability.",
-    shopPath: "/products/washbasins/shop-washbasins?subcategory=Floor-Standing",
-  },
-  {
-    name: "Over-Counter",
-    image: overCounterImage,
-    description:
-      "Washbasins set into the countertop for a seamless, integrated look that's easy to keep clean.",
-    shopPath: "/products/washbasins/shop-washbasins?subcategory=Over-Counter",
-  },
-  {
-    name: "Wall-Mounted",
-    image: wallMountedImage,
-    description:
-      "Wall-hung washbasins that create a floating look, making cleaning easier and the bathroom feel more spacious.",
-    shopPath: "/products/washbasins/shop-washbasins?subcategory=Wall-Mounted",
-  },
-  {
-    name: "Under-Counter",
-    image: underCounterImage,
-    description:
-      "Washbasins mounted beneath the counter for a clean, minimal edge and effortless countertop wipe-downs.",
-    shopPath: "/products/washbasins/shop-washbasins?subcategory=Under-Counter",
-  },
-  {
-    name: "Pedestal",
-    image: pedestalImage,
-    description:
-      "Classic pedestal washbasins that hide the plumbing while keeping the footprint compact and elegant.",
-    shopPath: "/products/washbasins/shop-washbasins?subcategory=Pedestal",
-  },
-  {
-    name: "Furniture",
-    image: furnitureImage,
-    description:
-      "Washbasins paired with matching furniture units for built-in storage and a coordinated bathroom look.",
-    shopPath: "/products/washbasins/shop-washbasins?subcategory=Furniture",
-  },
+  { name: "Counter-Top", type: "counter top" },
+  { name: "Floor-Standing", type: "Stand alone" },
+  { name: "Over-Counter", type: "over counter" },
+  { name: "Wall-Mounted", type: "wall hung" },
+  { name: "Under-Counter", type: "under counter" },
+  { name: "Pedestal", type: "pedestal" },
+  { name: "Furniture", type: "Furniture" },
 ];
 
-const cardDirections: Array<"left" | "right"> = ["left", "right"];
+const ALL_TAB = "All";
 
 const WashbasinsCategoriesPage = () => {
+  const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Record<string, string[]>>({});
+  const [activeTab, setActiveTab] = useState<string>(ALL_TAB);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/products?category=washbasins")
+      .then((res) => {
+        if (!res.ok) throw new Error(`Request failed (${res.status})`);
+        return res.json() as Promise<CatalogResponse>;
+      })
+      .then((data) => {
+        if (!cancelled) setCatalog(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load products");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const toggleOption = (filterId: string, option: string) => {
+    setSelected((prev) => {
+      const current = prev[filterId] ?? [];
+      const next = current.includes(option)
+        ? current.filter((o) => o !== option)
+        : [...current, option];
+      return { ...prev, [filterId]: next };
+    });
+  };
+
+  const activeTypeValue = useMemo(
+    () => subCategories.find((s) => s.name === activeTab)?.type,
+    [activeTab]
+  );
+
+  const matchesFilters = (
+    product: Product,
+    activeSelected: Record<string, string[]>,
+    excludeFilterId?: string
+  ) =>
+    Object.entries(activeSelected).every(([filterId, options]) => {
+      if (filterId === excludeFilterId) return true;
+      if (options.length === 0) return true;
+      return options.includes(product[filterId] as string);
+    });
+
+  const matchesTab = (product: Product) => {
+    if (!activeTypeValue) return true;
+    const productType = product.type;
+    return (
+      typeof productType === "string" &&
+      productType.trim().toLowerCase() === activeTypeValue.toLowerCase()
+    );
+  };
+
+  const matchesSearch = (product: Product) => {
+    const query = search.trim().toLowerCase();
+    if (!query) return true;
+    return product.name.toLowerCase().includes(query);
+  };
+
+  const filteredProducts =
+    catalog?.products.filter(
+      (product) => matchesFilters(product, selected) && matchesTab(product) && matchesSearch(product)
+    ) ?? [];
+
+  const getCount = (filterId: string, option: string) => {
+    if (!catalog) return 0;
+    return catalog.products.filter(
+      (product) =>
+        matchesFilters(product, selected, filterId) &&
+        matchesTab(product) &&
+        matchesSearch(product) &&
+        product[filterId] === option
+    ).length;
+  };
+
   return (
     <>
-      <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
-        <h1 className="text-4xl font-semibold text-white md:text-5xl">
-          Washbasins
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
-          Choose a category to explore our range of washbasins.
-        </p>
-      </RevealSection>
+      <section className="relative flex h-[60vh] min-h-[420px] w-full items-center justify-center overflow-hidden bg-black md:h-[70vh]">
+        <img
+          src={heroImage}
+          alt="Washbasins by Sanipure"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/55" />
+        <RevealSection className="relative z-10 px-6 text-center">
+          <h1 className="text-4xl font-semibold text-white md:text-5xl">
+            Washbasins
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-white/80">
+            Choose a category to explore our range of washbasins.
+          </p>
+        </RevealSection>
+      </section>
 
-      <section className="mx-auto my-12 flex max-w-6xl flex-col gap-6 px-6 md:my-16 lg:px-12">
-        {subCategories.map((subCategory, index) => (
-          <DirectionalReveal
-            key={subCategory.name}
-            direction={cardDirections[index % cardDirections.length]}
-            delay={(index % 2) * 0.1}
-            className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d] lg:flex-row lg:h-64"
-          >
-            <div className="h-56 w-full overflow-hidden lg:h-full lg:w-2/5">
-              <img
-                src={subCategory.image}
-                alt={subCategory.name}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="flex flex-1 flex-col justify-center gap-3 p-8 lg:p-10">
-              <h3 className="text-2xl font-semibold text-white">
-                {subCategory.name}
-              </h3>
-              <p className="max-w-xl text-base leading-relaxed text-white/70">
-                {subCategory.description}
-              </p>
-              <Link
-                to={subCategory.shopPath}
-                className="mt-2 w-fit border border-white px-8 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black"
+      <section className="bg-black px-6 pb-6 pt-6 lg:px-12">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[2rem] bg-white p-2 shadow-lg sm:flex-row sm:items-center sm:gap-2">
+          <div className="flex flex-1 flex-wrap items-center gap-1 overflow-x-auto px-1 py-1 sm:flex-nowrap">
+            {[ALL_TAB, ...subCategories.map((s) => s.name)].map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  activeTab === tab
+                    ? "bg-black text-white"
+                    : "text-black/70 hover:bg-black/5"
+                }`}
               >
-                View {subCategory.name}
-              </Link>
-            </div>
-          </DirectionalReveal>
-        ))}
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 sm:w-56">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              className="h-4 w-4 shrink-0 text-black/50"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search…"
+              className="w-full bg-transparent text-sm text-black placeholder:text-black/40 focus:outline-none"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto my-10 grid max-w-7xl grid-cols-1 gap-10 px-6 md:my-14 lg:grid-cols-[240px_1fr] lg:px-12">
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          {loading && <p className="text-sm text-white/60">Loading filters…</p>}
+          {error && <p className="text-sm text-red-400">{error}</p>}
+          {catalog && (
+            <FilterSidebar
+              filters={catalog.filters}
+              selected={selected}
+              onToggle={toggleOption}
+              onClear={() => setSelected({})}
+              getCount={getCount}
+              resultCount={filteredProducts.length}
+            />
+          )}
+        </aside>
+
+        <div>
+          {loading && <p className="text-sm text-white/60">Loading products…</p>}
+
+          {!loading && !error && filteredProducts.length === 0 && (
+            <p className="text-sm text-white/60">
+              No products match the selected filters.
+            </p>
+          )}
+
+          <div className="grid grid-cols-1 gap-x-6 gap-y-10 xl:grid-cols-2">
+            {filteredProducts.map((product) => {
+              const topLine = [product.series, product.type].filter(Boolean).join(" · ");
+              const bottomLine = [
+                product.material,
+                product.shape,
+                product.color,
+                product.size ? `${product.size}cm` : undefined,
+              ]
+                .filter(Boolean)
+                .join(" · ");
+
+              const colors = product.display?.colors ?? [];
+              const productPath = `/products/washbasins/shop-washbasins/${product.id}`;
+
+              return (
+                <div
+                  key={product.id}
+                  className="relative py-6 pl-6 pr-2 sm:pr-4"
+                >
+                  <div className="flex min-w-0 flex-col gap-2">
+                    <h4 className="truncate text-lg font-bold uppercase text-white">
+                      {product.name}
+                    </h4>
+                    {topLine && (
+                      <p className="text-sm font-medium text-white/70">{topLine}</p>
+                    )}
+                    {bottomLine && (
+                      <p className="text-xs uppercase tracking-wide text-white/40">
+                        {bottomLine}
+                      </p>
+                    )}
+
+                    {colors.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {colors.map((color, index) => (
+                          <Link
+                            key={`${color.name}-${index}`}
+                            to={`${productPath}?color=${encodeURIComponent(color.name)}`}
+                            title={color.name}
+                            className="h-6 w-6 shrink-0 overflow-hidden rounded-full border border-white/20 transition-colors hover:border-white"
+                          >
+                            {color.image ? (
+                              <img
+                                src={color.image}
+                                alt={color.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <span className="flex h-full w-full items-center justify-center bg-white/10 text-[8px] text-white/60">
+                                {color.name.slice(0, 2)}
+                              </span>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+
+                    <Link
+                      to={productPath}
+                      className="relative z-0 mt-2 w-[calc(100%+1.5rem)] rounded-full border border-white px-6 py-2 text-xs font-medium uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black sm:w-[calc(100%+2rem)]"
+                    >
+                      See More
+                    </Link>
+                  </div>
+
+                  <Link
+                    to={productPath}
+                    className="absolute right-1 -top-6 z-10 h-[calc(100%+2.5rem)] w-32 sm:right-2 sm:w-44 lg:w-52"
+                  >
+                    <img
+                      src={(product.image as string) || washbasinsImage}
+                      alt={product.name}
+                      className="h-full w-full object-contain drop-shadow-[0_12px_20px_rgba(0,0,0,0.55)]"
+                    />
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </section>
     </>
   );
