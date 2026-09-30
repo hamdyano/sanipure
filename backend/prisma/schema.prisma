@@ -41,7 +41,7 @@ model Filter {
 }
 
 // One row per product. Attributes are stored as JSON because the attribute
-// set differs per category (toilets: shape/color/series/type/extra;
+
 // washbasins add material/size; bathtubs add material) and "extra" can hold
 // multiple values (e.g. ["Soft close", "Hydro jet"]), matching the current
 // Record<string, string | string[]> shape used in the TS stub files.
