@@ -6,9 +6,9 @@ import bathtubImage from "../assets/why sani photos/2.PNG";
 import bathroomImage from "../assets/why sani photos/3.PNG";
 
 const images = [
-  { src: toiletImage, alt: "Sanipure toilet and bidet suite", height: "h-72 md:h-[380px]" },
-  { src: bathtubImage, alt: "Sanipure freestanding bathtub", height: "h-80 md:h-[440px]" },
-  { src: bathroomImage, alt: "Sanipure full bathroom collection", height: "h-72 md:h-[380px]" },
+  { src: toiletImage, alt: "Sanipure toilet and bidet suite" },
+  { src: bathtubImage, alt: "Sanipure freestanding bathtub" },
+  { src: bathroomImage, alt: "Sanipure full bathroom collection" },
 ];
 
 const WhySanipure = () => {
@@ -54,7 +54,7 @@ const WhySanipure = () => {
                 <img
                   src={image.src}
                   alt={image.alt}
-                  className={`w-full ${image.height} rounded-2xl object-cover shadow-2xl`}
+                  className="h-80 w-full rounded-2xl object-cover shadow-2xl md:h-[440px]"
                 />
               </div>
             </DirectionalReveal>

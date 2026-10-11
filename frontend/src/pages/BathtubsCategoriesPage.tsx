@@ -277,7 +277,7 @@ const BathtubsCategoriesPage = () => {
 
                   <Link
                     to={productPath}
-                    className="absolute right-1 -top-6 z-10 h-[calc(100%+2.5rem)] w-32 sm:right-2 sm:w-44 lg:w-52"
+                    className="absolute right-2 top-1/2 z-10 h-28 w-24 -translate-y-1/2 sm:right-4 sm:h-32 sm:w-28 lg:h-36 lg:w-32"
                   >
                     <img
                       src={typeof product.image === "string" ? product.image : bathtubsImage}

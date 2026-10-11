@@ -16,6 +16,7 @@ import bathtubsImage from "../assets/categories photos/Bathtubs photo.jpg";
 import accessoriesImage from "../assets/categories photos/Accessories photo.jpg";
 import publicBathroomsImage from "../assets/categories photos/Public Bathrooms photo.jpg";
 import bathroomCollectionImage from "../assets/categories photos/Bathroom collection photo.jpg";
+import concealedFlushTankImage from "../assets/categories photos/Concealed Flush tank.jpeg";
 
 export interface CarouselCategory {
   id: string;
@@ -56,6 +57,12 @@ const DEFAULT_CATEGORIES: CarouselCategory[] = [
     name: "Bathroom Collection",
     image: bathroomCollectionImage,
     href: "/products/bathroom-collection",
+  },
+  {
+    id: "concealed-flush-tank",
+    name: "Concealed Flush Tank",
+    image: concealedFlushTankImage,
+    href: "/products/concealed-flush-tank",
   },
 ];
 

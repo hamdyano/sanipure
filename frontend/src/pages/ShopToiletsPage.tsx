@@ -130,7 +130,7 @@ const ShopToiletsPage = () => {
             </p>
           )}
 
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 xl:grid-cols-4">
             {filteredProducts.map((product) => {
               const colors = product.display?.colors ?? [];
               return (
@@ -139,7 +139,7 @@ const ShopToiletsPage = () => {
                     to={`/products/toilets/shop-toilets/${product.id}`}
                     className="flex flex-col"
                   >
-                    <div className="h-64 w-full overflow-hidden">
+                    <div className="h-44 w-full overflow-hidden sm:h-52">
                       <img
                         src={typeof product.image === "string" ? product.image : toiletsImage}
                         alt={product.name}
