@@ -40,6 +40,17 @@ export interface ProductDisplayColor {
   image?: string;
 }
 
+// The "For Required Items" section: companion items needed with the product,
+// each with up to MAX_REQUIRED_ITEM_IMAGES photos of its own.
+export interface ProductRequiredItem {
+  name: string;
+  productCode?: string;
+  color?: string;
+  quantity?: string;
+  description?: string;
+  images?: string[];
+}
+
 export interface ProductDisplay {
   productCode?: string;
   description?: string;
@@ -48,7 +59,40 @@ export interface ProductDisplay {
   types?: string[];
   sizes?: string[];
   designFile?: string;
+  requiredItems?: ProductRequiredItem[];
 }
+
+const MAX_REQUIRED_ITEMS = 10;
+const MAX_REQUIRED_ITEM_IMAGES = 4;
+
+const trimmedString = (value: unknown) =>
+  typeof value === "string" && value.trim() ? value.trim() : undefined;
+
+const sanitizeRequiredItems = (raw: unknown): ProductRequiredItem[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+    .map((item) => {
+      const images = Array.isArray(item.images)
+        ? item.images
+            .filter((i): i is string => typeof i === "string" && i.trim() !== "")
+            .slice(0, MAX_REQUIRED_ITEM_IMAGES)
+        : [];
+      const fields = {
+        productCode: trimmedString(item.productCode),
+        color: trimmedString(item.color),
+        quantity: trimmedString(item.quantity),
+        description: trimmedString(item.description),
+      };
+      return {
+        name: trimmedString(item.name) ?? "",
+        ...Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined)),
+        ...(images.length ? { images } : {}),
+      } as ProductRequiredItem;
+    })
+    .filter((item) => item.name)
+    .slice(0, MAX_REQUIRED_ITEMS);
+};
 
 const sanitizeDisplay = (raw: unknown): ProductDisplay | undefined => {
   if (!raw || typeof raw !== "object") return undefined;
@@ -93,6 +137,9 @@ const sanitizeDisplay = (raw: unknown): ProductDisplay | undefined => {
   if (typeof src.designFile === "string" && src.designFile.trim()) {
     display.designFile = src.designFile.trim();
   }
+
+  const requiredItems = sanitizeRequiredItems(src.requiredItems);
+  if (requiredItems.length) display.requiredItems = requiredItems;
 
   return Object.keys(display).length ? display : undefined;
 };

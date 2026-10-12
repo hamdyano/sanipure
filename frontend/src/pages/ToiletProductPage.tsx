@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
+import RequiredItems from "../components/shared/RequiredItems";
 import toiletsApi from "../api/toiletsApi";
 import type { Product, ProductDisplayColor } from "../api/clientApi";
 
@@ -218,8 +219,12 @@ const ToiletProductPage = () => {
               rel="noreferrer"
               className="mt-10 w-fit border border-white px-8 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black"
             >
-              Download Design File
+              Download Technical Sheet
             </a>
+          )}
+
+          {display?.requiredItems && display.requiredItems.length > 0 && (
+            <RequiredItems items={display.requiredItems} />
           )}
         </div>
       </section>

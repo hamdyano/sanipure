@@ -48,6 +48,18 @@ export interface ProductDisplayColor {
   image?: string;
 }
 
+// The "For Required Items" section's data — companion items needed with the
+// product (e.g. a seat or flush plate), listed under the design file button
+// on the detail page and opened in a popup with their own photos/details.
+export interface ProductRequiredItem {
+  name: string;
+  productCode?: string;
+  color?: string;
+  quantity?: string;
+  description?: string;
+  images?: string[];
+}
+
 export interface ProductDisplay {
   productCode?: string;
   description?: string;
@@ -56,6 +68,7 @@ export interface ProductDisplay {
   types?: string[];
   sizes?: string[];
   designFile?: string;
+  requiredItems?: ProductRequiredItem[];
 }
 
 export interface Product {

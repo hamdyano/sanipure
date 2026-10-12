@@ -5,6 +5,7 @@ import type {
   Product,
   ProductDisplay,
   ProductInput,
+  ProductRequiredItem,
 } from "../../api/clientApi";
 import { uploadProductFile, uploadProductImage } from "../../api/clientApi";
 import {
@@ -15,6 +16,8 @@ import {
 
 const MAX_GALLERY_IMAGES = 5;
 const MAX_COLORS = 8;
+const MAX_REQUIRED_ITEMS = 10;
+const MAX_REQUIRED_ITEM_IMAGES = 4;
 
 interface ColorSlot {
   name: string;
@@ -27,8 +30,28 @@ interface ImageSlot {
   preview: string | null;
 }
 
-const emptyImageSlots = (): ImageSlot[] =>
-  Array.from({ length: MAX_GALLERY_IMAGES }, () => ({ file: null, preview: null }));
+const emptyImageSlots = (count = MAX_GALLERY_IMAGES): ImageSlot[] =>
+  Array.from({ length: count }, () => ({ file: null, preview: null }));
+
+interface RequiredItemSlot {
+  name: string;
+  productCode: string;
+  color: string;
+  quantity: string;
+  description: string;
+  images: ImageSlot[];
+}
+
+type RequiredItemTextField = "name" | "productCode" | "color" | "quantity" | "description";
+
+const emptyRequiredItem = (): RequiredItemSlot => ({
+  name: "",
+  productCode: "",
+  color: "",
+  quantity: "1",
+  description: "",
+  images: emptyImageSlots(MAX_REQUIRED_ITEM_IMAGES),
+});
 
 interface Filter {
   id: string;
@@ -116,6 +139,10 @@ const ProductManager = ({
   const [designFile, setDesignFile] = useState<File | null>(null);
   const [designFileUrl, setDesignFileUrl] = useState<string | null>(null);
 
+  // "For Required Items" section state — companion items shown under the
+  // design file button on the product's detail page.
+  const [requiredItems, setRequiredItems] = useState<RequiredItemSlot[]>([]);
+
   const loadMine = async () => {
     setLoadingMine(true);
     try {
@@ -160,6 +187,7 @@ const ProductManager = ({
     setSizeInput("");
     setDesignFile(null);
     setDesignFileUrl(null);
+    setRequiredItems([]);
   };
 
   const formRef = useRef<HTMLHeadingElement>(null);
@@ -200,6 +228,19 @@ const ProductManager = ({
     setSizeInput("");
     setDesignFile(null);
     setDesignFileUrl(display.designFile ?? null);
+    setRequiredItems(
+      (display.requiredItems ?? []).map((item) => ({
+        name: item.name,
+        productCode: item.productCode ?? "",
+        color: item.color ?? "",
+        quantity: item.quantity ?? "",
+        description: item.description ?? "",
+        images: emptyImageSlots(MAX_REQUIRED_ITEM_IMAGES).map((slot, index) => ({
+          ...slot,
+          preview: item.images?.[index] ?? null,
+        })),
+      }))
+    );
 
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -282,9 +323,63 @@ const ProductManager = ({
     setDesignFile(file);
   };
 
+  const addRequiredItem = () => {
+    setRequiredItems((prev) =>
+      prev.length >= MAX_REQUIRED_ITEMS ? prev : [...prev, emptyRequiredItem()]
+    );
+  };
+
+  const removeRequiredItem = (index: number) => {
+    setRequiredItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateRequiredItemField = (
+    index: number,
+    field: RequiredItemTextField,
+    value: string
+  ) => {
+    setRequiredItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  };
+
+  const setRequiredItemImage = (itemIndex: number, slotIndex: number, slot: ImageSlot) => {
+    setRequiredItems((prev) =>
+      prev.map((item, i) =>
+        i === itemIndex
+          ? { ...item, images: item.images.map((s, j) => (j === slotIndex ? slot : s)) }
+          : item
+      )
+    );
+  };
+
+  const handleRequiredItemImageChange = (
+    itemIndex: number,
+    slotIndex: number,
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0] ?? null;
+    if (!file) return;
+    setRequiredItemImage(itemIndex, slotIndex, { file, preview: URL.createObjectURL(file) });
+  };
+
   const handleSave = async () => {
     if (!name.trim()) {
       showErrorToast("Enter a product name.");
+      return;
+    }
+    if (
+      showDisplaySection &&
+      requiredItems.some(
+        (item) =>
+          !item.name.trim() &&
+          (item.productCode.trim() ||
+            item.color.trim() ||
+            item.description.trim() ||
+            item.images.some((slot) => slot.preview))
+      )
+    ) {
+      showErrorToast("Enter a name for every required item.");
       return;
     }
 
@@ -336,6 +431,24 @@ const ProductManager = ({
         const finalSizes =
           pendingSize && !sizes.includes(pendingSize) ? [...sizes, pendingSize] : sizes;
 
+        const resolvedRequiredItems: ProductRequiredItem[] = [];
+        for (const item of requiredItems) {
+          if (!item.name.trim()) continue;
+          const images: string[] = [];
+          for (const slot of item.images) {
+            const url = slot.file ? await uploadProductImage(slot.file) : slot.preview;
+            if (url) images.push(url);
+          }
+          resolvedRequiredItems.push({
+            name: item.name.trim(),
+            ...(item.productCode.trim() ? { productCode: item.productCode.trim() } : {}),
+            ...(item.color.trim() ? { color: item.color.trim() } : {}),
+            ...(item.quantity.trim() ? { quantity: item.quantity.trim() } : {}),
+            ...(item.description.trim() ? { description: item.description.trim() } : {}),
+            ...(images.length ? { images } : {}),
+          });
+        }
+
         const candidate: ProductDisplay = {
           ...(productCode.trim() ? { productCode: productCode.trim() } : {}),
           ...(description.trim() ? { description: description.trim() } : {}),
@@ -344,6 +457,7 @@ const ProductManager = ({
           ...(finalTypes.length ? { types: finalTypes } : {}),
           ...(finalSizes.length ? { sizes: finalSizes } : {}),
           ...(resolvedDesignFile ? { designFile: resolvedDesignFile } : {}),
+          ...(resolvedRequiredItems.length ? { requiredItems: resolvedRequiredItems } : {}),
         };
         if (Object.keys(candidate).length) display = candidate;
       }
@@ -774,6 +888,149 @@ const ProductManager = ({
                 />
               </label>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showDisplaySection && (
+        <div className="mt-10 border-t border-white/10 pt-8">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <h4 className="text-sm font-semibold uppercase tracking-wide text-white/60">
+              For Required Items
+            </h4>
+            <button
+              type="button"
+              onClick={addRequiredItem}
+              disabled={requiredItems.length >= MAX_REQUIRED_ITEMS}
+              className="rounded-full border border-white/30 px-5 py-2 text-sm text-white transition-colors hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              + Add Item
+            </button>
+          </div>
+
+          {requiredItems.length === 0 && (
+            <p className="text-sm text-white/40">
+              No required items yet. Add items needed with this product (e.g. a seat or flush plate).
+            </p>
+          )}
+
+          <div className="flex flex-col gap-6">
+            {requiredItems.map((item, itemIndex) => (
+              <div key={itemIndex} className="rounded-xl border border-white/10 p-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <p className="text-sm font-medium text-white">Item {itemIndex + 1}</p>
+                  <button
+                    type="button"
+                    onClick={() => removeRequiredItem(itemIndex)}
+                    className="text-xs text-red-300 transition-colors hover:text-red-200"
+                  >
+                    Remove Item
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm text-white/70">Item Name</label>
+                    <input
+                      type="text"
+                      value={item.name}
+                      onChange={(e) => updateRequiredItemField(itemIndex, "name", e.target.value)}
+                      className={inputClasses}
+                      placeholder="e.g. Elongated bidet toilet seat"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-white/70">Product Code</label>
+                    <input
+                      type="text"
+                      value={item.productCode}
+                      onChange={(e) =>
+                        updateRequiredItemField(itemIndex, "productCode", e.target.value)
+                      }
+                      className={inputClasses}
+                      placeholder="e.g. K-8297-0"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-white/70">Color/Finish</label>
+                    <input
+                      type="text"
+                      value={item.color}
+                      onChange={(e) => updateRequiredItemField(itemIndex, "color", e.target.value)}
+                      className={inputClasses}
+                      placeholder="e.g. White"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-white/70">Qty</label>
+                    <input
+                      type="text"
+                      value={item.quantity}
+                      onChange={(e) =>
+                        updateRequiredItemField(itemIndex, "quantity", e.target.value)
+                      }
+                      className={inputClasses}
+                      placeholder="e.g. 1"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="mb-1 block text-sm text-white/70">Description</label>
+                  <textarea
+                    value={item.description}
+                    onChange={(e) =>
+                      updateRequiredItemField(itemIndex, "description", e.target.value)
+                    }
+                    rows={3}
+                    className={`${inputClasses} resize-none`}
+                    placeholder="Details shown in the item's popup on the product page"
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <label className="mb-3 block text-sm text-white/70">
+                    Images (up to {MAX_REQUIRED_ITEM_IMAGES})
+                  </label>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    {item.images.map((slot, slotIndex) => (
+                      <div
+                        key={slotIndex}
+                        className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-white/20 p-3"
+                      >
+                        {slot.preview ? (
+                          <img src={slot.preview} alt="" className="h-20 w-20 rounded object-cover" />
+                        ) : (
+                          <div className="flex h-20 w-20 items-center justify-center rounded border border-white/10 text-[10px] text-white/30">
+                            Empty
+                          </div>
+                        )}
+                        <label className="cursor-pointer text-center text-[11px] text-white/70 underline underline-offset-2 hover:text-white">
+                          {slot.preview ? "Replace" : "Add"}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleRequiredItemImageChange(itemIndex, slotIndex, e)}
+                            className="hidden"
+                          />
+                        </label>
+                        {slot.preview && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setRequiredItemImage(itemIndex, slotIndex, { file: null, preview: null })
+                            }
+                            className="text-[11px] text-white/40 hover:text-white/70"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
