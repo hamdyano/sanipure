@@ -19,6 +19,8 @@ import BathtubsCategoriesPage from "./pages/BathtubsCategoriesPage";
 import ShopBathtubsPage from "./pages/ShopBathtubsPage";
 import BathtubProductPage from "./pages/BathtubProductPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import NewsPage from "./pages/NewsPage";
+import NewsArticlePage from "./pages/NewsArticlePage";
 import AdminPage from "./pages/AdminPage";
 import DashboardPage from "./pages/DashboardPage";
 
@@ -137,6 +139,22 @@ const App = () => {
           element={
             <Layout>
               <ProjectsPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/news"
+          element={
+            <Layout>
+              <NewsPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/news/:slug"
+          element={
+            <Layout>
+              <NewsArticlePage />
             </Layout>
           }
         />

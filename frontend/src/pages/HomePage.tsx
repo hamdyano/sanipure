@@ -2,6 +2,8 @@ import Hero from "../components/Hero";
 import WhySanipure from "../components/WhySanipure";
 import CategoryCarousel from "../components/CategoryCarousel";
 import DesignSection from "../components/DesignSection";
+import BathroomFurniture from "../components/BathroomFurniture";
+import BathroomSets from "../components/BathroomSets";
 import Articles from "../components/Articles";
 
 const HomePage = () => {
@@ -15,6 +17,8 @@ const HomePage = () => {
         <div className="h-[60%] w-full bg-[#2a2f36]" />
       </div>
       <DesignSection />
+      <BathroomFurniture />
+      <BathroomSets />
       <Articles />
     </>
   );
