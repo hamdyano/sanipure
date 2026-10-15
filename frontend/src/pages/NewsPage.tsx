@@ -61,6 +61,17 @@ const NewsPage = () => {
     return () => window.clearTimeout(timeout);
   }, [slide.active, paused, prefersReducedMotion, step]);
 
+  // Load and decode every article image up front. Otherwise a large photo is
+  // only fetched/decoded when it becomes the background, and the slide stalls
+  // (or grows out of its card as an empty box) until it is ready.
+  useEffect(() => {
+    newsArticles.forEach(({ image }) => {
+      const img = new Image();
+      img.src = image;
+      img.decode().catch(() => {});
+    });
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "ArrowRight") step(1);
@@ -133,9 +144,11 @@ const NewsPage = () => {
         {/* Active article text */}
         <div
           aria-live={paused || prefersReducedMotion ? "polite" : "off"}
-          className="lg:absolute lg:left-16 lg:top-1/2 lg:w-[44%] lg:-translate-y-1/2 xl:left-24"
+          className="relative lg:absolute lg:left-16 lg:top-1/2 lg:w-[44%] lg:-translate-y-1/2 xl:left-24"
         >
-          <AnimatePresence mode="wait" initial={false}>
+          {/* popLayout: the new text comes in while the old one leaves, instead
+              of waiting for the exit to finish (which lagged the background). */}
+          <AnimatePresence mode="popLayout" initial={false}>
             <motion.div
               key={article.slug}
               initial={{ opacity: 0, y: 32 }}
@@ -203,7 +216,6 @@ const NewsPage = () => {
                   transition={SLIDE_TRANSITION}
                   src={item.image}
                   alt=""
-                  loading="lazy"
                   className="absolute inset-0 h-full w-full object-cover"
                 />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
