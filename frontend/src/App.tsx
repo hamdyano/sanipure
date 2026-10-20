@@ -21,6 +21,7 @@ import BathtubProductPage from "./pages/BathtubProductPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import NewsPage from "./pages/NewsPage";
 import NewsArticlePage from "./pages/NewsArticlePage";
+import FindUsPage from "./pages/FindUsPage";
 import AdminPage from "./pages/AdminPage";
 import DashboardPage from "./pages/DashboardPage";
 
@@ -158,6 +159,18 @@ const App = () => {
             </Layout>
           }
         />
+        {/* The footer's "Contact Us" link lands on the same page as "Find Us". */}
+        {["/find-us", "/contact-us"].map((path) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <Layout>
+                <FindUsPage />
+              </Layout>
+            }
+          />
+        ))}
         <Route
           path="/admin"
           element={

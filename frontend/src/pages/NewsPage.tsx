@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import { newsArticles } from "../data/news";
+import { newsArticles, oldNewsArticles } from "../data/news";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { showErrorToast, showSuccessToast } from "../lib/toast";
 
@@ -25,10 +25,24 @@ const wrap = (index: number) =>
 
 const shortDate = (date: string) => date.replace(/^(\w{3})\w*/, "$1");
 
+// Old News pagination: one row of cards per page on desktop, and at most
+// ten page numbers shown at once (the window slides along past ten pages).
+const OLD_NEWS_PER_PAGE = 3;
+const MAX_PAGE_BUTTONS = 10;
+const oldNewsPageCount = Math.ceil(oldNewsArticles.length / OLD_NEWS_PER_PAGE);
+
+const visiblePages = (current: number, total: number) => {
+  const count = Math.min(total, MAX_PAGE_BUTTONS);
+  const start = Math.min(Math.max(current - Math.floor(count / 2), 0), total - count);
+  return Array.from({ length: count }, (_, i) => start + i);
+};
+
 const NewsPage = () => {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [slide, setSlide] = useState<SlideState>({ active: 0, previous: null, direction: 1 });
   const [paused, setPaused] = useState(false);
+  const [oldNewsPage, setOldNewsPage] = useState(0);
+  const oldNewsRef = useRef<HTMLElement>(null);
   // Becomes true after the first change (automatic or manual); from then on
   // each slide gets the full AUTOPLAY_MS.
   const startedRef = useRef(false);
@@ -86,6 +100,17 @@ const NewsPage = () => {
   const upcoming = Array.from({ length: newsArticles.length - 1 }, (_, i) =>
     newsArticles[wrap(slide.active + 1 + i)]
   );
+
+  const showOldNewsPage = (page: number) => {
+    if (page < 0 || page >= oldNewsPageCount || page === oldNewsPage) return;
+    setOldNewsPage(page);
+    // Bring the top of the section back into view, so the new cards are
+    // what the visitor sees rather than the space below them.
+    oldNewsRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  };
 
   const shareArticle = async () => {
     const url = `${window.location.origin}/news/${article.slug}`;
@@ -266,6 +291,110 @@ const NewsPage = () => {
           <span className="w-14 text-right font-brand text-4xl font-medium text-white md:text-5xl">
             {String(slide.active + 1).padStart(2, "0")}
           </span>
+        </div>
+      </section>
+
+      {/* Old news: older stories, as a grid under the slider. */}
+      <section
+        ref={oldNewsRef}
+        aria-labelledby="old-news-heading"
+        className="scroll-mt-[72px] bg-black px-6 pb-24 pt-16 md:px-12 md:pb-32 md:pt-20"
+      >
+        <div className="mx-auto max-w-7xl">
+          <span className="block h-0.5 w-8 bg-white" />
+          <h2
+            id="old-news-heading"
+            className="mt-3 font-brand text-[clamp(32px,4vw,56px)] font-medium uppercase leading-none text-white"
+          >
+            Old News
+          </h2>
+          <p className="mt-3 max-w-xl text-sm text-white/60 md:text-base">
+            Guides, product stories and ideas from earlier in the year.
+          </p>
+
+          <motion.div
+            key={oldNewsPage}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: EASE }}
+            className="mt-10 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 md:mt-12 lg:grid-cols-3"
+          >
+            {oldNewsArticles
+              .slice(oldNewsPage * OLD_NEWS_PER_PAGE, (oldNewsPage + 1) * OLD_NEWS_PER_PAGE)
+              .map((item) => (
+                <Link key={item.slug} to={`/news/${item.slug}`} className="group flex flex-col">
+                  <div className="relative h-56 overflow-hidden rounded-2xl md:h-64">
+                    <img
+                      src={item.image}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <span className="absolute left-4 top-4 rounded-full bg-black/55 px-3 py-1 font-brand text-xs text-white backdrop-blur-sm">
+                      {item.category}
+                    </span>
+                  </div>
+                  <p className="mt-4 font-brand text-xs text-white/60 md:text-sm">{item.date}</p>
+                  <h3 className="mt-1 font-brand text-xl font-medium uppercase leading-tight text-white transition-colors group-hover:text-amber-400 md:text-2xl">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/70">{item.excerpt}</p>
+                  <span className="mt-4 inline-flex items-center gap-2 font-brand text-sm font-medium uppercase tracking-wide text-white">
+                    Read More
+                    <span aria-hidden className="transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </span>
+                </Link>
+              ))}
+          </motion.div>
+
+          {oldNewsPageCount > 1 && (
+            <nav aria-label="Old news pages" className="mt-14 flex items-center justify-center gap-2 md:mt-16 md:gap-3">
+              <button
+                type="button"
+                onClick={() => showOldNewsPage(oldNewsPage - 1)}
+                disabled={oldNewsPage === 0}
+                aria-label="Previous page"
+                className="mr-1 flex h-9 w-7 items-center justify-center text-white transition-opacity hover:opacity-70 disabled:cursor-default disabled:opacity-30 md:mr-2"
+              >
+                <svg viewBox="0 0 20 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+                  <path d="M17 3.5v17a1.5 1.5 0 0 1-2.3 1.27L3 13.27a1.5 1.5 0 0 1 0-2.54L14.7 2.23A1.5 1.5 0 0 1 17 3.5Z" />
+                </svg>
+              </button>
+
+              {visiblePages(oldNewsPage, oldNewsPageCount).map((page) => {
+                const isCurrent = page === oldNewsPage;
+                return (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => showOldNewsPage(page)}
+                    aria-label={`Page ${page + 1}`}
+                    aria-current={isCurrent ? "page" : undefined}
+                    className={`flex h-8 w-8 items-center justify-center rounded-full border border-white font-brand text-sm font-semibold transition-colors md:h-9 md:w-9 md:text-base ${
+                      isCurrent ? "bg-white text-black" : "text-white hover:bg-white/15"
+                    }`}
+                  >
+                    {page + 1}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => showOldNewsPage(oldNewsPage + 1)}
+                disabled={oldNewsPage === oldNewsPageCount - 1}
+                aria-label="Next page"
+                className="ml-1 flex h-9 w-7 items-center justify-center text-white transition-opacity hover:opacity-70 disabled:cursor-default disabled:opacity-30 md:ml-2"
+              >
+                <svg viewBox="0 0 20 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+                  <path d="M3 3.5v17a1.5 1.5 0 0 0 2.3 1.27L17 13.27a1.5 1.5 0 0 0 0-2.54L5.3 2.23A1.5 1.5 0 0 0 3 3.5Z" />
+                </svg>
+              </button>
+            </nav>
+          )}
         </div>
       </section>
     </MotionConfig>
