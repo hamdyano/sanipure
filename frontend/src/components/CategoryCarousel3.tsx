@@ -3,77 +3,41 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion, useInView, type Variants } from "motion/react";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { useSlideAutoplay } from "../hooks/useSlideAutoplay";
-// Stock photos from Unsplash (free under the Unsplash License; they show
-// generic furniture, not Sanipure products):
-// vanity-units    https://unsplash.com/photos/modern-bathroom-with-oval-basin-chrome-faucet-and-backlit-mirror-l-50EzQH_3U (@thisismcfollis)
-// mirrors         https://unsplash.com/photos/modern-bathroom-vanity-with-sink-mirror-and-illuminated-lighting-xnJqPuuvW9g (@francotheshooter)
-// tall-units      https://unsplash.com/photos/a-large-bathroom-with-white-cabinets-and-tile-flooring-PT5jULHV0lA (@alextyson195)
-// open-shelves    https://unsplash.com/photos/a-bathroom-with-a-sink-mirror-and-shelves-6krDkhMya4I (@lisaanna195)
-// double-vanities https://unsplash.com/photos/modern-bathroom-with-double-sinks-and-freestanding-bathtub-j7Uv1Y_A7dY (@claybanks)
-import vanityUnitsImage from "../assets/furniture photos/vanity-units.jpg";
-import mirrorsImage from "../assets/furniture photos/mirrors.jpg";
-import tallUnitsImage from "../assets/furniture photos/tall-units.jpg";
-import openShelvesImage from "../assets/furniture photos/open-shelves.jpg";
-import doubleVanitiesImage from "../assets/furniture photos/double-vanities.jpg";
+import { CATEGORIES, type CarouselCategory } from "../data/categories";
 
-interface FurnitureItem {
-  id: string;
-  name: string;
-  /** Shown in giant faint letters behind the frame. */
+interface CategorySlide extends CarouselCategory {
+  /** Shown in giant faint letters behind the frame — kept to one short word,
+   *  since at this size a long name would run far off the page. */
   ghost: string;
+  /** First sentence of the description, shown large on the photo. */
   headline: string;
-  tip: string;
-  pairsWith: string;
-  image: string;
+  /** The rest of the description, shown in the "Good to know" side note. */
+  detail: string;
 }
 
-const items: FurnitureItem[] = [
-  {
-    id: "vanity-units",
-    name: "Vanity Units",
-    ghost: "Vanity",
-    headline: "Keep essentials hidden and the counter clear with a vanity built around your washbasin.",
-    tip: "Wall-hung units leave the floor open, making smaller bathrooms feel larger and easier to clean.",
-    pairsWith: "Countertop, over-counter and furniture washbasins",
-    image: vanityUnitsImage,
-  },
-  {
-    id: "mirrors",
-    name: "Mirrors & Lighting",
-    ghost: "Mirror",
-    headline: "A backlit mirror adds soft, even light at the washbasin and makes the whole room feel bigger.",
-    tip: "Choose a mirror slightly narrower than the vanity below it for a balanced look.",
-    pairsWith: "Wall-mounted and pedestal washbasins",
-    image: mirrorsImage,
-  },
-  {
-    id: "tall-units",
-    name: "Tall Units",
-    ghost: "Tall",
-    headline: "Use the height of the wall to keep towels, cleaning products, and spares out of sight.",
-    tip: "Place a tall unit beside the vanity to frame the washbasin area.",
-    pairsWith: "Floor-standing and furniture washbasins",
-    image: tallUnitsImage,
-  },
-  {
-    id: "open-shelves",
-    name: "Open Shelves",
-    ghost: "Shelves",
-    headline: "Keep everyday items within reach and add warmth with wood, baskets, and plants.",
-    tip: "Mix closed storage with a few open shelves to keep the room tidy but personal.",
-    pairsWith: "Wall-mounted washbasins and wall-hung toilets",
-    image: openShelvesImage,
-  },
-  {
-    id: "double-vanities",
-    name: "Double Vanities",
-    ghost: "Double",
-    headline: "Two basins on one vanity make busy mornings easier in family and master bathrooms.",
-    tip: "Leave enough space between the basins so two people can use them comfortably.",
-    pairsWith: "Countertop and under-counter washbasins",
-    image: doubleVanitiesImage,
-  },
-];
+const GHOST_WORDS: Record<string, string> = {
+  washbasins: "Basin",
+  toilets: "Toilet",
+  bathtubs: "Bath",
+  accessories: "Detail",
+  "public-bathrooms": "Public",
+  "bathroom-collection": "Suite",
+  "concealed-flush-tank": "Flush",
+};
+
+// Split a description after its first sentence: the opening line is short
+// enough to read big on the photo, the rest fits the smaller side note.
+const splitDescription = (description: string) => {
+  const end = description.indexOf(". ");
+  if (end === -1) return { headline: description, detail: "" };
+  return { headline: description.slice(0, end + 1), detail: description.slice(end + 2) };
+};
+
+const items: CategorySlide[] = CATEGORIES.map((category) => ({
+  ...category,
+  ghost: GHOST_WORDS[category.id] ?? category.name.split(" ")[0],
+  ...splitDescription(category.description),
+}));
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -106,7 +70,7 @@ const ghostVariants: Variants = {
 const dotGrid =
   "pointer-events-none absolute bg-[radial-gradient(circle,rgba(255,255,255,0.22)_1px,transparent_1.5px)] [background-size:18px_18px]";
 
-const BathroomFurniture = () => {
+const CategoryCarousel3 = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef);
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -135,7 +99,7 @@ const BathroomFurniture = () => {
       <section
         ref={sectionRef}
         aria-roledescription="carousel"
-        aria-labelledby="bathroom-furniture-heading"
+        aria-labelledby="category-carousel-3-heading"
         className="relative mb-20 flex min-h-[640px] w-full items-center overflow-hidden bg-[#0b0b0b] py-16 md:mb-28 md:h-screen md:py-0"
       >
         {/* Giant faint word behind everything */}
@@ -169,31 +133,37 @@ const BathroomFurniture = () => {
           >
             <div className="absolute left-[3vw] top-[30%] w-[13vw] max-w-[220px]">
               <p className="font-brand text-xs uppercase tracking-[0.2em] text-white/40">Good to know</p>
-              <p className="mt-3 text-xs leading-relaxed text-white/70">{item.tip}</p>
+              <p className="mt-3 text-xs leading-relaxed text-white/70">{item.detail}</p>
             </div>
             <div className="pointer-events-auto absolute right-[3vw] top-[30%] w-[13vw] max-w-[220px]">
-              <p className="font-brand text-xs uppercase tracking-[0.2em] text-white/40">Pairs with</p>
-              <p className="mt-3 text-xs leading-relaxed text-white/70">{item.pairsWith}</p>
+              <p className="font-brand text-xs uppercase tracking-[0.2em] text-white/40">Explore</p>
+              <p className="mt-3 text-xs leading-relaxed text-white/70">{item.name}</p>
               <Link
-                to="/products/washbasins/categories"
+                to={item.href}
                 className="mt-4 inline-block font-brand text-xs uppercase tracking-wide text-white underline-offset-4 hover:underline"
               >
-                Explore washbasins
+                View all products
               </Link>
             </div>
           </motion.div>
         </AnimatePresence>
 
         <div className="relative mx-auto w-full px-4 md:w-[min(76vw,1100px)] md:px-0 xl:w-[min(66vw,1100px)]">
-          {/* Top bar: section name and one tab per furniture type */}
-          <div className="mb-4 flex flex-col gap-3 md:mb-5 md:flex-row md:items-end md:justify-between">
+          {/* Top bar: section name and one tab per category. Seven tabs are
+              too many to fit beside the heading, so they get their own row
+              under it: spread across the frame on wide screens, wrapping on
+              tablets, scrolling sideways on phones. */}
+          <div className="mb-4 flex flex-col gap-3 md:mb-5">
             <h2
-              id="bathroom-furniture-heading"
-              className="font-brand text-sm uppercase tracking-[0.2em] text-white/90"
+              id="category-carousel-3-heading"
+              className="shrink-0 font-brand text-sm uppercase tracking-[0.2em] text-white/90"
             >
-              Bathroom Furniture
+              Our Categories
             </h2>
-            <div className="-mx-4 flex gap-5 overflow-x-auto px-4 md:mx-0 md:px-0" role="tablist">
+            <div
+              className="-mx-4 flex gap-5 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:gap-x-6 md:gap-y-2 md:overflow-visible md:px-0 xl:justify-between"
+              role="tablist"
+            >
               {items.map((entry, i) => (
                 <button
                   key={entry.id}
@@ -245,6 +215,22 @@ const BathroomFurniture = () => {
                   <p className="mt-4 max-w-md font-brand text-lg leading-snug text-white/90 md:text-2xl">
                     {item.headline}
                   </p>
+                  {/* Same divider and "View All Products" button as
+                      CategoryCarousel2's title block. */}
+                  <motion.span
+                    aria-hidden
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2, ease: EASE }}
+                    className="mt-5 block h-0.5 w-12 origin-left bg-white"
+                  />
+                  <Link
+                    to={item.href}
+                    className="mt-3 inline-flex w-fit items-center gap-2 font-brand text-base text-white/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.6)] hover:text-white md:text-lg"
+                  >
+                    View All Products
+                    <span aria-hidden>→</span>
+                  </Link>
                   <div className="mt-8 flex items-center gap-4 font-brand text-xs tracking-[0.5em] text-white/80">
                     <span>01</span>
                     <span className="relative h-px w-28 bg-white/25 md:w-40">
@@ -264,7 +250,7 @@ const BathroomFurniture = () => {
             <button
               type="button"
               onClick={() => goTo(slide.index - 1, -1)}
-              aria-label="Previous furniture type"
+              aria-label="Previous category"
               className="absolute bottom-4 left-4 z-10 flex h-10 w-10 md:bottom-auto md:top-1/2 md:-translate-y-1/2 items-center justify-center border border-white/30 bg-black/50 text-white transition-colors hover:bg-white hover:text-black md:left-0 md:-translate-x-1/2"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
@@ -274,7 +260,7 @@ const BathroomFurniture = () => {
             <button
               type="button"
               onClick={() => goTo(slide.index + 1, 1)}
-              aria-label="Next furniture type"
+              aria-label="Next category"
               className="absolute bottom-4 right-4 z-10 flex h-10 w-10 md:bottom-auto md:top-1/2 md:-translate-y-1/2 items-center justify-center border border-white/30 bg-black/50 text-white transition-colors hover:bg-white hover:text-black md:right-0 md:translate-x-1/2"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
@@ -288,4 +274,4 @@ const BathroomFurniture = () => {
   );
 };
 
-export default BathroomFurniture;
+export default CategoryCarousel3;

@@ -6,14 +6,14 @@
    point — Lightning CSS then silently drops it, so no font ever loads. */
 @theme {
   --font-brand: "Fira Sans Condensed", ui-sans-serif, system-ui, sans-serif;
-  /* Bathroom Sets section: classic serif titles with a softer serif accent. */
+  /* Design section: classic serif titles with a softer serif accent. */
   --font-heading: "Cinzel", ui-serif, Georgia, serif;
   --font-accent: "Cormorant Garamond", ui-serif, Georgia, serif;
   --color-copper: #d98a3d;
 }
 
-/* Slow push-in on the Bathroom Sets background while a slide is showing. */
-@keyframes sets-zoom {
+/* Slow push-in on the Design section background while a slide is showing. */
+@keyframes design-zoom {
   from {
     transform: scale(1);
   }

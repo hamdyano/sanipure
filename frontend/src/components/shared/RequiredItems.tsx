@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ProductRequiredItem } from "../../api/clientApi";
+import ItemTile, { ItemSectionTitle } from "./ItemTile";
 
 // Popup with a required item's photos (main image + thumbnails) and details.
 // Closes on the backdrop, the × button, or Escape.
@@ -93,48 +94,27 @@ const RequiredItemModal = ({
   );
 };
 
-// "Required Items" list on a product's detail page — each row opens the
-// item's popup.
+// "Required Items" grid on a product's detail page — each item's "See More"
+// opens its popup.
 const RequiredItems = ({ items }: { items: ProductRequiredItem[] }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const openItem = openIndex === null ? null : items[openIndex];
 
   return (
-    <div className="mt-10">
-      <h2 className="border-b border-white/40 pb-3 text-lg font-medium text-white">
-        Required Items
-      </h2>
+    <section>
+      <ItemSectionTitle>Required Items</ItemSectionTitle>
 
-      <ul>
+      <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item, index) => (
-          <li key={`${item.name}-${index}`} className="border-b border-white/15">
-            <button
-              type="button"
-              onClick={() => setOpenIndex(index)}
-              className="group flex w-full items-start gap-5 py-5 text-left"
-            >
-              <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded bg-white">
-                {item.images?.[0] ? (
-                  <img src={item.images[0]} alt="" className="h-full w-full object-contain" />
-                ) : (
-                  <span className="text-[10px] text-black/30">No image</span>
-                )}
-              </span>
-              <span className="flex min-w-0 flex-col gap-2">
-                <span className="text-base text-white underline underline-offset-4 transition-colors group-hover:text-white/70">
-                  {item.name}
-                </span>
-                {item.color && (
-                  <span className="text-sm text-white/70">Color/Finish: {item.color}</span>
-                )}
-                {item.quantity && (
-                  <span className="text-sm text-white/70">Qty: {item.quantity}</span>
-                )}
-              </span>
-            </button>
-          </li>
+          <ItemTile
+            key={`${item.name}-${index}`}
+            name={item.name}
+            image={item.images?.[0]}
+            productCode={item.productCode}
+            onSeeMore={() => setOpenIndex(index)}
+          />
         ))}
-      </ul>
+      </div>
 
       {openItem && (
         <RequiredItemModal
@@ -143,7 +123,7 @@ const RequiredItems = ({ items }: { items: ProductRequiredItem[] }) => {
           onClose={() => setOpenIndex(null)}
         />
       )}
-    </div>
+    </section>
   );
 };
 

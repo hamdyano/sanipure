@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import RevealSection from "../components/shared/RevealSection";
+import CategoryPageHeader from "../components/shared/CategoryPageHeader";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import heroImage from "../assets/toilets shop photos/hero section.jpg";
 import toiletsImage from "../assets/categories photos/Toilets photo.jpg";
@@ -25,23 +25,11 @@ interface CatalogResponse {
   products: Product[];
 }
 
-// The subcategory tabs. `values` holds the exact option string(s) the admin
-// dashboard's "Type" dropdown submits (see ToiletsShop.ts filters) so a tab
-// reliably matches products saved with that value, regardless of the
-// friendlier label shown to shoppers.
-const subCategories: { name: string; filterId: string; values: string[] }[] = [
-  { name: "Floor-Standing", filterId: "type", values: ["Floor Standing"] },
-  { name: "Wall-Mounted", filterId: "type", values: ["Wall hung"] },
-];
-
-const ALL_TAB = "All";
-
 const ToiletsCategoriesPage = () => {
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Record<string, string[]>>({});
-  const [activeTab, setActiveTab] = useState<string>(ALL_TAB);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -92,16 +80,6 @@ const ToiletsCategoriesPage = () => {
       return options.includes(value as string);
     });
 
-  const matchesTab = (product: Product) => {
-    const tab = subCategories.find((s) => s.name === activeTab);
-    if (!tab) return true;
-    const raw = product[tab.filterId];
-    const productValues = Array.isArray(raw) ? raw : typeof raw === "string" ? [raw] : [];
-    return productValues.some((v) =>
-      tab.values.some((tv) => tv.toLowerCase() === v.trim().toLowerCase())
-    );
-  };
-
   const matchesSearch = (product: Product) => {
     const query = search.trim().toLowerCase();
     if (!query) return true;
@@ -110,14 +88,14 @@ const ToiletsCategoriesPage = () => {
 
   const filteredProducts =
     catalog?.products.filter(
-      (product) => matchesFilters(product, selected) && matchesTab(product) && matchesSearch(product)
+      (product) => matchesFilters(product, selected) && matchesSearch(product)
     ) ?? [];
 
   const getCount = (filterId: string, option: string) => {
     if (!catalog) return 0;
     return catalog.products.filter((product) => {
       if (!matchesFilters(product, selected, filterId)) return false;
-      if (!matchesTab(product) || !matchesSearch(product)) return false;
+      if (!matchesSearch(product)) return false;
       const value = product[filterId];
       return Array.isArray(value) ? value.includes(option) : value === option;
     }).length;
@@ -125,63 +103,15 @@ const ToiletsCategoriesPage = () => {
 
   return (
     <>
-      <section className="relative flex h-[60vh] min-h-[420px] w-full items-center justify-center overflow-hidden bg-black md:h-[70vh]">
-        <img
-          src={heroImage}
-          alt="Toilets by Sanipure"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/55" />
-        <RevealSection className="relative z-10 px-6 text-center">
-          <h1 className="text-4xl font-semibold text-white md:text-5xl">
-            Toilets
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-white/80">
-            Choose a category to explore our range of toilets.
-          </p>
-        </RevealSection>
-      </section>
-
-      <section className="bg-black px-6 pb-6 pt-6 lg:px-12">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 rounded-[2rem] bg-white p-2 shadow-lg sm:flex-row sm:items-center sm:gap-2">
-          <div className="flex flex-1 flex-wrap items-center gap-1 overflow-x-auto px-1 py-1 sm:flex-nowrap">
-            {[ALL_TAB, ...subCategories.map((s) => s.name)].map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  activeTab === tab
-                    ? "bg-black text-white"
-                    : "text-black/70 hover:bg-black/5"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 sm:w-56">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              className="h-4 w-4 shrink-0 text-black/50"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.5-3.5" strokeLinecap="round" />
-            </svg>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search…"
-              className="w-full bg-transparent text-sm text-black placeholder:text-black/40 focus:outline-none"
-            />
-          </div>
-        </div>
-      </section>
+      <CategoryPageHeader
+        categoryId="toilets"
+        title="Toilets"
+        subtitle="Choose a category to explore our range of toilets."
+        image={heroImage}
+        imageAlt="Toilets by Sanipure"
+        search={search}
+        onSearchChange={setSearch}
+      />
 
       <section className="mx-auto my-10 grid max-w-7xl grid-cols-1 gap-10 px-6 md:my-14 lg:grid-cols-[240px_1fr] lg:px-12">
         <aside className="lg:sticky lg:top-24 lg:self-start">
