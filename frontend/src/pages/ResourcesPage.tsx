@@ -9,6 +9,7 @@ import priceListsImage from "../assets/washbasins shop photos/hero section.jpg";
 import technicalImage from "../assets/Resources photos/Technical Documents.png";
 import platformsImage from "../assets/articles photos/article 3.jpg";
 import guidesImage from "../assets/Resources photos/Guides.jpg";
+import needSomethingElseImage from "../assets/Resources photos/Need Something Else.jpg";
 
 interface Resource {
   id: string;
@@ -162,10 +163,13 @@ const ResourcesPage = () => {
         ref={heroRef}
         aria-roledescription="carousel"
         aria-label="Sanipure resources"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocus={() => setPaused(true)}
-        onBlur={() => setPaused(false)}
+        // The hero fills the screen, so pausing on hover (or on a clicked
+        // button keeping focus) would stop it almost all the time. Only
+        // keyboard focus pauses it, so the slide can be read while tabbing.
+        onFocus={(event) => setPaused(event.target.matches(":focus-visible"))}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
+        }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         className="relative h-[calc(100svh-72px)] min-h-[560px] overflow-hidden bg-black"
@@ -401,20 +405,31 @@ const ResourcesPage = () => {
 
       {/* Call to action */}
       <section className="px-6 pb-24 md:pb-32">
-        <RevealSection className="mx-auto max-w-6xl bg-[#232323] px-6 py-14 text-center md:py-20">
-          <p className={outlinedLabel}>Need Something Else?</p>
-          <h2 className="mt-1 font-brand text-3xl font-semibold leading-tight text-white md:text-5xl">
-            Can't Find What You're Looking For?
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/70 md:text-base">
-            Our team is happy to help with any document, file or detail your project needs.
-          </p>
-          <Link
-            to="/contact-us"
-            className="mt-8 inline-block rounded-full bg-white px-7 py-3 text-sm font-medium text-black transition-colors hover:bg-white/85"
-          >
-            Contact Us
-          </Link>
+        <RevealSection className="relative mx-auto max-w-6xl overflow-hidden px-6 py-16 text-center md:py-24">
+          {/* The photo has white bands top and bottom; the wide banner crops
+              them off on its own, but narrower screens show more of the
+              height, so it's zoomed in there to keep them out of view. */}
+          <img
+            src={needSomethingElseImage}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-[1.35] object-cover md:scale-100"
+          />
+          <div className="absolute inset-0 bg-black/65" />
+          <div className="relative">
+            <p className={outlinedLabel}>Need Something Else?</p>
+            <h2 className="mt-1 font-brand text-3xl font-semibold leading-tight text-white md:text-5xl">
+              Can't Find What You're Looking For?
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/80 md:text-base">
+              Our team is happy to help with any document, file or detail your project needs.
+            </p>
+            <Link
+              to="/contact-us"
+              className="mt-8 inline-block rounded-full bg-white px-7 py-3 text-sm font-medium text-black transition-colors hover:bg-white/85"
+            >
+              Contact Us
+            </Link>
+          </div>
         </RevealSection>
       </section>
     </div>
