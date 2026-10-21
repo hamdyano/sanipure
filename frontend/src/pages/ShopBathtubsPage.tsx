@@ -77,7 +77,7 @@ const ShopBathtubsPage = () => {
       if (Array.isArray(value)) {
         return value.some((v) => options.includes(v));
       }
-      return options.includes(value);
+      return typeof value === "string" && options.includes(value);
     });
 
   const filteredProducts =
@@ -133,6 +133,9 @@ const ShopBathtubsPage = () => {
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3">
             {filteredProducts.map((product) => {
               const colors = product.display?.colors ?? [];
+              const summary = [product.series, product.type, product.shape, product.color]
+                .filter((value): value is string => typeof value === "string" && value !== "")
+                .join(" · ");
               return (
                 <div key={product.id} className="flex flex-col">
                   <Link
@@ -149,9 +152,9 @@ const ShopBathtubsPage = () => {
                     <h4 className="mt-4 text-base font-medium text-white">
                       {product.name}
                     </h4>
-                    <p className="mt-1 text-sm text-white/60">
-                      {product.series} · {product.type} · {product.shape} · {product.color}
-                    </p>
+                    {summary && (
+                      <p className="mt-1 text-sm text-white/60">{summary}</p>
+                    )}
                     {Array.isArray(product.extra) && product.extra.length > 0 && (
                       <p className="mt-1 text-xs uppercase tracking-wide text-white/40">
                         {product.extra.join(" · ")}

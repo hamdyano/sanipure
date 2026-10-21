@@ -20,8 +20,8 @@ const productLinks = [
   { label: "Toilets", to: "/products/toilets" },
   { label: "Washbasins", to: "/products/washbasins" },
   { label: "Bathtubs", to: "/products/bathtubs" },
-  { label: "Shower Trays", to: "/products/shower-trays" },
-  { label: "Public Toilets", to: "/products/public-toilets" },
+  { label: "Shower Trays", to: "/products/bathtubs" },
+  { label: "Public Toilets", to: "/products/public-bathrooms" },
   { label: "Accessories", to: "/products/accessories" },
 ];
 

@@ -151,7 +151,7 @@ export const getProduct = async (
 
 // ---------------------------------------------------------------------------
 // Auth (used by the Admin sign-in / sign-up forms)
-// Not implemented on the backend yet — no /api/auth/* routes exist.
+// Backed by POST /api/auth/signin and /api/auth/signup (backend/src/auth.ts).
 // ---------------------------------------------------------------------------
 
 export interface SignInInput {

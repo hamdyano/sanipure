@@ -21,6 +21,7 @@ import BathtubProductPage from "./pages/BathtubProductPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import NewsPage from "./pages/NewsPage";
 import NewsArticlePage from "./pages/NewsArticlePage";
+import ResourcesPage from "./pages/ResourcesPage";
 import FindUsPage from "./pages/FindUsPage";
 import AdminPage from "./pages/AdminPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -156,6 +157,14 @@ const App = () => {
           element={
             <Layout>
               <NewsArticlePage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/resources"
+          element={
+            <Layout>
+              <ResourcesPage />
             </Layout>
           }
         />

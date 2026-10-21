@@ -16,6 +16,7 @@ import {
   getMyProducts,
   getProductById,
   updateProduct,
+  uploadDesignFile,
   uploadImage,
   upload,
   uploadFile,
@@ -55,9 +56,26 @@ const productCatalog: Record<string, CatalogEntry> = {
   toilets: toiletsShop,
 };
 
+// Own keys only, so a slug like "constructor" or "__proto__" doesn't resolve
+// to something inherited from Object.prototype.
+const getCatalog = (category: string): CatalogEntry | undefined =>
+  Object.prototype.hasOwnProperty.call(productCatalog, category)
+    ? productCatalog[category]
+    : undefined;
+
+// Products can only be added to one of the shop categories above —
+// otherwise createProduct would create a Category row for any slug sent.
+const requireKnownCategory = (req: Request, res: Response, next: NextFunction) => {
+  if (!getCatalog(String(req.params.category))) {
+    res.status(404).json({ message: `Unknown category "${req.params.category}"` });
+    return;
+  }
+  next();
+};
+
 app.get("/api/products", async (req, res) => {
   const category = String(req.query.category || "");
-  const catalog = productCatalog[category];
+  const catalog = getCatalog(category);
   if (!catalog) {
     res.status(404).json({ message: `No catalog for category "${category}"` });
     return;
@@ -82,9 +100,9 @@ app.post(
   "/api/products/upload-file",
   requireAuth,
   uploadFile.single("file"),
-  uploadImage
+  uploadDesignFile
 );
-app.post("/api/products/:category", requireAuth, createProduct);
+app.post("/api/products/:category", requireAuth, requireKnownCategory, createProduct);
 app.get("/api/products/:category/:id", getProductById);
 app.put("/api/products/:category/:id", requireAuth, updateProduct);
 app.delete("/api/products/:category/:id", requireAuth, deleteProduct);

@@ -16,11 +16,16 @@ const toPublicUser = (user: { id: string; username: string; email: string }) => 
   email: user.email,
 });
 
+// Request bodies are untrusted JSON — a number or object here would otherwise
+// reach bcrypt/Prisma and surface as a 500 instead of a 400.
+const isFilledString = (value: unknown): value is string =>
+  typeof value === "string" && value !== "";
+
 export const signUp = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body ?? {};
 
-    if (!username || !email || !password) {
+    if (!isFilledString(username) || !isFilledString(email) || !isFilledString(password)) {
       res.status(400).json({ message: "username, email, and password are required" });
       return;
     }
@@ -52,7 +57,7 @@ export const signIn = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body ?? {};
 
-    if (!email || !password) {
+    if (!isFilledString(email) || !isFilledString(password)) {
       res.status(400).json({ message: "email and password are required" });
       return;
     }

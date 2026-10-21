@@ -14,19 +14,41 @@ export const upload = multer({
 
 // Larger limit for the "For Display" product spec sheet upload — real
 // design/spec PDFs (often with embedded diagrams or scans) run bigger than
-// a single photo. Reuses the same uploadImage handler below — it just reads
-// req.file, so field name/mimetype don't matter to it.
+// a single photo. Handled by uploadDesignFile below.
 export const uploadFile = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 20 * 1024 * 1024 },
 });
 
+// Raster formats only — an SVG (or HTML, etc.) can carry script, and the
+// bucket serves files publicly with whatever content type was uploaded.
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+const ALLOWED_DESIGN_FILE_TYPES = ["application/pdf"];
+
+// Every URL a product stores (photo, gallery, colors, design file) must be a
+// plain http(s) link — anything else (e.g. "javascript:") is dropped.
+const httpUrl = (value: unknown): string | undefined => {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : undefined;
+};
+
+// Keys the API itself sets on every product response ({ id, name, ...attributes }),
+// so a submitted attribute must never be stored under one of them.
+const RESERVED_ATTRIBUTE_KEYS = new Set(["id", "name", "display"]);
+
 const parseAttributes = (rawAttributes: Record<string, unknown>) => {
   const attributes: Record<string, string> = {};
   for (const [key, value] of Object.entries(rawAttributes)) {
+    if (RESERVED_ATTRIBUTE_KEYS.has(key)) continue;
     if (typeof value === "string" && value.trim() !== "") {
       attributes[key] = value;
     }
+  }
+  if ("image" in attributes) {
+    const image = httpUrl(attributes.image);
+    if (image) attributes.image = image;
+    else delete attributes.image;
   }
   return attributes;
 };
@@ -75,7 +97,8 @@ const sanitizeRequiredItems = (raw: unknown): ProductRequiredItem[] => {
     .map((item) => {
       const images = Array.isArray(item.images)
         ? item.images
-            .filter((i): i is string => typeof i === "string" && i.trim() !== "")
+            .map(httpUrl)
+            .filter((i): i is string => i !== undefined)
             .slice(0, MAX_REQUIRED_ITEM_IMAGES)
         : [];
       const fields = {
@@ -109,17 +132,21 @@ const sanitizeDisplay = (raw: unknown): ProductDisplay | undefined => {
   if (Array.isArray(src.colors)) {
     const colors = src.colors
       .filter((c): c is Record<string, unknown> => !!c && typeof c === "object")
-      .map((c) => ({
-        name: typeof c.name === "string" ? c.name.trim() : "",
-        ...(typeof c.image === "string" && c.image.trim() ? { image: c.image.trim() } : {}),
-      }))
+      .map((c) => {
+        const image = httpUrl(c.image);
+        return {
+          name: typeof c.name === "string" ? c.name.trim() : "",
+          ...(image ? { image } : {}),
+        };
+      })
       .filter((c) => c.name || c.image);
     if (colors.length) display.colors = colors;
   }
 
   if (Array.isArray(src.images)) {
     const images = src.images
-      .filter((i): i is string => typeof i === "string" && i.trim() !== "")
+      .map(httpUrl)
+      .filter((i): i is string => i !== undefined)
       .slice(0, 5);
     if (images.length) display.images = images;
   }
@@ -134,9 +161,8 @@ const sanitizeDisplay = (raw: unknown): ProductDisplay | undefined => {
     if (sizes.length) display.sizes = sizes;
   }
 
-  if (typeof src.designFile === "string" && src.designFile.trim()) {
-    display.designFile = src.designFile.trim();
-  }
+  const designFile = httpUrl(src.designFile);
+  if (designFile) display.designFile = designFile;
 
   const requiredItems = sanitizeRequiredItems(src.requiredItems);
   if (requiredItems.length) display.requiredItems = requiredItems;
@@ -144,60 +170,102 @@ const sanitizeDisplay = (raw: unknown): ProductDisplay | undefined => {
   return Object.keys(display).length ? display : undefined;
 };
 
-// Best-effort cleanup of a previously-uploaded Supabase Storage object when
-// it's replaced or the product is deleted — a leftover file isn't worth
-// failing the request over, so errors here are only logged.
-const deleteStorageObject = async (imageUrl: string) => {
-  const marker = `/object/public/${PRODUCT_IMAGES_BUCKET}/`;
-  const index = imageUrl.indexOf(marker);
-  if (index === -1) return;
+// Every uploaded file a product's attributes point at: its main photo plus,
+// under "display", gallery photos, color photos, the design file and each
+// required item's photos. Defensive about shape since older rows may differ.
+const collectFileUrls = (attributes: unknown): Set<string> => {
+  const urls = new Set<string>();
+  const add = (value: unknown) => {
+    if (typeof value === "string" && value) urls.add(value);
+  };
+  const list = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+  const field = (value: unknown, key: string): unknown =>
+    value && typeof value === "object" ? (value as Record<string, unknown>)[key] : undefined;
 
-  const objectPath = imageUrl.slice(index + marker.length);
+  add(field(attributes, "image"));
+  const display = field(attributes, "display");
+  list(field(display, "images")).forEach(add);
+  list(field(display, "colors")).forEach((color) => add(field(color, "image")));
+  add(field(display, "designFile"));
+  list(field(display, "requiredItems")).forEach((item) =>
+    list(field(item, "images")).forEach(add)
+  );
+  return urls;
+};
+
+// Best-effort cleanup of previously-uploaded Supabase Storage objects once
+// they're no longer referenced (replaced, removed, or the product deleted) —
+// a leftover file isn't worth failing the request over, so errors here are
+// only logged. URLs that aren't from our bucket are ignored.
+const deleteStorageObjects = async (urls: Iterable<string>) => {
+  const marker = `/object/public/${PRODUCT_IMAGES_BUCKET}/`;
+  const objectPaths: string[] = [];
+  for (const url of urls) {
+    const index = url.indexOf(marker);
+    if (index !== -1) objectPaths.push(url.slice(index + marker.length));
+  }
+  if (!objectPaths.length) return;
+
   const { error } = await supabase.storage
     .from(PRODUCT_IMAGES_BUCKET)
-    .remove([objectPath]);
+    .remove(objectPaths);
   if (error) {
-    console.error("Failed to delete old product image from storage:", error);
+    console.error("Failed to delete old product files from storage:", error);
   }
 };
 
-// Uploads a single image file to the product-images Supabase Storage bucket
-// and returns its public URL. Used by the admin product form before
+// Uploads a single file to the product-images Supabase Storage bucket and
+// returns its public URL. Used by the admin product form before
 // create/update, decoupled from saving the product itself.
-export const uploadImage = async (req: AuthedRequest, res: Response) => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ message: "No image file was provided" });
-      return;
+const makeUploadHandler =
+  (allowedTypes: string[], wrongTypeMessage: string) =>
+  async (req: AuthedRequest, res: Response) => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ message: "No file was provided" });
+        return;
+      }
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        res.status(400).json({ message: wrongTypeMessage });
+        return;
+      }
+
+      // Only keep a plain extension like ".jpg" from the client's file name.
+      const ext = /\.[a-z0-9]{1,8}$/i.exec(req.file.originalname)?.[0] ?? "";
+      const objectPath = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+
+      const { error } = await supabase.storage
+        .from(PRODUCT_IMAGES_BUCKET)
+        .upload(objectPath, req.file.buffer, {
+          contentType: req.file.mimetype,
+        });
+
+      if (error) {
+        console.error("Supabase Storage upload failed:", error);
+        res.status(500).json({ message: "Failed to upload file" });
+        return;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(objectPath);
+
+      res.status(201).json({ url: publicUrl });
+    } catch (err) {
+      console.error("upload failed:", err);
+      res.status(500).json({ message: "Something went wrong uploading the file" });
     }
+  };
 
-    const ext = req.file.originalname.includes(".")
-      ? req.file.originalname.slice(req.file.originalname.lastIndexOf("."))
-      : "";
-    const objectPath = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+export const uploadImage = makeUploadHandler(
+  ALLOWED_IMAGE_TYPES,
+  "Please choose a JPG, PNG, WEBP, GIF or AVIF image."
+);
 
-    const { error } = await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .upload(objectPath, req.file.buffer, {
-        contentType: req.file.mimetype,
-      });
-
-    if (error) {
-      console.error("Supabase Storage upload failed:", error);
-      res.status(500).json({ message: "Failed to upload image" });
-      return;
-    }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(objectPath);
-
-    res.status(201).json({ url: publicUrl });
-  } catch (err) {
-    console.error("uploadImage failed:", err);
-    res.status(500).json({ message: "Something went wrong uploading the image" });
-  }
-};
+export const uploadDesignFile = makeUploadHandler(
+  ALLOWED_DESIGN_FILE_TYPES,
+  "Please choose a PDF file."
+);
 
 // Creates a product under the given category (from the route param), taking
 // whatever attribute fields were submitted (all optional — filter selects the
@@ -249,9 +317,10 @@ export const createProduct = async (req: AuthedRequest, res: Response) => {
 };
 
 // Updates a product, but only if the signed-in user is the one who created
-// it. "image" in the body is expected to be either the existing public URL
-// (unchanged) or a new one from uploadImage; if it changed, the old Supabase
-// Storage object is cleaned up.
+// it. File URLs in the body are expected to be either the existing public
+// URLs (unchanged) or new ones from uploadImage/uploadDesignFile; once the
+// update is saved, any old Supabase Storage object no longer referenced is
+// cleaned up.
 export const updateProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const id = String(req.params.id);
@@ -275,21 +344,18 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
     const display = sanitizeDisplay(rawDisplay);
     if (display) attributes.display = display;
 
-    const existingAttributes = existing.attributes as Record<string, string>;
-
-    if (
-      existingAttributes.image &&
-      attributes.image &&
-      attributes.image !== existingAttributes.image
-    ) {
-      await deleteStorageObject(existingAttributes.image);
-    }
-
     const updated = await prisma.product.update({
       where: { id },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: { name: name.trim(), attributes: attributes as any },
     });
+
+    // Only after the save succeeds, so a failed update never leaves the
+    // product pointing at files that were already deleted.
+    const stillUsed = collectFileUrls(updated.attributes);
+    await deleteStorageObjects(
+      [...collectFileUrls(existing.attributes)].filter((url) => !stillUsed.has(url))
+    );
 
     res.json({
       id: updated.id,
@@ -303,7 +369,7 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
 };
 
 // Deletes a product, but only if the signed-in user is the one who created
-// it. Also removes its uploaded image from Supabase Storage, if any.
+// it. Also removes all of its uploaded files from Supabase Storage.
 export const deleteProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const id = String(req.params.id);
@@ -319,10 +385,7 @@ export const deleteProduct = async (req: AuthedRequest, res: Response) => {
 
     await prisma.product.delete({ where: { id } });
 
-    const existingAttributes = existing.attributes as Record<string, string>;
-    if (existingAttributes.image) {
-      await deleteStorageObject(existingAttributes.image);
-    }
+    await deleteStorageObjects(collectFileUrls(existing.attributes));
 
     res.json({ message: "Product deleted" });
   } catch (err) {

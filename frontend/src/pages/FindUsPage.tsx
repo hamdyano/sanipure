@@ -1,9 +1,10 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
 import { showErrorToast, showSuccessToast } from "../lib/toast";
 import heroImage from "../assets/who we are photos/Factory 1.png";
-import projectImage from "../assets/projects photos/project 1.JPG";
+// Arkan 205 — same photo as on the Projects page.
+import projectImage from "../assets/projects photos/project 3.JPG";
 
 const CONTACT_EMAIL = "info@sanipure-eg.com";
 
@@ -93,7 +94,15 @@ const outlinedLabel =
   "font-brand text-lg font-bold text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.7)] md:text-xl";
 
 const FindUsPage = () => {
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  // Links like the Resources page's "Request a Catalog" pass ?subject= to
+  // start the message with what the visitor is asking for.
+  const [searchParams] = useSearchParams();
+  const [form, setForm] = useState(() => ({
+    name: "",
+    email: "",
+    subject: searchParams.get("subject") ?? "",
+    message: "",
+  }));
   const [mapId, setMapId] = useState<LocationId>("hq");
 
   const update = (field: keyof typeof form) => (value: string) =>

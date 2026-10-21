@@ -155,21 +155,25 @@ const ProductManager = ({
     }
   };
 
+  // Initial load. Both loading flags already start as true, so nothing is set
+  // synchronously here; the cancelled flag keeps a StrictMode double-run (or
+  // an unmount mid-request) from setting state or toasting twice.
   useEffect(() => {
-    loadMine();
-    (async () => {
-      setLoadingFilters(true);
-      try {
-        const catalog = await api.getAll();
-        setFilters(catalog.filters);
-      } catch (err) {
-        reportError(err);
-      } finally {
-        setLoadingFilters(false);
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    let cancelled = false;
+    api
+      .getMine()
+      .then((mine) => !cancelled && setMyProducts(mine))
+      .catch((err) => !cancelled && reportError(err))
+      .finally(() => !cancelled && setLoadingMine(false));
+    api
+      .getAll()
+      .then((catalog) => !cancelled && setFilters(catalog.filters))
+      .catch((err) => !cancelled && reportError(err))
+      .finally(() => !cancelled && setLoadingFilters(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [api]);
 
   const resetForm = () => {
     setEditingId(null);
