@@ -18,7 +18,7 @@ const navItems = [
   { label: "Projects", to: "/projects" },
   { label: "News", to: "/news" },
   { label: "Resources", to: "/resources" },
-  { label: "Find Us", to: "/find-us" },
+  { label: "Contact Us", to: "/contact-us" },
 ];
 
 const Header = () => {

@@ -99,7 +99,7 @@ const requestLink = (resource: Resource) =>
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-// Thin outlined lettering for the small labels above headings, as on Find Us.
+// Thin outlined lettering for the small labels above headings, as on Contact Us.
 const outlinedLabel =
   "font-brand text-lg font-bold text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.7)] md:text-xl";
 

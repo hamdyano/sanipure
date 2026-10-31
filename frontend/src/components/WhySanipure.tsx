@@ -45,8 +45,6 @@ const WhySanipure = () => {
       </RevealSection>
 
       <div className="relative pb-20 md:pb-32">
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-[#2e2e2e] md:h-28" />
-
         <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-3 items-center gap-4 px-6 md:gap-8 md:px-10">
           {images.map((image, index) => (
             <DirectionalReveal key={image.alt} direction="up" delay={index * 0.1}>

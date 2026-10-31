@@ -8,23 +8,17 @@ import projectImage from "../assets/projects photos/project 3.JPG";
 
 const CONTACT_EMAIL = "info@sanipure-eg.com";
 
-// Same places as the footer's location links. Each map is embedded by its
-// Google Maps place id (cid, read from those links), so it shows the pin and
-// the place's own card with its name and address.
+// Same places as the footer's location links.
 const locations = {
   hq: {
     label: "Head Quarters",
     mapsUrl: "https://maps.app.goo.gl/SH1X8QyuMLeNyZ3J9",
-    embedUrl: "https://maps.google.com/maps?cid=4836581143482261441&z=16&output=embed",
   },
   factory: {
     label: "Factory",
     mapsUrl: "https://maps.app.goo.gl/YC6qkUwULUoKTP359",
-    embedUrl: "https://maps.google.com/maps?cid=1647109058578589726&z=15&output=embed",
   },
 } as const;
-
-type LocationId = keyof typeof locations;
 
 const iconProps = {
   viewBox: "0 0 24 24",
@@ -86,9 +80,20 @@ const contactItems: { title: string; detail: string; href: string; external?: bo
   },
 ];
 
-const fieldLabel = "mb-1.5 block text-xs text-white/45";
+const fieldLabel = "mb-2 block font-brand text-sm font-semibold uppercase text-white";
 const fieldInput =
-  "w-full border border-white/30 bg-[#2f2f2f] px-3 py-2.5 text-sm text-white placeholder:text-white/50 outline-none transition-colors focus:border-white";
+  "w-full bg-[#3a3a3a] px-3 py-2.5 text-sm text-white outline-none ring-1 ring-transparent transition [color-scheme:dark] focus:ring-white/70";
+
+// The short fields, two to a row on wide screens; "wide" ones span the row.
+const formFields = [
+  { name: "firstName", label: "First Name", type: "text", autoComplete: "given-name" },
+  { name: "lastName", label: "Last Name", type: "text", autoComplete: "family-name" },
+  { name: "email", label: "Email Address", type: "email", autoComplete: "email" },
+  { name: "phone", label: "Phone Number", type: "tel", autoComplete: "tel" },
+  { name: "location", label: "Location", type: "text", autoComplete: "address-level2" },
+  { name: "date", label: "Date", type: "date" },
+  { name: "subject", label: "Subject", type: "text", wide: true },
+] as const;
 // Thin outlined lettering for the small labels above headings, as in the design.
 const outlinedLabel =
   "font-brand text-lg font-bold text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.7)] md:text-xl";
@@ -98,12 +103,15 @@ const FindUsPage = () => {
   // start the message with what the visitor is asking for.
   const [searchParams] = useSearchParams();
   const [form, setForm] = useState(() => ({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
+    phone: "",
+    location: "",
+    date: "",
     subject: searchParams.get("subject") ?? "",
     message: "",
   }));
-  const [mapId, setMapId] = useState<LocationId>("hq");
 
   const update = (field: keyof typeof form) => (value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -112,14 +120,20 @@ const FindUsPage = () => {
   // visitor's own email app with the message already addressed and filled in.
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    const { name, email, subject, message } = form;
-    if (!name.trim() || !email.trim() || !message.trim()) {
-      showErrorToast("Please fill in your name, email and message.");
+    const { firstName, lastName, email, phone, location, date, subject, message } = form;
+    const name = `${firstName.trim()} ${lastName.trim()}`.trim();
+    if (!name || !email.trim() || !message.trim()) {
+      showErrorToast("Please fill in your name, email and details.");
       return;
     }
-    const body = `${message.trim()}\n\n— ${name.trim()} (${email.trim()})`;
+    const extras = [
+      phone.trim() && `Phone: ${phone.trim()}`,
+      location.trim() && `Location: ${location.trim()}`,
+      date && `Date: ${date}`,
+    ].filter(Boolean);
+    const body = [`${message.trim()}\n\n— ${name} (${email.trim()})`, ...extras].join("\n");
     const params = new URLSearchParams({
-      subject: subject.trim() || `Website message from ${name.trim()}`,
+      subject: subject.trim() || `Website message from ${name}`,
       body,
     });
     // URLSearchParams encodes spaces as "+", which mail apps show literally.
@@ -130,100 +144,68 @@ const FindUsPage = () => {
   return (
     <div className="bg-black">
       {/* Hero */}
-      <section className="relative flex h-[280px] items-center justify-center overflow-hidden md:h-[340px]">
+      <section className="relative flex h-[360px] items-end justify-center overflow-hidden pb-10 md:h-[480px] md:pb-14">
         {/* The SANIPURE sign sits high on the building (about 13–25% down the
             photo), so the crop leans to the top to keep it in view on wide
-            screens. The overlay stays light so the dark lettering still reads
-            against the white wall; only the middle, behind the title, is
-            darkened. */}
+            screens. The photo fades to black at the bottom, where the title
+            sits, and stays bright above so the sign still reads. */}
         <img
           src={heroImage}
           alt="The Sanipure factory"
           className="absolute inset-0 h-full w-full object-cover object-[center_10%]"
         />
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_45%_60%_at_center,rgba(0,0,0,0.6),transparent)]" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black to-transparent" />
+        <div className="absolute inset-0 bg-black/15" />
+        <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black via-black/70 to-transparent" />
         <RevealSection className="relative px-6 text-center">
-          <h1 className="font-brand text-5xl font-semibold text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.6)] md:text-6xl">Find Us</h1>
-          <nav aria-label="Breadcrumb" className="mt-3 text-xs text-white/75 md:text-sm">
-            <Link to="/" className="transition-colors hover:text-white">
-              Home
-            </Link>
-            <span className="mx-3" aria-hidden>
-              /
-            </span>
-            <span aria-current="page">Find Us</span>
-          </nav>
+          <h1 className="font-brand text-4xl font-semibold uppercase text-white md:text-6xl">Contact Us</h1>
+          <p className="mt-1 font-brand text-base uppercase text-white/85 md:text-2xl">
+            We'd love to hear what you think
+          </p>
         </RevealSection>
       </section>
 
       {/* Form + contact details */}
       <section className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 py-14 md:grid-cols-2 md:py-20 lg:gap-16">
-        <RevealSection className="bg-[#232323] p-7 md:p-10">
-          <p className={outlinedLabel}>Contact Us</p>
-          <h2 className="font-brand text-3xl font-semibold text-white md:text-4xl">Get In Touch</h2>
+        <RevealSection>
+          <h2 className="font-brand text-3xl font-semibold uppercase text-white md:text-4xl">
+            Let's <span className="text-white/75">Work</span> Together
+          </h2>
 
-          <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4" noValidate>
-            <div>
-              <label htmlFor="find-us-name" className={fieldLabel}>
-                Name
-              </label>
-              <input
-                id="find-us-name"
-                type="text"
-                autoComplete="name"
-                value={form.name}
-                onChange={(e) => update("name")(e.target.value)}
-                placeholder="Your Name…"
-                className={fieldInput}
-              />
-            </div>
-            <div>
-              <label htmlFor="find-us-email" className={fieldLabel}>
-                Email
-              </label>
-              <input
-                id="find-us-email"
-                type="email"
-                autoComplete="email"
-                value={form.email}
-                onChange={(e) => update("email")(e.target.value)}
-                placeholder="example@yourmail.com"
-                className={fieldInput}
-              />
-            </div>
-            <div>
-              <label htmlFor="find-us-subject" className={fieldLabel}>
-                Subject
-              </label>
-              <input
-                id="find-us-subject"
-                type="text"
-                value={form.subject}
-                onChange={(e) => update("subject")(e.target.value)}
-                placeholder="Title…"
-                className={fieldInput}
-              />
-            </div>
-            <div>
-              <label htmlFor="find-us-message" className={fieldLabel}>
-                Message
-              </label>
-              <textarea
-                id="find-us-message"
-                rows={5}
-                value={form.message}
-                onChange={(e) => update("message")(e.target.value)}
-                placeholder="Type Here…"
-                className={`${fieldInput} resize-y`}
-              />
+          <form onSubmit={handleSubmit} className="mt-8" noValidate>
+            <div className="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
+              {formFields.map((field) => (
+                <div key={field.name} className={"wide" in field ? "sm:col-span-2" : undefined}>
+                  <label htmlFor={`contact-${field.name}`} className={fieldLabel}>
+                    {field.label}
+                  </label>
+                  <input
+                    id={`contact-${field.name}`}
+                    type={field.type}
+                    autoComplete={"autoComplete" in field ? field.autoComplete : undefined}
+                    value={form[field.name]}
+                    onChange={(e) => update(field.name)(e.target.value)}
+                    className={fieldInput}
+                  />
+                </div>
+              ))}
+              <div className="sm:col-span-2">
+                <label htmlFor="contact-message" className={fieldLabel}>
+                  Details
+                </label>
+                <textarea
+                  id="contact-message"
+                  rows={8}
+                  value={form.message}
+                  onChange={(e) => update("message")(e.target.value)}
+                  className={`${fieldInput} resize-y`}
+                />
+              </div>
             </div>
             <button
               type="submit"
-              className="mt-3 rounded-full border border-white/70 py-3 text-sm text-white transition-colors hover:bg-white hover:text-black"
+              className="mt-10 w-full border border-white/70 py-3 font-brand text-xs font-semibold uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black"
             >
-              Send Now
+              Submit
             </button>
           </form>
         </RevealSection>
@@ -250,32 +232,6 @@ const FindUsPage = () => {
                 </span>
               </a>
             ))}
-          </div>
-
-          <div className="mt-10">
-            <div className="mb-3 flex gap-2" role="group" aria-label="Map location">
-              {(Object.keys(locations) as LocationId[]).map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setMapId(id)}
-                  aria-pressed={mapId === id}
-                  className={`rounded-full px-4 py-1.5 font-brand text-xs uppercase tracking-wide transition-colors ${
-                    mapId === id ? "bg-white text-black" : "border border-white/40 text-white/80 hover:border-white"
-                  }`}
-                >
-                  {locations[id].label}
-                </button>
-              ))}
-            </div>
-            <iframe
-              key={mapId}
-              title={`Map: Sanipure ${locations[mapId].label}`}
-              src={locations[mapId].embedUrl}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="h-64 w-full border-0 md:h-72"
-            />
           </div>
         </RevealSection>
       </section>

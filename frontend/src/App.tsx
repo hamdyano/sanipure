@@ -168,7 +168,7 @@ const App = () => {
             </Layout>
           }
         />
-        {/* The footer's "Contact Us" link lands on the same page as "Find Us". */}
+        {/* "/find-us" is kept so old links to the Contact Us page still work. */}
         {["/find-us", "/contact-us"].map((path) => (
           <Route
             key={path}

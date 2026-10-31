@@ -5,6 +5,7 @@ import RequiredItems from "./RequiredItems";
 import ItemTile, { ItemSectionTitle } from "./ItemTile";
 import { CATEGORIES } from "../../data/categories";
 import type { CatalogResponse, Product, ProductDisplayColor } from "../../api/clientApi";
+import { toSizeEntries } from "../../api/clientApi";
 
 interface CategoryApi {
   getAll: () => Promise<CatalogResponse>;
@@ -54,7 +55,7 @@ const BackgroundWaves = () => (
 );
 
 /**
- * A product's detail page, shared by every category: a light card with the
+ * A product's detail page, shared by every category: a black card with the
  * photo gallery and spec sheet (code, description, colors, type, size,
  * technical sheet), then the product's required items and a few other
  * products from the same category to recommend.
@@ -160,7 +161,7 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
         </Link>
 
         {/* Product card */}
-        <section className="mt-4 grid grid-cols-1 gap-6 rounded-3xl bg-[#d4d6d9] p-5 md:grid-cols-[96px_1fr] md:p-7 lg:grid-cols-[104px_1fr_minmax(280px,340px)] lg:gap-8">
+        <section className={`mt-4 grid grid-cols-1 gap-6 rounded-3xl bg-black p-5 ring-1 ring-white/10 [color-scheme:dark] md:grid-cols-[96px_1fr] md:p-7 lg:grid-cols-[104px_1fr_minmax(280px,340px)] lg:gap-8`}>
           {/* Thumbnails: a row under the photo on phones, a column on the left otherwise. */}
           {gallery.length > 1 && (
             <div className="order-2 flex gap-3 overflow-x-auto md:order-none md:max-h-[460px] md:flex-col md:overflow-y-auto md:overflow-x-visible">
@@ -170,11 +171,15 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
                   type="button"
                   onClick={() => pick(image, activeColor)}
                   aria-label={`Show photo ${index + 1}`}
-                  className={`h-20 w-20 shrink-0 overflow-hidden rounded-xl ring-offset-2 ring-offset-[#d4d6d9] transition md:h-24 md:w-24 lg:h-[100px] lg:w-[100px] ${
-                    activeImage === image ? "ring-2 ring-black/70" : "hover:ring-2 hover:ring-black/25"
+                  className={`h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-black ring-offset-2 ring-offset-black transition md:h-24 md:w-24 lg:h-[100px] lg:w-[100px] ${
+                    activeImage === image ? "ring-2 ring-white/80" : "hover:ring-2 hover:ring-white/30"
                   }`}
                 >
-                  <img src={image} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={image}
+                    alt=""
+                    className="h-full w-full object-contain p-1"
+                  />
                 </button>
               ))}
             </div>
@@ -193,29 +198,29 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
                 className="max-h-full max-w-full object-contain drop-shadow-[0_24px_30px_rgba(0,0,0,0.25)]"
               />
             ) : (
-              <span className="text-sm text-black/40">No image</span>
+              <span className="text-sm text-white/55">No image</span>
             )}
           </div>
 
           {/* Spec sheet */}
           <div className="order-3 flex flex-col md:col-span-2 md:order-none lg:col-span-1 lg:pt-4">
-            <h1 className="font-brand text-3xl font-bold leading-tight text-black md:text-4xl">
+            <h1 className="font-brand text-3xl font-bold leading-tight md:text-4xl text-white">
               {product.name}
             </h1>
             {display?.productCode && (
-              <span className="mt-2 w-fit rounded bg-neutral-500 px-2 py-0.5 font-brand text-xs font-semibold italic text-white">
+              <span className="mt-2 w-fit rounded px-2 py-0.5 font-brand text-xs font-semibold italic bg-white/15 text-white">
                 {display.productCode}
               </span>
             )}
             {display?.description && (
-              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-black/80">
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-white/80">
                 {display.description}
               </p>
             )}
 
             {display?.colors && display.colors.length > 0 && (
-              <div className="mt-6 rounded-2xl bg-[#b9bcc0] p-4 shadow-[0_14px_30px_-10px_rgba(0,0,0,0.45)]">
-                <p className="font-brand text-sm font-semibold text-black">Color / Finish</p>
+              <div className="mt-6 rounded-2xl p-4 ring-1 ring-white/15">
+                <p className="font-brand text-sm font-semibold text-white">Color / Finish</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {display.colors.map((color, index) => {
                     const isActive = activeColor?.name === color.name && activeColor?.image === color.image;
@@ -224,34 +229,37 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
                         key={`${color.name}-${index}`}
                         type="button"
                         onClick={() => pick(color.image ?? activeImage, color)}
-                        title={color.name}
-                        aria-label={color.name}
+                        title={color.code || color.name}
+                        aria-label={color.code || color.name}
                         aria-pressed={isActive}
-                        className={`flex h-11 w-12 items-center justify-center overflow-hidden rounded-lg transition ${
-                          isActive ? "bg-white/70 ring-2 ring-black/60" : "hover:bg-white/40"
+                        className={`flex h-11 w-12 items-center justify-center overflow-hidden rounded-lg bg-black p-0.5 ring-offset-2 ring-offset-black transition ${
+                          isActive ? "ring-2 ring-white/80" : "hover:ring-2 hover:ring-white/30"
                         }`}
                       >
                         {color.image ? (
                           <img src={color.image} alt="" className="max-h-full max-w-full object-contain" />
                         ) : (
-                          <span className="text-[10px] font-semibold text-black/60">{color.name.slice(0, 2)}</span>
+                          <span className="text-[10px] font-semibold text-white/55">{color.name.slice(0, 2)}</span>
                         )}
                       </button>
                     );
                   })}
                 </div>
-                {activeColor?.name && (
-                  <p className="mt-3 font-brand text-sm font-bold text-black">{activeColor.name}</p>
+                {/* A color's code replaces its name here when it has one. */}
+                {(activeColor?.code || activeColor?.name) && (
+                  <p className="mt-3 font-brand text-sm font-bold text-white">
+                    {activeColor.code || activeColor.name}
+                  </p>
                 )}
               </div>
             )}
 
             {display?.types && display.types.length > 0 && (
               <div className="mt-6">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-black">Type</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-white">Type</p>
                 <div className="mt-1.5 flex flex-wrap gap-2">
                   {display.types.map((type) => (
-                    <span key={type} className="rounded-sm border border-neutral-600 px-3 py-1 text-xs text-black">
+                    <span key={type} className="rounded-sm border px-3 py-1 text-xs border-white/40 text-white">
                       {type}
                     </span>
                   ))}
@@ -261,11 +269,15 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
 
             {display?.sizes && display.sizes.length > 0 && (
               <div className="mt-4">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-black">Size</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-white">Size</p>
                 <div className="mt-1.5 flex flex-wrap gap-2">
-                  {display.sizes.map((size) => (
-                    <span key={size} className="rounded-sm border border-neutral-600 px-3 py-1 text-xs text-black">
-                      {size}
+                  {toSizeEntries(display.sizes).map((size, index) => (
+                    <span
+                      key={`${size.name}-${index}`}
+                      className="rounded-sm border px-3 py-1 text-xs border-white/40 text-white"
+                    >
+                      {size.name}
+                      {size.code && <span className="ml-1.5 text-white/55">{size.code}</span>}
                     </span>
                   ))}
                 </div>
@@ -277,7 +289,7 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
                 href={display.designFile}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-7 w-fit rounded bg-neutral-500 px-3 py-1.5 font-brand text-sm font-bold uppercase italic text-white transition-colors hover:bg-neutral-700"
+                className="mt-7 w-fit rounded px-3 py-1.5 font-brand text-sm font-bold uppercase italic transition-colors bg-white text-black hover:bg-white/80"
               >
                 Download Technical Sheet
               </a>

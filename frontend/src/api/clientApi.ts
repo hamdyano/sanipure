@@ -45,8 +45,18 @@ export interface ProductFilter {
 // (which only ever hold single strings for the shop grid's filter sidebar).
 export interface ProductDisplayColor {
   name: string;
+  code?: string;
   image?: string;
 }
+
+export interface ProductDisplaySize {
+  name: string;
+  code?: string;
+}
+
+// Products saved before sizes had codes store each size as a plain string.
+export const toSizeEntries = (sizes: ProductDisplay["sizes"]): ProductDisplaySize[] =>
+  (sizes ?? []).map((size) => (typeof size === "string" ? { name: size } : size));
 
 // The "For Required Items" section's data — companion items needed with the
 // product (e.g. a seat or flush plate), listed under the design file button
@@ -66,7 +76,7 @@ export interface ProductDisplay {
   colors?: ProductDisplayColor[];
   images?: string[];
   types?: string[];
-  sizes?: string[];
+  sizes?: Array<ProductDisplaySize | string>;
   designFile?: string;
   requiredItems?: ProductRequiredItem[];
 }

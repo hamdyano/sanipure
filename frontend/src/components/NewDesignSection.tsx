@@ -146,12 +146,12 @@ const NewDesignSection = () => {
                 >
                   Design
                 </h2>
-                <h3 className="mt-3 font-heading text-[clamp(34px,7vw,104px)] uppercase leading-[1] text-white">
+                <h3 className="mt-3 font-brand text-[clamp(34px,7vw,104px)] font-medium uppercase leading-[1] text-white">
                   <span className="block">{design.title[0]}</span>
                   <span className="flex flex-wrap items-end gap-x-5">
                     <span>{design.title[1]}</span>
                     <span className="mb-[0.18em] block normal-case leading-none">
-                      <span className="block font-accent text-[clamp(22px,2.6vw,36px)] text-copper">
+                      <span className="block font-brand text-[clamp(22px,2.6vw,36px)] text-copper">
                         {design.series}
                       </span>
                       <span className="mt-1 block font-brand text-xs tracking-normal text-white/70">

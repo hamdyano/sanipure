@@ -100,7 +100,7 @@ const CategoryCarousel3 = () => {
         ref={sectionRef}
         aria-roledescription="carousel"
         aria-labelledby="category-carousel-3-heading"
-        className="relative mb-20 flex min-h-[640px] w-full items-center overflow-hidden bg-[#0b0b0b] py-16 md:mb-28 md:h-screen md:py-0"
+        className="relative mb-20 flex min-h-[640px] w-full items-center overflow-hidden bg-black py-16 md:mb-28 md:h-screen md:py-0"
       >
         {/* Giant faint word behind everything */}
         <AnimatePresence initial={false} custom={slide.direction}>
@@ -133,11 +133,11 @@ const CategoryCarousel3 = () => {
           >
             <div className="absolute left-[3vw] top-[30%] w-[13vw] max-w-[220px]">
               <p className="font-brand text-xs uppercase tracking-[0.2em] text-white/40">Good to know</p>
-              <p className="mt-3 text-xs leading-relaxed text-white/70">{item.detail}</p>
+              <p className="mt-3 font-brand text-xs leading-relaxed text-white/70">{item.detail}</p>
             </div>
             <div className="pointer-events-auto absolute right-[3vw] top-[30%] w-[13vw] max-w-[220px]">
               <p className="font-brand text-xs uppercase tracking-[0.2em] text-white/40">Explore</p>
-              <p className="mt-3 text-xs leading-relaxed text-white/70">{item.name}</p>
+              <p className="mt-3 font-brand text-xs leading-relaxed text-white/70">{item.name}</p>
               <Link
                 to={item.href}
                 className="mt-4 inline-block font-brand text-xs uppercase tracking-wide text-white underline-offset-4 hover:underline"

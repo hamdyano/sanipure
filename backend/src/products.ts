@@ -59,7 +59,13 @@ const parseAttributes = (rawAttributes: Record<string, unknown>) => {
 // attributes.display so it rides along in the same Json column.
 export interface ProductDisplayColor {
   name: string;
+  code?: string;
   image?: string;
+}
+
+export interface ProductDisplaySize {
+  name: string;
+  code?: string;
 }
 
 // The "For Required Items" section: companion items needed with the product,
@@ -79,7 +85,7 @@ export interface ProductDisplay {
   colors?: ProductDisplayColor[];
   images?: string[];
   types?: string[];
-  sizes?: string[];
+  sizes?: ProductDisplaySize[];
   designFile?: string;
   requiredItems?: ProductRequiredItem[];
 }
@@ -134,12 +140,14 @@ const sanitizeDisplay = (raw: unknown): ProductDisplay | undefined => {
       .filter((c): c is Record<string, unknown> => !!c && typeof c === "object")
       .map((c) => {
         const image = httpUrl(c.image);
+        const code = trimmedString(c.code);
         return {
           name: typeof c.name === "string" ? c.name.trim() : "",
+          ...(code ? { code } : {}),
           ...(image ? { image } : {}),
         };
       })
-      .filter((c) => c.name || c.image);
+      .filter((c) => c.name || c.code || c.image);
     if (colors.length) display.colors = colors;
   }
 
@@ -156,8 +164,18 @@ const sanitizeDisplay = (raw: unknown): ProductDisplay | undefined => {
     if (types.length) display.types = types;
   }
 
+  // Older products stored each size as a plain string; newer ones as
+  // { name, code }. Both are accepted and saved in the newer shape.
   if (Array.isArray(src.sizes)) {
-    const sizes = src.sizes.filter((s): s is string => typeof s === "string" && s.trim() !== "");
+    const sizes = src.sizes
+      .map((s): ProductDisplaySize | undefined => {
+        if (typeof s === "string") return s.trim() ? { name: s.trim() } : undefined;
+        if (!s || typeof s !== "object") return undefined;
+        const name = trimmedString((s as Record<string, unknown>).name);
+        const code = trimmedString((s as Record<string, unknown>).code);
+        return name ? { name, ...(code ? { code } : {}) } : undefined;
+      })
+      .filter((s): s is ProductDisplaySize => s !== undefined);
     if (sizes.length) display.sizes = sizes;
   }
 

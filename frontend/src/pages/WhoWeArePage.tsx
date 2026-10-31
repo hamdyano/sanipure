@@ -7,7 +7,7 @@ import whoWeAreVideo from "../assets/who we are photos/who we are video.mp4";
 
 const WhoWeArePage = () => {
   return (
-    <>
+    <div className="flow-root bg-black">
       <section className="relative h-screen w-full overflow-hidden bg-black">
         <video
           className="absolute inset-0 h-full w-full object-cover"
@@ -100,7 +100,7 @@ const WhoWeArePage = () => {
           </p>
         </RevealSection>
       </section>
-    </>
+    </div>
   );
 };
 

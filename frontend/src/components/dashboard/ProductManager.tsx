@@ -4,10 +4,11 @@ import type {
   CatalogResponse,
   Product,
   ProductDisplay,
+  ProductDisplaySize,
   ProductInput,
   ProductRequiredItem,
 } from "../../api/clientApi";
-import { uploadProductFile, uploadProductImage } from "../../api/clientApi";
+import { toSizeEntries, uploadProductFile, uploadProductImage } from "../../api/clientApi";
 import {
   showErrorToast,
   showSuccessToast,
@@ -21,6 +22,7 @@ const MAX_REQUIRED_ITEM_IMAGES = 4;
 
 interface ColorSlot {
   name: string;
+  code: string;
   file: File | null;
   preview: string | null;
 }
@@ -134,8 +136,9 @@ const ProductManager = ({
   const [galleryImages, setGalleryImages] = useState<ImageSlot[]>(emptyImageSlots());
   const [types, setTypes] = useState<string[]>([]);
   const [typeInput, setTypeInput] = useState("");
-  const [sizes, setSizes] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<ProductDisplaySize[]>([]);
   const [sizeInput, setSizeInput] = useState("");
+  const [sizeCodeInput, setSizeCodeInput] = useState("");
   const [designFile, setDesignFile] = useState<File | null>(null);
   const [designFileUrl, setDesignFileUrl] = useState<string | null>(null);
 
@@ -189,6 +192,7 @@ const ProductManager = ({
     setTypeInput("");
     setSizes([]);
     setSizeInput("");
+    setSizeCodeInput("");
     setDesignFile(null);
     setDesignFileUrl(null);
     setRequiredItems([]);
@@ -215,6 +219,7 @@ const ProductManager = ({
     setColors(
       (display.colors ?? []).map((color) => ({
         name: color.name,
+        code: color.code ?? "",
         file: null,
         preview: color.image ?? null,
       }))
@@ -228,8 +233,9 @@ const ProductManager = ({
     );
     setTypes(display.types ?? []);
     setTypeInput("");
-    setSizes(display.sizes ?? []);
+    setSizes(toSizeEntries(display.sizes));
     setSizeInput("");
+    setSizeCodeInput("");
     setDesignFile(null);
     setDesignFileUrl(display.designFile ?? null);
     setRequiredItems(
@@ -260,6 +266,7 @@ const ProductManager = ({
       if (nextCount <= prev.length) return prev.slice(0, nextCount);
       const additions = Array.from({ length: nextCount - prev.length }, () => ({
         name: "",
+        code: "",
         file: null,
         preview: null,
       }));
@@ -267,9 +274,9 @@ const ProductManager = ({
     });
   };
 
-  const updateColorName = (index: number, value: string) => {
+  const updateColorField = (index: number, field: "name" | "code", value: string) => {
     setColors((prev) =>
-      prev.map((color, i) => (i === index ? { ...color, name: value } : color))
+      prev.map((color, i) => (i === index ? { ...color, [field]: value } : color))
     );
   };
 
@@ -313,8 +320,10 @@ const ProductManager = ({
   const addSize = () => {
     const value = sizeInput.trim();
     if (!value) return;
-    setSizes((prev) => [...prev, value]);
+    const code = sizeCodeInput.trim();
+    setSizes((prev) => [...prev, { name: value, ...(code ? { code } : {}) }]);
     setSizeInput("");
+    setSizeCodeInput("");
   };
 
   const removeSize = (index: number) => {
@@ -405,14 +414,15 @@ const ProductManager = ({
         // multipart uploads at once turned out to be enough to make one of
         // them fail on an ordinary connection, which surfaced as a generic
         // "Something went wrong" with no indication of which file it was.
-        const resolvedColorsRaw: Array<{ name: string; image?: string }> = [];
+        const resolvedColorsRaw: Array<{ name: string; code?: string; image?: string }> = [];
         for (const color of colors) {
           resolvedColorsRaw.push({
             name: color.name.trim(),
+            ...(color.code.trim() ? { code: color.code.trim() } : {}),
             image: color.file ? await uploadProductImage(color.file) : color.preview ?? undefined,
           });
         }
-        const resolvedColors = resolvedColorsRaw.filter((color) => color.name || color.image);
+        const resolvedColors = resolvedColorsRaw.filter((color) => color.name || color.code || color.image);
 
         const resolvedImagesRaw: Array<string | undefined> = [];
         for (const slot of galleryImages) {
@@ -432,8 +442,11 @@ const ProductManager = ({
         const finalTypes =
           pendingType && !types.includes(pendingType) ? [...types, pendingType] : types;
         const pendingSize = sizeInput.trim();
+        const pendingSizeCode = sizeCodeInput.trim();
         const finalSizes =
-          pendingSize && !sizes.includes(pendingSize) ? [...sizes, pendingSize] : sizes;
+          pendingSize && !sizes.some((size) => size.name === pendingSize)
+            ? [...sizes, { name: pendingSize, ...(pendingSizeCode ? { code: pendingSizeCode } : {}) }]
+            : sizes;
 
         const resolvedRequiredItems: ProductRequiredItem[] = [];
         for (const item of requiredItems) {
@@ -698,9 +711,16 @@ const ProductManager = ({
                     <input
                       type="text"
                       value={color.name}
-                      onChange={(e) => updateColorName(index, e.target.value)}
+                      onChange={(e) => updateColorField(index, "name", e.target.value)}
                       className={inputClasses}
                       placeholder={`Color ${index + 1} name`}
+                    />
+                    <input
+                      type="text"
+                      value={color.code}
+                      onChange={(e) => updateColorField(index, "code", e.target.value)}
+                      className={`${inputClasses} sm:max-w-[11rem]`}
+                      placeholder={`Color ${index + 1} code`}
                     />
                     <div className="flex shrink-0 items-center gap-3">
                       {color.preview ? (
@@ -836,6 +856,19 @@ const ProductManager = ({
                   className={inputClasses}
                   placeholder="e.g. Standard height"
                 />
+                <input
+                  type="text"
+                  value={sizeCodeInput}
+                  onChange={(e) => setSizeCodeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addSize();
+                    }
+                  }}
+                  className={`${inputClasses} max-w-[9rem]`}
+                  placeholder="Code"
+                />
                 <button
                   type="button"
                   onClick={addSize}
@@ -848,14 +881,15 @@ const ProductManager = ({
                 <div className="mt-3 flex flex-wrap gap-2">
                   {sizes.map((size, index) => (
                     <span
-                      key={`${size}-${index}`}
+                      key={`${size.name}-${index}`}
                       className="flex items-center gap-2 border border-white/30 px-3 py-1 text-xs text-white/80"
                     >
-                      {size}
+                      {size.name}
+                      {size.code && <span className="text-white/50">{size.code}</span>}
                       <button
                         type="button"
                         onClick={() => removeSize(index)}
-                        aria-label={`Remove ${size}`}
+                        aria-label={`Remove ${size.name}`}
                       >
                         ×
                       </button>

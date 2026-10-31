@@ -57,7 +57,7 @@ const cardDirections: Array<"left" | "right" | "up"> = [
 const Articles = () => {
   return (
     <section className="mb-32 md:mb-44">
-      <RevealSection className="bg-[#3a3a3a] px-6 py-10 md:px-16 md:py-12">
+      <RevealSection className="bg-black px-6 py-10 md:px-16 md:py-12">
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
           <div className="flex items-center gap-2 justify-self-start">
             <span className="h-2 w-2 flex-none bg-white" />
