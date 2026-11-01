@@ -229,8 +229,8 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
                         key={`${color.name}-${index}`}
                         type="button"
                         onClick={() => pick(color.image ?? activeImage, color)}
-                        title={color.code || color.name}
-                        aria-label={color.code || color.name}
+                        title={[color.name, color.code].filter(Boolean).join(" ")}
+                        aria-label={[color.name, color.code].filter(Boolean).join(" ")}
                         aria-pressed={isActive}
                         className={`flex h-11 w-12 items-center justify-center overflow-hidden rounded-lg bg-black p-0.5 ring-offset-2 ring-offset-black transition ${
                           isActive ? "ring-2 ring-white/80" : "hover:ring-2 hover:ring-white/30"
@@ -245,10 +245,14 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
                     );
                   })}
                 </div>
-                {/* A color's code replaces its name here when it has one. */}
-                {(activeColor?.code || activeColor?.name) && (
+                {(activeColor?.name || activeColor?.code) && (
                   <p className="mt-3 font-brand text-sm font-bold text-white">
-                    {activeColor.code || activeColor.name}
+                    {activeColor.name}
+                    {activeColor.code && (
+                      <span className={`font-semibold text-white/55 ${activeColor.name ? "ml-2" : ""}`}>
+                        {activeColor.code}
+                      </span>
+                    )}
                   </p>
                 )}
               </div>
