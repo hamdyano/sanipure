@@ -2,23 +2,23 @@ import type { CatalogEntry } from "./washbasinsShop";
 
 // Filters for the concealed flush tank catalog. Products are entirely
 // DB-backed (added through the admin dashboard) — see getDbProducts in
-// products.ts.
+// products.ts. "color" and "shape" only apply to actuators.
 export const concealedFlushTankShop: CatalogEntry = {
   filters: [
     {
-      id: "installation",
-      label: "Installation",
-      options: ["Wall-Hung Frame", "Back-to-Wall", "Low-Height Frame", "Brick-In"],
+      id: "type",
+      label: "Type",
+      options: ["Flush Tank", "Actuator"],
     },
     {
-      id: "mechanism",
-      label: "Flush Mechanism",
-      options: ["Mechanical", "Pneumatic", "Sensor"],
+      id: "color",
+      label: "Actuator Color",
+      options: ["White", "Matte Black", "Chrome", "Matte Chrome"],
     },
     {
-      id: "flush",
-      label: "Flush Type",
-      options: ["Dual Flush", "Single Flush"],
+      id: "shape",
+      label: "Actuator Shape",
+      options: ["Round", "Square"],
     },
   ],
   products: [],

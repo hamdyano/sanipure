@@ -5,9 +5,7 @@ import FilterSidebar from "../components/shared/FilterSidebar";
 import RevealSection from "../components/shared/RevealSection";
 import heroImage from "../assets/concealed flush tank shop photos/hero section.jpg";
 import wallHungFrameImage from "../assets/concealed flush tank shop photos/wall hung frame.jpg";
-import backToWallImage from "../assets/concealed flush tank shop photos/back to wall.jpg";
 import lowHeightFrameImage from "../assets/concealed flush tank shop photos/low height frame.jpg";
-import brickInImage from "../assets/concealed flush tank shop photos/brick in.jpg";
 import concealedFlushTankImage from "../assets/categories photos/Concealed Flush tank.jpeg";
 import type { ProductDisplay } from "../api/clientApi";
 
@@ -30,53 +28,33 @@ interface CatalogResponse {
   products: Product[];
 }
 
-// The "name" of each type below must match an option of the matching
-// backend filter (see backend/src/ConcealedFlushTankShop.ts), since picking
-// a type selects that filter option.
-const INSTALLATION_TYPES = [
+// The names below must match options of the matching backend filters (see
+// backend/src/ConcealedFlushTankShop.ts), since picking one selects that
+// filter option.
+const TYPES = [
   {
-    name: "Wall-Hung Frame",
+    name: "Flush Tank",
     image: wallHungFrameImage,
     description:
-      "A self-supporting steel frame carries both the cistern and a wall-hung toilet, leaving the floor clear for easy cleaning.",
+      "The cistern hidden inside the wall, keeping the tank and pipework out of sight for a clean, open bathroom.",
   },
   {
-    name: "Back-to-Wall",
-    image: backToWallImage,
-    description:
-      "For floor-standing toilets that sit flush against the wall, with the cistern and pipework hidden behind the wall or furniture.",
-  },
-  {
-    name: "Low-Height Frame",
+    name: "Actuator",
     image: lowHeightFrameImage,
     description:
-      "A shorter frame for half-height walls, under windows or beneath sloped ceilings, where a full-height frame won't fit.",
-  },
-  {
-    name: "Brick-In",
-    image: brickInImage,
-    description:
-      "Built straight into a masonry wall during construction or renovation, then plastered and tiled over.",
+      "The flush plate on the wall. Pick the color and shape that finish your bathroom.",
   },
 ];
 
-const FLUSH_MECHANISMS = [
-  {
-    name: "Mechanical",
-    description:
-      "A push plate linked directly to the flush valve. Simple, reliable and easy to service.",
-  },
-  {
-    name: "Pneumatic",
-    description:
-      "Air pressure triggers the flush for a lighter, quieter press, and lets the plate sit further from the cistern.",
-  },
-  {
-    name: "Sensor",
-    description:
-      "Touch-free infrared flushing. The most hygienic choice, especially for busy and public bathrooms.",
-  },
+// Swatch backgrounds for the actuator color options.
+const ACTUATOR_COLORS = [
+  { name: "White", swatch: "#f4f4f4" },
+  { name: "Matte Black", swatch: "#1c1c1c" },
+  { name: "Chrome", swatch: "linear-gradient(135deg, #fafafa 0%, #8e8e8e 50%, #e6e6e6 100%)" },
+  { name: "Matte Chrome", swatch: "#a6a6a6" },
 ];
+
+const ACTUATOR_SHAPES = ["Round", "Square"];
 
 const ConcealedFlushTankCategoriesPage = () => {
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
@@ -130,6 +108,16 @@ const ConcealedFlushTankCategoriesPage = () => {
     productsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // Picking an actuator color or shape also narrows the type to actuators.
+  // It doesn't scroll, so a color and a shape can both be picked in turn.
+  const pickActuatorOption = (filterId: string, option: string) => {
+    setSelected((prev) => {
+      const current = prev[filterId] ?? [];
+      const isOnlyPick = current.length === 1 && current[0] === option;
+      return { ...prev, type: ["Actuator"], [filterId]: isOnlyPick ? [] : [option] };
+    });
+  };
+
   const isPicked = (filterId: string, option: string) =>
     (selected[filterId] ?? []).includes(option);
 
@@ -176,7 +164,7 @@ const ConcealedFlushTankCategoriesPage = () => {
       <CategoryPageHeader
         categoryId="concealed-flush-tank"
         title="Concealed Flush Tank"
-        subtitle="Choose a type to explore our range of concealed flush tanks."
+        subtitle="Choose a flush tank or an actuator to explore our range."
         image={heroImage}
         imageAlt="Wall-hung toilet with a concealed flush tank"
         search={search}
@@ -185,23 +173,23 @@ const ConcealedFlushTankCategoriesPage = () => {
 
       <section className="mx-auto mt-14 max-w-7xl px-6 md:mt-20 lg:px-12">
         <RevealSection>
-          <h2 className="text-2xl font-semibold text-white md:text-3xl">Installation Types</h2>
+          <h2 className="text-2xl font-semibold text-white md:text-3xl">Types</h2>
           <p className="mt-2 max-w-2xl text-white/60">
-            Every concealed flush tank hides the cistern inside the wall. How it's mounted
-            depends on your toilet and your wall.
+            A concealed system has two parts: the flush tank hidden inside the wall, and the
+            actuator you press to flush.
           </p>
         </RevealSection>
 
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {INSTALLATION_TYPES.map((type) => {
-            const active = isPicked("installation", type.name);
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
+          {TYPES.map((type) => {
+            const active = isPicked("type", type.name);
             return (
               <button
                 key={type.name}
                 type="button"
-                onClick={() => pickType("installation", type.name)}
+                onClick={() => pickType("type", type.name)}
                 aria-pressed={active}
-                className={`group relative h-80 overflow-hidden rounded-3xl text-left ring-2 transition-shadow ${
+                className={`group relative h-96 overflow-hidden rounded-3xl text-left ring-2 transition-shadow ${
                   active ? "ring-white" : "ring-transparent hover:ring-white/40"
                 }`}
               >
@@ -221,31 +209,66 @@ const ConcealedFlushTankCategoriesPage = () => {
         </div>
 
         <RevealSection className="mt-14">
-          <h2 className="text-2xl font-semibold text-white md:text-3xl">Flush Mechanisms</h2>
+          <h2 className="text-2xl font-semibold text-white md:text-3xl">Actuator Options</h2>
         </RevealSection>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          {FLUSH_MECHANISMS.map((mechanism) => {
-            const active = isPicked("mechanism", mechanism.name);
-            return (
-              <button
-                key={mechanism.name}
-                type="button"
-                onClick={() => pickType("mechanism", mechanism.name)}
-                aria-pressed={active}
-                className={`rounded-3xl border p-6 text-left transition-colors ${
-                  active
-                    ? "border-white bg-white text-black"
-                    : "border-white/15 text-white hover:border-white/50"
-                }`}
-              >
-                <h3 className="text-base font-semibold uppercase">{mechanism.name}</h3>
-                <p className={`mt-2 text-sm ${active ? "text-black/70" : "text-white/60"}`}>
-                  {mechanism.description}
-                </p>
-              </button>
-            );
-          })}
+        <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-[2fr_1fr]">
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-white/60">Color</h3>
+            <div className="mt-3 flex flex-wrap gap-3">
+              {ACTUATOR_COLORS.map((color) => {
+                const active = isPicked("color", color.name);
+                return (
+                  <button
+                    key={color.name}
+                    type="button"
+                    onClick={() => pickActuatorOption("color", color.name)}
+                    aria-pressed={active}
+                    className={`flex items-center gap-3 rounded-full border py-2 pl-2 pr-5 text-sm font-medium transition-colors ${
+                      active
+                        ? "border-white bg-white text-black"
+                        : "border-white/15 text-white hover:border-white/50"
+                    }`}
+                  >
+                    <span
+                      className="h-7 w-7 shrink-0 rounded-full border border-white/30"
+                      style={{ background: color.swatch }}
+                    />
+                    {color.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-white/60">Shape</h3>
+            <div className="mt-3 flex flex-wrap gap-3">
+              {ACTUATOR_SHAPES.map((shape) => {
+                const active = isPicked("shape", shape);
+                return (
+                  <button
+                    key={shape}
+                    type="button"
+                    onClick={() => pickActuatorOption("shape", shape)}
+                    aria-pressed={active}
+                    className={`flex items-center gap-3 rounded-full border py-2 pl-3 pr-5 text-sm font-medium transition-colors ${
+                      active
+                        ? "border-white bg-white text-black"
+                        : "border-white/15 text-white hover:border-white/50"
+                    }`}
+                  >
+                    <span
+                      className={`h-5 w-5 shrink-0 border-2 border-current ${
+                        shape === "Round" ? "rounded-full" : "rounded-[3px]"
+                      }`}
+                    />
+                    {shape}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -292,10 +315,10 @@ const ConcealedFlushTankCategoriesPage = () => {
 
           <div className="grid grid-cols-1 gap-x-6 gap-y-10 xl:grid-cols-2">
             {filteredProducts.map((product) => {
-              const topLine = [product.installation, product.mechanism]
+              const topLine = [product.type, product.shape]
                 .filter((v): v is string => typeof v === "string" && v.length > 0)
                 .join(" · ");
-              const bottomLine = [product.flush]
+              const bottomLine = [product.color]
                 .filter((v): v is string => typeof v === "string" && v.length > 0)
                 .join(" · ");
 
