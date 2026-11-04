@@ -7,6 +7,9 @@ import path from "path";
 import { washbasinsShop, type CatalogEntry } from "./washbasinsShop";
 import { toiletsShop } from "./ToiletsShop";
 import { bathtubsShop } from "./BathtubsShop";
+import { concealedFlushTankShop } from "./ConcealedFlushTankShop";
+import { publicBathroomsShop } from "./PublicBathroomsShop";
+import { accessoriesShop } from "./AccessoriesShop";
 import { signIn, signUp } from "./auth";
 import { requireAuth } from "./authMiddleware";
 import {
@@ -54,6 +57,9 @@ const productCatalog: Record<string, CatalogEntry> = {
   bathtubs: bathtubsShop,
   washbasins: washbasinsShop,
   toilets: toiletsShop,
+  "concealed-flush-tank": concealedFlushTankShop,
+  "public-bathrooms": publicBathroomsShop,
+  accessories: accessoriesShop,
 };
 
 // Own keys only, so a slug like "constructor" or "__proto__" doesn't resolve

@@ -6,13 +6,37 @@ import { isAuthenticated } from "../api/clientApi";
 import washbasinsApi from "../api/washbasinsApi";
 import toiletsApi from "../api/toiletsApi";
 import bathtubsApi from "../api/bathtubsApi";
+import concealedFlushTankApi from "../api/concealedFlushTankApi";
+import publicBathroomsApi from "../api/publicBathroomsApi";
+import accessoriesApi from "../api/accessoriesApi";
 
-type CategorySlug = "washbasins" | "toilets" | "bathtubs";
+type CategorySlug =
+  | "washbasins"
+  | "toilets"
+  | "bathtubs"
+  | "concealed-flush-tank"
+  | "public-bathrooms"
+  | "accessories";
 
 const CATEGORIES: { slug: CategorySlug; label: string; api: typeof washbasinsApi }[] = [
   { slug: "washbasins", label: "Washbasins", api: washbasinsApi },
   { slug: "toilets", label: "Toilets", api: toiletsApi },
   { slug: "bathtubs", label: "Bathtubs", api: bathtubsApi },
+  {
+    slug: "concealed-flush-tank",
+    label: "Concealed Flush Tanks",
+    api: concealedFlushTankApi,
+  },
+  {
+    slug: "public-bathrooms",
+    label: "Public Bathrooms",
+    api: publicBathroomsApi,
+  },
+  {
+    slug: "accessories",
+    label: "Accessories & Furniture",
+    api: accessoriesApi,
+  },
 ];
 
 const DashboardPage = () => {

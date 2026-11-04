@@ -31,7 +31,8 @@ apiClient.interceptors.request.use((config) => {
 export default apiClient;
 
 // ---------------------------------------------------------------------------
-// Products (category-scoped: "toilets" | "washbasins" | "bathtubs")
+// Products (category-scoped: "toilets" | "washbasins" | "bathtubs" |
+// "concealed-flush-tank" | "public-bathrooms" | "accessories")
 // ---------------------------------------------------------------------------
 
 export interface ProductFilter {

@@ -54,6 +54,7 @@ export const CATEGORIES: CarouselCategory[] = [
     name: "Accessories & Furniture",
     image: accessoriesImage,
     href: "/products/accessories",
+    shopHref: "/products/accessories/categories",
     description:
       "Complete your bathroom with furniture and accessories that bring style and practicality together. Explore functional solutions created to complement your sanitaryware and keep every detail beautifully organized.",
   },
@@ -62,6 +63,7 @@ export const CATEGORIES: CarouselCategory[] = [
     name: "Public Bathrooms",
     image: publicBathroomsImage,
     href: "/products/public-bathrooms",
+    shopHref: "/products/public-bathrooms/categories",
     description:
       "Check our durable, practical solutions designed specifically for high-traffic public and commercial spaces. Our range combines reliable performance, hygiene-focused designs, and functionality to meet demanding everyday environments.",
   },
@@ -70,6 +72,7 @@ export const CATEGORIES: CarouselCategory[] = [
     name: "Bathroom Collection",
     image: bathroomCollectionImage,
     href: "/products/bathroom-collection",
+    shopHref: "/products/bathroom-collection/categories",
     description:
       "Discover complete bathroom collections where every element is designed to work together seamlessly. Explore coordinated designs that create a distinctive bathroom aesthetic.",
   },
@@ -78,6 +81,7 @@ export const CATEGORIES: CarouselCategory[] = [
     name: "Concealed Flush Tank",
     image: concealedFlushTankImage,
     href: "/products/concealed-flush-tank",
+    shopHref: "/products/concealed-flush-tank/categories",
     description:
       "Keep your bathroom clean and clutter-free with concealed flush tanks hidden neatly inside the wall. Enjoy quiet, water-efficient flushing and more usable space, paired with a sleek finish that suits any modern design.",
   },

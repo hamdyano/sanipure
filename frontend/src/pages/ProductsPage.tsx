@@ -9,6 +9,7 @@ import accessoriesImage from "../assets/categories photos/Accessories photo.jpg"
 import publicBathroomsImage from "../assets/categories photos/Public Bathrooms photo.jpg";
 import bathroomCollectionImage from "../assets/categories photos/Bathroom collection photo.jpg";
 import concealedFlushTankImage from "../assets/categories photos/7th category.jpg";
+import heroImage from "../assets/products page photos/hero section.jpg";
 
 interface Category {
   name: string;
@@ -54,6 +55,7 @@ const categories: Category[] = [
     headline: "Accessories & Furniture",
     description:
       "Complete your bathroom with furniture and accessories that bring style and practicality together. Explore functional solutions created to complement your sanitaryware and keep every detail beautifully organized.",
+    shopPath: "/products/accessories/categories",
   },
   {
     name: "Public Bathrooms",
@@ -62,6 +64,7 @@ const categories: Category[] = [
     headline: "Public Bathrooms",
     description:
       "Check our durable, practical solutions designed specifically for high-traffic public and commercial spaces. Our range combines reliable performance, hygiene-focused designs, and functionality to meet demanding everyday environments.",
+    shopPath: "/products/public-bathrooms/categories",
   },
   {
     name: "Bathroom Collection",
@@ -70,6 +73,7 @@ const categories: Category[] = [
     headline: "Bathroom Collection",
     description:
       "Discover complete bathroom collections where every element is designed to work together seamlessly. Explore coordinated designs that create a distinctive bathroom aesthetic.",
+    shopPath: "/products/bathroom-collection/categories",
   },
   {
     name: "Concealed Flush Tank",
@@ -78,6 +82,7 @@ const categories: Category[] = [
     headline: "Concealed Flush Tank",
     description:
       "Keep your bathroom clean and clutter-free with concealed flush tanks hidden neatly inside the wall. Enjoy quiet, water-efficient flushing and more usable space, paired with a sleek finish that suits any modern design.",
+    shopPath: "/products/concealed-flush-tank/categories",
   },
 ];
 
@@ -146,15 +151,27 @@ const ProductsPage = () => {
 
   return (
     <div className="flow-root bg-black">
-      <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
-        <h1 className="text-4xl font-semibold text-white md:text-5xl">
-          Products
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
-          Explore our full range of sanitary ware, crafted at scale and
-          trusted across Egypt.
-        </p>
-      </RevealSection>
+      <section className="relative flex min-h-[60vh] w-full items-center justify-center overflow-hidden bg-black md:min-h-[70vh]">
+        <img
+          src={heroImage}
+          alt="Luxury bathroom with a freestanding bathtub, marble washbasin counter and wall-hung toilet"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/55" />
+        {/* Soft fade at the bottom so the photo ends in the page's black
+            instead of a hard edge above the category cards. */}
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black to-transparent" />
+
+        <RevealSection className="relative z-10 px-6 text-center">
+          <h1 className="text-4xl font-semibold text-white md:text-5xl">
+            Products
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-white/80">
+            Explore our full range of sanitary ware, crafted at scale and
+            trusted across Egypt.
+          </p>
+        </RevealSection>
+      </section>
 
       <section className="mx-auto my-16 grid max-w-6xl grid-cols-1 gap-6 px-6 md:my-20 md:grid-cols-2 md:gap-8 lg:px-10">
         {categories.map((category, index) => {

@@ -18,6 +18,13 @@ import WashbasinProductPage from "./pages/WashbasinProductPage";
 import BathtubsCategoriesPage from "./pages/BathtubsCategoriesPage";
 import ShopBathtubsPage from "./pages/ShopBathtubsPage";
 import BathtubProductPage from "./pages/BathtubProductPage";
+import ConcealedFlushTankCategoriesPage from "./pages/ConcealedFlushTankCategoriesPage";
+import ConcealedFlushTankProductPage from "./pages/ConcealedFlushTankProductPage";
+import BathroomCollectionPage from "./pages/BathroomCollectionPage";
+import PublicBathroomsCategoriesPage from "./pages/PublicBathroomsCategoriesPage";
+import PublicBathroomsProductPage from "./pages/PublicBathroomsProductPage";
+import AccessoriesCategoriesPage from "./pages/AccessoriesCategoriesPage";
+import AccessoriesProductPage from "./pages/AccessoriesProductPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import NewsPage from "./pages/NewsPage";
 import NewsArticlePage from "./pages/NewsArticlePage";
@@ -133,6 +140,62 @@ const App = () => {
           element={
             <Layout>
               <BathtubProductPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/concealed-flush-tank/categories"
+          element={
+            <Layout>
+              <ConcealedFlushTankCategoriesPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/concealed-flush-tank/categories/:id"
+          element={
+            <Layout>
+              <ConcealedFlushTankProductPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/bathroom-collection/categories"
+          element={
+            <Layout>
+              <BathroomCollectionPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/public-bathrooms/categories"
+          element={
+            <Layout>
+              <PublicBathroomsCategoriesPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/public-bathrooms/categories/:id"
+          element={
+            <Layout>
+              <PublicBathroomsProductPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/accessories/categories"
+          element={
+            <Layout>
+              <AccessoriesCategoriesPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/products/accessories/categories/:id"
+          element={
+            <Layout>
+              <AccessoriesProductPage />
             </Layout>
           }
         />
