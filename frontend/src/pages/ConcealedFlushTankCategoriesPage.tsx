@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import CategoryPageHeader from "../components/shared/CategoryPageHeader";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import RevealSection from "../components/shared/RevealSection";
-import heroImage from "../assets/concealed flush tank shop photos/hero section.jpg";
+import heroImage from "../assets/categories photos/7th category.jpg";
 import wallHungFrameImage from "../assets/concealed flush tank shop photos/wall hung frame.jpg";
 import lowHeightFrameImage from "../assets/concealed flush tank shop photos/low height frame.jpg";
 import concealedFlushTankImage from "../assets/categories photos/Concealed Flush tank.jpeg";
@@ -167,7 +167,7 @@ const ConcealedFlushTankCategoriesPage = () => {
         title="Concealed Flush Tank"
         subtitle="Choose a flush tank or an actuator to explore our range."
         image={heroImage}
-        imageAlt="Wall-hung toilet with a concealed flush tank"
+        imageAlt="Wall-hung toilet with a cut-away wall showing the concealed flush tank and frame inside"
         search={search}
         onSearchChange={setSearch}
       />
