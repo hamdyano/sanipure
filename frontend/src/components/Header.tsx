@@ -11,6 +11,7 @@ import {
   type AuthUser,
 } from "../api/clientApi";
 import { showSuccessToast } from "../lib/toast";
+import { openAuthPrompt } from "../lib/authPrompt";
 
 const navItems = [
   { label: "Who We Are", to: "/who-we-are" },
@@ -65,7 +66,7 @@ const Header = () => {
 
   return (
     <motion.header
-      className="sticky top-0 z-50 bg-black"
+      className="sticky top-0 z-50 bg-black print:hidden"
       animate={
         prefersReducedMotion
           ? { y: 0, opacity: 1 }
@@ -109,6 +110,13 @@ const Header = () => {
                   {dropdownOpen && (
                     <div className="absolute right-0 top-full mt-3 w-44 rounded-md border border-white/10 bg-black py-2 shadow-lg">
                       <Link
+                        to="/profile"
+                        onClick={() => setDropdownOpen(false)}
+                        className="block px-4 py-2 text-sm font-medium uppercase tracking-[0.02em] text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                      >
+                        My Profile
+                      </Link>
+                      <Link
                         to="/dashboard"
                         onClick={() => setDropdownOpen(false)}
                         className="block px-4 py-2 text-sm font-medium uppercase tracking-[0.02em] text-white/80 transition-colors hover:bg-white/10 hover:text-white"
@@ -126,12 +134,14 @@ const Header = () => {
                   )}
                 </>
               ) : (
-                <Link
-                  to="/admin"
+                <button
+                  type="button"
+                  onClick={() => openAuthPrompt()}
+                  aria-haspopup="dialog"
                   className="whitespace-nowrap text-sm font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
                 >
                   Admin
-                </Link>
+                </button>
               )}
             </li>
           </ul>
@@ -195,6 +205,15 @@ const Header = () => {
               </li>
               <li className="border-b border-white/10">
                 <Link
+                  to="/profile"
+                  onClick={() => setIsOpen(false)}
+                  className="block py-4 text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
+                >
+                  My Profile
+                </Link>
+              </li>
+              <li className="border-b border-white/10">
+                <Link
                   to="/dashboard"
                   onClick={() => setIsOpen(false)}
                   className="block py-4 text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
@@ -214,13 +233,17 @@ const Header = () => {
             </>
           ) : (
             <li className="border-b border-white/10">
-              <Link
-                to="/admin"
-                onClick={() => setIsOpen(false)}
-                className="block py-4 text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  openAuthPrompt();
+                }}
+                aria-haspopup="dialog"
+                className="block w-full py-4 text-left text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
               >
                 Admin
-              </Link>
+              </button>
             </li>
           )}
         </ul>

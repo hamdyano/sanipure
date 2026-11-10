@@ -173,8 +173,19 @@ export interface SignInInput {
 export interface SignUpInput {
   username: string;
   email: string;
+  phone: string;
   password: string;
 }
+
+// Same rule as the backend (backend/src/validation.ts): digits with an
+// optional leading "+", spaces, dashes and brackets.
+export const isValidPhone = (phone: string) => /^\+?[0-9\s\-()]{6,30}$/.test(phone.trim());
+
+// Same rule as the backend: something@something.something, no spaces.
+export const isValidEmail = (email: string) => {
+  const trimmed = email.trim();
+  return trimmed.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+};
 
 export interface AuthUser {
   id: string;
@@ -216,6 +227,117 @@ export const signIn = async (payload: SignInInput): Promise<AuthResponse> => {
 export const signUp = async (payload: SignUpInput): Promise<AuthResponse> => {
   const { data } = await apiClient.post<AuthResponse>("/auth/signup", payload);
   persistAuth(data.token, data.user);
+  return data;
+};
+
+export interface ResetPasswordInput {
+  email: string;
+  resetWord: string;
+  newPassword: string;
+}
+
+// POST /api/auth/reset-password — the reset word is checked on the server
+// only. Doesn't sign the user in; they sign in with the new password after.
+export const resetPassword = async (payload: ResetPasswordInput): Promise<void> => {
+  await apiClient.post("/auth/reset-password", payload);
+};
+
+// ---------------------------------------------------------------------------
+// Profile — GET/PUT /api/profile (backend/src/profile.ts). Auth required.
+// ---------------------------------------------------------------------------
+
+export interface Profile extends AuthUser {
+  fullName: string | null;
+  phone: string | null;
+  jobTitle: string | null;
+  location: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  createdAt: string;
+}
+
+// Empty strings clear an optional field.
+export interface ProfileInput {
+  username: string;
+  fullName: string;
+  phone: string;
+  jobTitle: string;
+  location: string;
+  bio: string;
+  avatarUrl: string;
+}
+
+// Keeps the cached signed-in user (shown in the Header) in step with the
+// profile, e.g. after the username is changed.
+const syncStoredUser = (profile: Profile) => {
+  const token = getAuthToken();
+  if (!token) return;
+  persistAuth(token, { id: profile.id, username: profile.username, email: profile.email });
+};
+
+export const getProfile = async (): Promise<Profile> => {
+  const { data } = await apiClient.get<Profile>("/profile");
+  syncStoredUser(data);
+  return data;
+};
+
+export const updateProfile = async (payload: ProfileInput): Promise<Profile> => {
+  const { data } = await apiClient.put<Profile>("/profile", payload);
+  syncStoredUser(data);
+  return data;
+};
+
+// ---------------------------------------------------------------------------
+// Wishlist — /api/wishlist (backend/src/wishlist.ts). Auth required.
+// State shared across the app lives in lib/wishlist.ts.
+// ---------------------------------------------------------------------------
+
+export interface WishlistEntry extends Product {
+  /** Category slug, e.g. "toilets" — used to build the product page link. */
+  category: string;
+  addedAt: string;
+}
+
+export const fetchWishlist = async (): Promise<WishlistEntry[]> => {
+  const { data } = await apiClient.get<WishlistEntry[]>("/wishlist");
+  return data;
+};
+
+export const addWishlistItem = async (productId: string): Promise<WishlistEntry> => {
+  const { data } = await apiClient.post<WishlistEntry>(
+    `/wishlist/${encodeURIComponent(productId)}`,
+  );
+  return data;
+};
+
+export const removeWishlistItem = async (productId: string): Promise<void> => {
+  await apiClient.delete(`/wishlist/${encodeURIComponent(productId)}`);
+};
+
+// ---------------------------------------------------------------------------
+// Leads report — GET /api/leads (backend/src/leads.ts). Auth required.
+// One entry per user, with every product they saved to their wishlist.
+// ---------------------------------------------------------------------------
+
+export interface LeadProduct {
+  id: string;
+  name: string;
+  category: string;
+  image: string | null;
+  addedAt: string;
+}
+
+export interface Lead {
+  userId: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  /** Newest first. */
+  products: LeadProduct[];
+}
+
+export const getLeads = async (): Promise<Lead[]> => {
+  const { data } = await apiClient.get<Lead[]>("/leads");
   return data;
 };
 

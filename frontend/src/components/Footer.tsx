@@ -153,7 +153,7 @@ const FooterColumn = ({
 
 const Footer = () => {
   return (
-    <footer className="bg-black py-16">
+    <footer className="bg-black py-16 print:hidden">
       <div className="container mx-auto grid grid-cols-1 gap-12 px-6 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <img src={logo} alt="Sanipure" className="h-8 w-auto" />

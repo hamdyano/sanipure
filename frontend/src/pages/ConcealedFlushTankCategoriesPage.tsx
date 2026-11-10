@@ -8,6 +8,7 @@ import wallHungFrameImage from "../assets/concealed flush tank shop photos/wall 
 import lowHeightFrameImage from "../assets/concealed flush tank shop photos/low height frame.jpg";
 import concealedFlushTankImage from "../assets/categories photos/Concealed Flush tank.jpeg";
 import type { ProductDisplay } from "../api/clientApi";
+import WishlistButton from "../components/shared/WishlistButton";
 
 interface Filter {
   id: string;
@@ -330,6 +331,11 @@ const ConcealedFlushTankCategoriesPage = () => {
                   key={product.id}
                   className="relative py-6 pl-6 pr-2 sm:pr-4"
                 >
+                  <WishlistButton
+                    productId={product.id}
+                    productName={product.name}
+                    className="absolute right-2 top-0 z-20 sm:right-4"
+                  />
                   <div className="flex min-w-0 flex-col gap-2">
                     <h4 className="truncate text-lg font-bold uppercase text-white">
                       {product.name}

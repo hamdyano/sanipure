@@ -4,6 +4,7 @@ import RevealSection from "../components/shared/RevealSection";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import bathtubsImage from "../assets/categories photos/Bathtubs photo.jpg";
 import type { ProductDisplay } from "../api/clientApi";
+import WishlistButton from "../components/shared/WishlistButton";
 
 interface Filter {
   id: string;
@@ -137,7 +138,12 @@ const ShopBathtubsPage = () => {
                 .filter((value): value is string => typeof value === "string" && value !== "")
                 .join(" · ");
               return (
-                <div key={product.id} className="flex flex-col">
+                <div key={product.id} className="relative flex flex-col">
+                  <WishlistButton
+                    productId={product.id}
+                    productName={product.name}
+                    className="absolute right-2 top-2 z-10"
+                  />
                   <Link
                     to={`/products/bathtubs/shop-bathtubs/${product.id}`}
                     className="flex flex-col"

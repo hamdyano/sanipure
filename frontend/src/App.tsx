@@ -32,6 +32,8 @@ import ResourcesPage from "./pages/ResourcesPage";
 import FindUsPage from "./pages/FindUsPage";
 import AdminPage from "./pages/AdminPage";
 import DashboardPage from "./pages/DashboardPage";
+import ProfilePage from "./pages/ProfilePage";
+import LeadsReportPage from "./pages/LeadsReportPage";
 
 const App = () => {
 
@@ -256,6 +258,22 @@ const App = () => {
           element={
             <Layout>
               <DashboardPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/dashboard/leads"
+          element={
+            <Layout>
+              <LeadsReportPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <Layout>
+              <ProfilePage />
             </Layout>
           }
         />

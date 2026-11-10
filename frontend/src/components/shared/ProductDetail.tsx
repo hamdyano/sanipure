@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import RevealSection from "./RevealSection";
 import RequiredItems from "./RequiredItems";
 import ItemTile, { ItemSectionTitle } from "./ItemTile";
+import WishlistButton from "./WishlistButton";
 import { CATEGORIES } from "../../data/categories";
 import type { CatalogResponse, Product, ProductDisplayColor } from "../../api/clientApi";
 import { toSizeEntries } from "../../api/clientApi";
@@ -204,9 +205,16 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
 
           {/* Spec sheet */}
           <div className="order-3 flex flex-col md:col-span-2 md:order-none lg:col-span-1 lg:pt-4">
-            <h1 className="font-brand text-3xl font-bold leading-tight md:text-4xl text-white">
-              {product.name}
-            </h1>
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="font-brand text-3xl font-bold leading-tight md:text-4xl text-white">
+                {product.name}
+              </h1>
+              <WishlistButton
+                productId={product.id}
+                productName={product.name}
+                className="mt-1 shrink-0"
+              />
+            </div>
             {display?.productCode && (
               <span className="mt-2 w-fit rounded px-2 py-0.5 font-brand text-xs font-semibold italic bg-white/15 text-white">
                 {display.productCode}

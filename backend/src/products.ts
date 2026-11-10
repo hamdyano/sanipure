@@ -27,7 +27,7 @@ const ALLOWED_DESIGN_FILE_TYPES = ["application/pdf"];
 
 // Every URL a product stores (photo, gallery, colors, design file) must be a
 // plain http(s) link — anything else (e.g. "javascript:") is dropped.
-const httpUrl = (value: unknown): string | undefined => {
+export const httpUrl = (value: unknown): string | undefined => {
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return /^https?:\/\//i.test(trimmed) ? trimmed : undefined;
@@ -215,7 +215,7 @@ const collectFileUrls = (attributes: unknown): Set<string> => {
 // they're no longer referenced (replaced, removed, or the product deleted) —
 // a leftover file isn't worth failing the request over, so errors here are
 // only logged. URLs that aren't from our bucket are ignored.
-const deleteStorageObjects = async (urls: Iterable<string>) => {
+export const deleteStorageObjects = async (urls: Iterable<string>) => {
   const marker = `/object/public/${PRODUCT_IMAGES_BUCKET}/`;
   const objectPaths: string[] = [];
   for (const url of urls) {

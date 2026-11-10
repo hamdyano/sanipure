@@ -1,6 +1,7 @@
 
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import AuthPromptModal from "../components/AuthPromptModal";
 //import SearchBar from "../components/SearchBar";
 
 interface Props {
@@ -14,6 +15,7 @@ const Layout = ({ children }: Props) => {
 
       <main className="flex-1">{children}</main>
       <Footer />
+      <AuthPromptModal />
     </div>
   );
 };

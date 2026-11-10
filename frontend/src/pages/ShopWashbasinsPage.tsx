@@ -4,6 +4,7 @@ import RevealSection from "../components/shared/RevealSection";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import washbasinsImage from "../assets/categories photos/Washbasins photo.jpg";
 import type { ProductDisplay } from "../api/clientApi";
+import WishlistButton from "../components/shared/WishlistButton";
 
 interface Filter {
   id: string;
@@ -140,7 +141,12 @@ const ShopWashbasinsPage = () => {
               const colors = product.display?.colors ?? [];
 
               return (
-                <div key={product.id} className="flex flex-col">
+                <div key={product.id} className="relative flex flex-col">
+                  <WishlistButton
+                    productId={product.id}
+                    productName={product.name}
+                    className="absolute right-2 top-2 z-10"
+                  />
                   <Link
                     to={`/products/washbasins/shop-washbasins/${product.id}`}
                     className="flex flex-col"

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import CategoryPageHeader from "../components/shared/CategoryPageHeader";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import RevealSection from "../components/shared/RevealSection";
+import WishlistButton from "../components/shared/WishlistButton";
 import heroImage from "../assets/accessories and furniture shop photos/hero section.jpg";
 import towelHoldersImage from "../assets/accessories and furniture shop photos/towel holders.jpg";
 import toiletRollHoldersImage from "../assets/accessories and furniture shop photos/toilet roll holders.jpg";
@@ -318,6 +319,11 @@ const AccessoriesCategoriesPage = () => {
                   key={product.id}
                   className="relative py-6 pl-6 pr-2 sm:pr-4"
                 >
+                  <WishlistButton
+                    productId={product.id}
+                    productName={product.name}
+                    className="absolute right-2 top-0 z-20 sm:right-4"
+                  />
                   <div className="flex min-w-0 flex-col gap-2">
                     <h4 className="truncate text-lg font-bold uppercase text-white">
                       {product.name}

@@ -46,15 +46,16 @@ model Filter {
 // multiple values (e.g. ["Soft close", "Hydro jet"]), matching the current
 // Record<string, string | string[]> shape used in the TS stub files.
 model Product {
-  id          String   @id @default(cuid())
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  name        String
-  attributes  Json
-  createdById String?
-  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String         @id @default(cuid())
+  categoryId   String
+  category     Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name         String
+  attributes   Json
+  createdById  String?
+  createdBy    User?          @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  wishlistedBy WishlistItem[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   @@index([categoryId])
   @@index([createdById])
@@ -62,11 +63,34 @@ model Product {
 
 // Admin sign-up / sign-in accounts.
 model User {
-  id           String    @id @default(cuid())
+  id           String         @id @default(cuid())
   username     String
-  email        String    @unique
+  email        String         @unique
   passwordHash String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  // Optional profile details the user can fill in from the /profile page.
+  fullName     String?
+  phone        String?
+  jobTitle     String?
+  location     String?
+  bio          String?
+  avatarUrl    String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   products     Product[]
+  wishlist     WishlistItem[]
+}
+
+// A product a signed-in user saved with the heart button; listed under
+// "My Wishlist" on their profile. Removed automatically if either the user
+// or the product is deleted.
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([productId])
 }

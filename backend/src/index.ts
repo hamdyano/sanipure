@@ -10,8 +10,11 @@ import { bathtubsShop } from "./BathtubsShop";
 import { concealedFlushTankShop } from "./ConcealedFlushTankShop";
 import { publicBathroomsShop } from "./PublicBathroomsShop";
 import { accessoriesShop } from "./AccessoriesShop";
-import { signIn, signUp } from "./auth";
+import { resetPassword, signIn, signUp } from "./auth";
 import { requireAuth } from "./authMiddleware";
+import { getProfile, updateProfile } from "./profile";
+import { addToWishlist, getWishlist, removeFromWishlist } from "./wishlist";
+import { getLeads } from "./leads";
 import {
   createProduct,
   deleteProduct,
@@ -115,6 +118,16 @@ app.delete("/api/products/:category/:id", requireAuth, deleteProduct);
 
 app.post("/api/auth/signup", signUp);
 app.post("/api/auth/signin", signIn);
+app.post("/api/auth/reset-password", resetPassword);
+
+app.get("/api/profile", requireAuth, getProfile);
+app.put("/api/profile", requireAuth, updateProfile);
+
+app.get("/api/wishlist", requireAuth, getWishlist);
+app.post("/api/wishlist/:productId", requireAuth, addToWishlist);
+app.delete("/api/wishlist/:productId", requireAuth, removeFromWishlist);
+
+app.get("/api/leads", requireAuth, getLeads);
 
 // SPA fallback: any non-API route should load the React app, which then
 // handles routing (e.g. /products/washbasins) on the client via React Router.
