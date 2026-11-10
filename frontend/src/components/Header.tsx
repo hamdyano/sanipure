@@ -179,8 +179,10 @@ const Header = () => {
       </div>
 
       <nav
-        className={`overflow-hidden bg-black font-brand transition-[max-height] duration-300 ease-in-out md:hidden ${
-          isOpen ? "max-h-[32rem]" : "max-h-0"
+        className={`bg-black font-brand transition-[max-height] duration-300 ease-in-out md:hidden ${
+          isOpen
+            ? "max-h-[calc(100dvh-4.5rem)] overflow-y-auto"
+            : "max-h-0 overflow-hidden"
         }`}
       >
         <ul className="flex flex-col px-6 pb-4">
