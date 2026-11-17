@@ -161,7 +161,7 @@ const ConcealedFlushTankCategoriesPage = () => {
   const hasActiveFilters = Object.values(selected).some((options) => options.length > 0);
 
   return (
-    <>
+    <div className="isolate flow-root overflow-clip bg-black">
       <CategoryPageHeader
         categoryId="concealed-flush-tank"
         title="Concealed Flush Tank"
@@ -398,7 +398,7 @@ const ConcealedFlushTankCategoriesPage = () => {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 };
 

@@ -4,6 +4,7 @@ import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { newsArticles, oldNewsArticles } from "../data/news";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { showErrorToast, showSuccessToast } from "../lib/toast";
+import { HERO_FADE_LAYER, HERO_FADE_PAGE } from "../lib/heroFade";
 
 const AUTOPLAY_MS = 4000;
 // The first change after the page opens comes quickly, so the slider is
@@ -130,16 +131,19 @@ const NewsPage = () => {
 
   return (
     <MotionConfig reducedMotion="user">
+      <div className={`${HERO_FADE_PAGE} bg-black`}>
       <section
         aria-roledescription="carousel"
         aria-label="Sanipure news"
         // Pause autoplay while someone is moving through it with the keyboard.
         onFocus={(event) => setPaused(event.target.matches(":focus-visible"))}
         onBlur={() => setPaused(false)}
-        className="relative isolate flex min-h-[calc(100svh-72px)] flex-col justify-end gap-8 overflow-hidden bg-black px-6 pb-8 pt-24 md:px-12 lg:block lg:min-h-[640px] lg:h-[calc(100svh-72px)] lg:p-0"
+        className="relative flex min-h-[calc(100svh-72px)] flex-col justify-end gap-8 overflow-x-clip px-6 pb-8 pt-24 md:px-12 lg:block lg:min-h-[640px] lg:h-[calc(100svh-72px)] lg:p-0"
       >
-        {/* Background: the active article's image, which grows out of its card. */}
-        <div className="absolute inset-0 -z-10">
+        {/* Background: the active article's image, which grows out of its
+            card, and fades out past the bottom of the hero (lib/heroFade.ts).
+            The section clips only sideways so the fade can run on below. */}
+        <div className={HERO_FADE_LAYER}>
           {previousArticle && (
             <img
               src={previousArticle.image}
@@ -298,7 +302,7 @@ const NewsPage = () => {
       <section
         ref={oldNewsRef}
         aria-labelledby="old-news-heading"
-        className="scroll-mt-[72px] bg-black px-6 pb-24 pt-16 md:px-12 md:pb-32 md:pt-20"
+        className="scroll-mt-[72px] px-6 pb-24 pt-16 md:px-12 md:pb-32 md:pt-20"
       >
         <div className="mx-auto max-w-7xl">
           <span className="block h-0.5 w-8 bg-white" />
@@ -397,6 +401,7 @@ const NewsPage = () => {
           )}
         </div>
       </section>
+      </div>
     </MotionConfig>
   );
 };

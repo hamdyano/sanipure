@@ -13,7 +13,9 @@ const images = [
 
 const WhySanipure = () => {
   return (
-    <section className="bg-black">
+    // No background of its own: the page is black, and an opaque background
+    // here would cut off the hero video fading out above it.
+    <section>
       <RevealSection className="mx-auto max-w-3xl px-6 pb-14 pt-16 text-center md:pb-16 md:pt-20">
         <h2 className="font-brand text-3xl font-bold text-white md:text-4xl">
           Why Sanipure?

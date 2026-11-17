@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, type PointerEvent } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion, useInView, type Variants } from "motion/react";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
@@ -40,6 +40,12 @@ const items: CategorySlide[] = CATEGORIES.map((category) => ({
 }));
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+// Mouse-steering: how far the pointer must travel sideways over the frame to
+// turn the slider, and how long to wait after a turn (about the length of the
+// slide animation) so one long sweep doesn't race through every category.
+const STEER_DISTANCE = 120;
+const STEER_COOLDOWN_MS = 800;
 
 // The photo panel turns in 3D as it slides: in from the side it's heading
 // from, out towards the other side.
@@ -92,6 +98,44 @@ const CategoryCarousel3 = () => {
   const goTo = (index: number, direction: number) => {
     markStarted();
     setSlide({ index: (index + items.length) % items.length, direction });
+  };
+
+  // Moving the mouse right over the frame slides the images right (previous
+  // category comes in from the left); moving left slides them left (next one
+  // comes in from the right). Only a mouse steers — touch keeps its normal
+  // behavior, so tapping tabs and links on phones still works.
+  const lastPointerX = useRef<number | null>(null);
+  const steerTravel = useRef(0);
+  const lastSteerAt = useRef(0);
+
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== "mouse") return;
+    const previousX = lastPointerX.current;
+    lastPointerX.current = event.clientX;
+    if (previousX === null) return;
+
+    const now = performance.now();
+    if (now - lastSteerAt.current < STEER_COOLDOWN_MS) {
+      steerTravel.current = 0;
+      return;
+    }
+
+    const dx = event.clientX - previousX;
+    // Changing direction starts the count over, so a small wiggle never turns it.
+    steerTravel.current =
+      Math.sign(dx) === Math.sign(steerTravel.current) ? steerTravel.current + dx : dx;
+
+    if (Math.abs(steerTravel.current) >= STEER_DISTANCE) {
+      if (steerTravel.current > 0) goTo(slide.index - 1, -1);
+      else goTo(slide.index + 1, 1);
+      steerTravel.current = 0;
+      lastSteerAt.current = now;
+    }
+  };
+
+  const handlePointerLeave = () => {
+    lastPointerX.current = null;
+    steerTravel.current = 0;
   };
 
   return (
@@ -184,7 +228,11 @@ const CategoryCarousel3 = () => {
           </div>
 
           {/* The frame */}
-          <div className="relative h-[68svh] max-h-[620px] min-h-[420px] [perspective:1600px]">
+          <div
+            onPointerMove={handlePointerMove}
+            onPointerLeave={handlePointerLeave}
+            className="relative h-[68svh] max-h-[620px] min-h-[420px] [perspective:1600px]"
+          >
             <span className="pointer-events-none absolute -inset-3 border border-white/10 md:-inset-5" aria-hidden />
             <span className="absolute -top-3 left-1/2 h-3 w-px bg-white/60 md:-top-5 md:h-5" aria-hidden />
             <span className="absolute -bottom-3 left-1/2 h-3 w-px bg-white/60 md:-bottom-5 md:h-5" aria-hidden />

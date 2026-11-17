@@ -103,7 +103,7 @@ const ToiletsCategoriesPage = () => {
   };
 
   return (
-    <>
+    <div className="isolate flow-root overflow-clip bg-black">
       <CategoryPageHeader
         categoryId="toilets"
         title="Toilets"
@@ -224,7 +224,7 @@ const ToiletsCategoriesPage = () => {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 };
 

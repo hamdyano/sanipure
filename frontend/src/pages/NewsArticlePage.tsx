@@ -1,6 +1,7 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
 import { getNewsArticle, newsArticles } from "../data/news";
+import { HERO_FADE_LAYER, HERO_FADE_PAGE } from "../lib/heroFade";
 
 const NewsArticlePage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -11,14 +12,14 @@ const NewsArticlePage = () => {
   const moreNews = newsArticles.filter((item) => item.slug !== article.slug).slice(0, 3);
 
   return (
-    <>
-      <section className="relative flex h-[60svh] min-h-[420px] items-end overflow-hidden bg-black">
-        <img
-          src={article.image}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+    <div className={HERO_FADE_PAGE}>
+      {/* The photo darkens toward the title, then fades out past the bottom
+          of the hero (lib/heroFade.ts). */}
+      <section className="relative flex h-[60svh] min-h-[420px] items-end">
+        <div className={HERO_FADE_LAYER}>
+          <img src={article.image} alt="" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.1)_0%,rgba(0,0,0,0.4)_30%,rgba(0,0,0,0.85)_58%)]" />
+        </div>
         <RevealSection className="relative mx-auto w-full max-w-4xl px-6 pb-12 md:pb-16">
           <span className="block h-0.5 w-8 bg-white" />
           <p className="mt-3 font-brand text-sm text-white/90 md:text-base">
@@ -78,7 +79,7 @@ const NewsArticlePage = () => {
           ))}
         </div>
       </section>
-    </>
+    </div>
   );
 };
 

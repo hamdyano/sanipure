@@ -103,7 +103,7 @@ const BathtubsCategoriesPage = () => {
   };
 
   return (
-    <>
+    <div className="isolate flow-root overflow-clip bg-black">
       <CategoryPageHeader
         categoryId="bathtubs"
         title="Bathtubs"
@@ -224,7 +224,7 @@ const BathtubsCategoriesPage = () => {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 };
 

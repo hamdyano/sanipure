@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import RevealSection from "./RevealSection";
 import { CATEGORIES } from "../../data/categories";
+import { HERO_FADE_LAYER } from "../../lib/heroFade";
 
 interface CategoryPageHeaderProps {
   /** Id of the category whose page this is (see data/categories.ts). */
@@ -30,12 +31,15 @@ const CategoryPageHeader = ({
   onSearchChange,
 }: CategoryPageHeaderProps) => {
   return (
-    <section className="relative flex min-h-[calc(60vh+6.5rem)] w-full flex-col overflow-hidden bg-black md:min-h-[calc(70vh+6.5rem)]">
-      <img src={image} alt={imageAlt} className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-black/55" />
-      {/* Soft fade at the very bottom, so the photo ends in the page's black
-          instead of a hard edge just under the bar. */}
-      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black to-transparent" />
+    <section className="relative flex min-h-[calc(60vh+6.5rem)] w-full flex-col md:min-h-[calc(70vh+6.5rem)]">
+      {/* The photo runs on past the bottom of the hero and fades out over the
+          top of the filters and products. It sits at -z-10, so the page's own
+          content draws on top of it; the page wrapper must be `isolate` (and
+          `overflow-clip`, so a short page can't spill it into the footer). */}
+      <div className={HERO_FADE_LAYER}>
+        <img src={image} alt={imageAlt} className="h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-black/55" />
+      </div>
 
       <div className="relative z-10 flex flex-1 items-center justify-center">
         <RevealSection className="px-6 text-center">

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import RevealSection from "../components/shared/RevealSection";
@@ -16,7 +16,37 @@ const formatDateTime = (iso: string) =>
     minute: "2-digit",
   });
 
-const headerCell = "px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/50";
+// Date filter values are the <input type="date"> format, "YYYY-MM-DD", read
+// as local calendar days (so "today" means today where the viewer is).
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const toDayValue = (date: Date) =>
+  `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+const dayStart = (value: string) => {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
+const daysAgo = (days: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return toDayValue(date);
+};
+const formatDay = (value: string) =>
+  dayStart(value).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+
+const latestSave = (lead: Lead) =>
+  Math.max(...lead.products.map((product) => new Date(product.addedAt).getTime()));
+
+const DATE_PRESETS:{ label: string; range: () => { from: string; to: string } }[] = [
+  { label: "Today", range: () => ({ from: daysAgo(0), to: daysAgo(0) }) },
+  { label: "Last 7 days", range: () => ({ from: daysAgo(6), to: daysAgo(0) }) },
+  { label: "Last 30 days", range: () => ({ from: daysAgo(29), to: daysAgo(0) }) },
+  { label: "All time", range: () => ({ from: "", to: "" }) },
+];
+
+const dateInput =
+  "rounded-md border border-white/20 bg-[#0d0d0d] px-3 py-2 text-sm text-white [color-scheme:dark] outline-none transition-colors focus:border-white";
+
+const headerCell ="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-white/50";
 const bodyCell = "px-4 py-4 align-top text-sm text-white";
 // Contact details sit level with the first product line.
 const contactCell = "px-4 pb-4 pt-8 align-top text-sm text-white";
@@ -25,7 +55,7 @@ const contactCell = "px-4 pb-4 pt-8 align-top text-sm text-white";
 const productLine = "flex h-14 items-center";
 
 /**
- * Dashboard → "Leads Report": everyone who saved a product to their
+ * Dashboard → "Sales Leads": everyone who saved a product to their
  * wishlist, one row per person listing all the products they saved. The
  * person with the most recent save comes first.
  */
@@ -41,8 +71,9 @@ const PRINT_STYLES = `
   .leads-report .leads-muted { color: #555 !important; }
   .leads-report tr { border-color: #d4d4d4 !important; break-inside: avoid; }
   .leads-report a { text-decoration: none !important; }
-  .leads-report .leads-thumb {
-    background: #f2f2f2 !important;
+  .leads-report .leads-thumb,
+  .leads-report .leads-name {
+    background: #e6e6e6 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -77,15 +108,60 @@ const LeadsReportPage = () => {
     fetchLeads();
   }, [navigate, fetchLeads]);
 
-  const savedCount = leads?.reduce((total, lead) => total + lead.products.length, 0) ?? 0;
+  // Date filter: keeps only the products saved within [from, to] (whole days,
+  // either end optional), and only the people who saved at least one of them.
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const isDateFiltered = dateFrom !== "" || dateTo !== "";
+
+  const filteredLeads = useMemo(() => {
+    if (!leads || !isDateFiltered) return leads;
+    const start = dateFrom ? dayStart(dateFrom).getTime() : -Infinity;
+    // "To" includes that whole day, so compare against the next midnight.
+    const end = dateTo ? dayStart(dateTo).getTime() + 24 * 60 * 60 * 1000 : Infinity;
+    return leads
+      .map((lead) => ({
+        ...lead,
+        products: lead.products.filter((product) => {
+          const at = new Date(product.addedAt).getTime();
+          return at >= start && at < end;
+        }),
+      }))
+      .filter((lead) => lead.products.length > 0)
+      // Newest first again, by each person's latest save inside the range.
+      .sort((a, b) => latestSave(b) - latestSave(a));
+  }, [leads, isDateFiltered, dateFrom, dateTo]);
+
+  const rangeLabel = !isDateFiltered
+    ? ""
+    : dateFrom && dateTo
+      ? dateFrom === dateTo
+        ? `Saved on ${formatDay(dateFrom)}`
+        : `Saved ${formatDay(dateFrom)} – ${formatDay(dateTo)}`
+      : dateFrom
+        ? `Saved since ${formatDay(dateFrom)}`
+        : `Saved until ${formatDay(dateTo)}`;
+
+  const applyPreset = (preset: (typeof DATE_PRESETS)[number]) => {
+    const { from, to } = preset.range();
+    setDateFrom(from);
+    setDateTo(to);
+  };
+  const isPresetActive = (preset: (typeof DATE_PRESETS)[number]) => {
+    const { from, to } = preset.range();
+    return from === dateFrom && to === dateTo;
+  };
+
+  const savedCount =
+    filteredLeads?.reduce((total, lead) => total + lead.products.length, 0) ?? 0;
 
   const retry = () => {
     setLoadFailed(false);
     fetchLeads();
   };
 
-  const countSummary = leads
-    ? `${leads.length} ${leads.length === 1 ? "person" : "people"} · ${savedCount} saved ${
+  const countSummary = filteredLeads
+    ? `${filteredLeads.length} ${filteredLeads.length === 1 ? "person" : "people"} · ${savedCount} saved ${
         savedCount === 1 ? "product" : "products"
       }`
     : "";
@@ -97,7 +173,7 @@ const LeadsReportPage = () => {
     const previousTitle = document.title;
     const now = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
-    document.title = `Sanipure Leads Report ${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    document.title = `Sanipure Sales Leads ${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     const restoreTitle = () => {
       document.title = previousTitle;
       window.removeEventListener("afterprint", restoreTitle);
@@ -113,7 +189,7 @@ const LeadsReportPage = () => {
       <style>{PRINT_STYLES}</style>
 
       <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28 print:hidden">
-        <h1 className="text-4xl font-semibold text-white md:text-5xl">Leads Report</h1>
+        <h1 className="text-4xl font-semibold text-white md:text-5xl">Sales Leads</h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
           Everyone who saved a product to their wishlist, newest first.
         </p>
@@ -122,9 +198,13 @@ const LeadsReportPage = () => {
       <section className="leads-report mx-auto my-16 max-w-6xl px-4 sm:px-6 md:my-20 print:m-0 print:max-w-none print:p-0">
         {/* Only on paper / in the PDF. */}
         <div className="mb-6 hidden print:block">
-          <h1 className="text-2xl font-semibold">Sanipure · Leads Report</h1>
+          <h1 className="text-2xl font-semibold">Sanipure · Sales Leads</h1>
           <p className="leads-muted mt-1 text-sm">
-            {[printedAt && `Generated ${formatDateTime(printedAt.toISOString())}`, countSummary]
+            {[
+              printedAt && `Generated ${formatDateTime(printedAt.toISOString())}`,
+              rangeLabel,
+              countSummary,
+            ]
               .filter(Boolean)
               .join(" · ")}
           </p>
@@ -143,7 +223,8 @@ const LeadsReportPage = () => {
               <button
                 type="button"
                 onClick={saveAsPdf}
-                className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium uppercase tracking-wide text-black transition-colors hover:bg-white/80"
+                disabled={!filteredLeads?.length}
+                className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium uppercase tracking-wide text-black transition-colors hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -164,10 +245,57 @@ const LeadsReportPage = () => {
           )}
         </div>
 
+        {leads && leads.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-end gap-x-6 gap-y-4 rounded-2xl border border-white/10 bg-[#0d0d0d] p-4 print:hidden">
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium uppercase tracking-wide text-white/50">From</span>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  max={dateTo || undefined}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className={dateInput}
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium uppercase tracking-wide text-white/50">To</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className={dateInput}
+                />
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {DATE_PRESETS.map((preset) => {
+                const active = isPresetActive(preset);
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => applyPreset(preset)}
+                    aria-pressed={active}
+                    className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                      active
+                        ? "border-white bg-white text-black"
+                        : "border-white/20 text-white/70 hover:border-white/50 hover:text-white"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="rounded-2xl border border-white/10 bg-[#0d0d0d] print:rounded-none print:border-0 print:bg-transparent">
           {loadFailed ? (
             <div className="p-8 text-center">
-              <p className="text-white/70">We couldn't load the leads report.</p>
+              <p className="text-white/70">We couldn't load the sales leads.</p>
               <button
                 type="button"
                 onClick={retry}
@@ -183,6 +311,20 @@ const LeadsReportPage = () => {
               No leads yet. When signed-in users save products with the heart button, they'll
               show up here.
             </p>
+          ) : !filteredLeads?.length ? (
+            <div className="p-8 text-center">
+              <p className="text-white/60">No products were saved in this date range.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setDateFrom("");
+                  setDateTo("");
+                }}
+                className="mt-4 text-sm text-white underline underline-offset-4"
+              >
+                Show all dates
+              </button>
+            </div>
           ) : (
             // Scrolls sideways inside the card on narrow screens instead of
             // squeezing the columns.
@@ -198,12 +340,16 @@ const LeadsReportPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {leads.map((lead) => (
+                  {filteredLeads.map((lead) => (
                     <tr
                       key={lead.userId}
                       className="border-b border-white/10 last:border-b-0 hover:bg-white/[0.03]"
                     >
-                      <td className={`${contactCell} font-medium`}>{lead.name}</td>
+                      <td className={`${contactCell} font-medium`}>
+                        <span className="leads-name -my-1 inline-block rounded-md bg-white/15 px-2.5 py-1">
+                          {lead.name}
+                        </span>
+                      </td>
                       <td className={contactCell}>
                         <a
                           href={`mailto:${lead.email}`}

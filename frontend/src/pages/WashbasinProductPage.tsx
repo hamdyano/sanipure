@@ -7,6 +7,7 @@ const WashbasinProductPage = () => (
     categoryLabel="Washbasins"
     api={washbasinsApi}
     shopPath="/products/washbasins/shop-washbasins"
+    backPath="/products/washbasins/categories"
   />
 );
 

@@ -1,18 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import CategoryPageHeader from "../components/shared/CategoryPageHeader";
 import FilterSidebar from "../components/shared/FilterSidebar";
-import RevealSection from "../components/shared/RevealSection";
 import WishlistButton from "../components/shared/WishlistButton";
 import heroImage from "../assets/accessories and furniture shop photos/hero section.jpg";
-import towelHoldersImage from "../assets/accessories and furniture shop photos/towel holders.jpg";
-import toiletRollHoldersImage from "../assets/accessories and furniture shop photos/toilet roll holders.jpg";
-import soapDispensersImage from "../assets/accessories and furniture shop photos/soap dispensers.jpg";
-import mirrorsImage from "../assets/accessories and furniture shop photos/mirrors.jpg";
-import circularCabinetImage from "../assets/accessories and furniture shop photos/circular cabinet.jpg";
-import rectangularCabinetImage from "../assets/accessories and furniture shop photos/rectangular cabinet.jpg";
-import overCounterImage from "../assets/accessories and furniture shop photos/over counter.jpg";
-import counterTopImage from "../assets/accessories and furniture shop photos/counter top.jpg";
 import accessoriesImage from "../assets/categories photos/Accessories photo.jpg";
 import type { ProductDisplay } from "../api/clientApi";
 
@@ -35,80 +26,12 @@ interface CatalogResponse {
   products: Product[];
 }
 
-interface TypeCard {
-  /** Must match an option of the backend "type" filter. */
-  type: string;
-  /** Must match an option of the backend "shape" filter, for cabinets. */
-  shape?: string;
-  title: string;
-  image: string;
-  description: string;
-}
-
-// See backend/src/AccessoriesShop.ts for the filter options these select.
-const ACCESSORIES: TypeCard[] = [
-  {
-    type: "Towel Holders",
-    title: "Towel Holders",
-    image: towelHoldersImage,
-    description: "Rings, rails and bars that keep towels within easy reach.",
-  },
-  {
-    type: "Toilet Roll Holders",
-    title: "Toilet Roll Holders",
-    image: toiletRollHoldersImage,
-    description: "Wall-mounted and free-standing holders in refined finishes.",
-  },
-  {
-    type: "Soap Dispensers",
-    title: "Soap Dispensers",
-    image: soapDispensersImage,
-    description: "Elegant dispensers that bring a finishing touch to the basin.",
-  },
-  {
-    type: "Mirrors",
-    title: "Mirrors",
-    image: mirrorsImage,
-    description: "Statement mirrors, from framed classics to backlit designs.",
-  },
-];
-
-const FURNITURE: TypeCard[] = [
-  {
-    type: "Cabinet",
-    shape: "Circular",
-    title: "Circular Cabinet",
-    image: circularCabinetImage,
-    description: "Soft, rounded lines for a graceful, timeless vanity.",
-  },
-  {
-    type: "Cabinet",
-    shape: "Rectangular",
-    title: "Rectangular Cabinet",
-    image: rectangularCabinetImage,
-    description: "Crisp, tailored lines with generous storage below the basin.",
-  },
-  {
-    type: "Over-Counter",
-    title: "Over-Counter",
-    image: overCounterImage,
-    description: "A basin that sits proudly on top of the counter, like a sculpture.",
-  },
-  {
-    type: "Counter-Top",
-    title: "Counter-Top",
-    image: counterTopImage,
-    description: "A seamless stone surface with the basin set neatly into it.",
-  },
-];
-
 const AccessoriesCategoriesPage = () => {
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Record<string, string[]>>({});
   const [search, setSearch] = useState("");
-  const productsRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,24 +64,6 @@ const AccessoriesCategoriesPage = () => {
         : [...current, option];
       return { ...prev, [filterId]: next };
     });
-  };
-
-  const isOnly = (values: string[] | undefined, value?: string) =>
-    value ? values?.length === 1 && values[0] === value : !values?.length;
-
-  const isPicked = (card: TypeCard) =>
-    isOnly(selected.type, card.type) && isOnly(selected.shape, card.shape);
-
-  // Picking a card narrows the filters to just that type (and shape, for
-  // cabinets), or clears them if it was already the current pick, then
-  // jumps to the results.
-  const pickCard = (card: TypeCard) => {
-    setSelected(
-      isPicked(card)
-        ? {}
-        : { type: [card.type], shape: card.shape ? [card.shape] : [] }
-    );
-    productsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const matchesFilters = (
@@ -199,39 +104,8 @@ const AccessoriesCategoriesPage = () => {
 
   const hasActiveFilters = Object.values(selected).some((options) => options.length > 0);
 
-  const renderCard = (card: TypeCard) => {
-    const active = isPicked(card);
-    return (
-      <button
-        key={card.title}
-        type="button"
-        onClick={() => pickCard(card)}
-        aria-pressed={active}
-        className={`group relative h-96 overflow-hidden rounded-3xl text-left ring-2 transition-shadow ${
-          active ? "ring-white" : "ring-transparent hover:ring-white/40"
-        }`}
-      >
-        <img
-          src={card.image}
-          alt={card.title}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-5">
-          {card.shape && (
-            <p className="text-xs uppercase tracking-[0.2em] text-white/60">{card.type}</p>
-          )}
-          <h3 className="mt-1 font-brand text-xl font-semibold uppercase text-white">
-            {card.title}
-          </h3>
-          <p className="mt-2 text-sm text-white/75">{card.description}</p>
-        </div>
-      </button>
-    );
-  };
-
   return (
-    <>
+    <div className="isolate flow-root overflow-clip bg-black">
       <CategoryPageHeader
         categoryId="accessories"
         title="Accessories & Furniture"
@@ -242,32 +116,7 @@ const AccessoriesCategoriesPage = () => {
         onSearchChange={setSearch}
       />
 
-      <section className="mx-auto mt-14 max-w-7xl px-6 md:mt-20 lg:px-12">
-        <RevealSection>
-          <h2 className="text-2xl font-semibold text-white md:text-3xl">Accessories</h2>
-          <p className="mt-2 max-w-2xl text-white/60">
-            Every detail considered, from the towel ring to the soap dispenser.
-          </p>
-        </RevealSection>
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {ACCESSORIES.map(renderCard)}
-        </div>
-
-        <RevealSection className="mt-16">
-          <h2 className="text-2xl font-semibold text-white md:text-3xl">Furniture</h2>
-          <p className="mt-2 max-w-2xl text-white/60">
-            Cabinets in circular or rectangular forms, and basin counters made to be seen.
-          </p>
-        </RevealSection>
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {FURNITURE.map(renderCard)}
-        </div>
-      </section>
-
-      <section
-        ref={productsRef}
-        className="mx-auto my-10 grid max-w-7xl scroll-mt-24 grid-cols-1 gap-10 px-6 md:my-14 lg:grid-cols-[240px_1fr] lg:px-12"
-      >
+      <section className="mx-auto my-10 grid max-w-7xl grid-cols-1 gap-10 px-6 md:my-14 lg:grid-cols-[240px_1fr] lg:px-12">
         <aside className="lg:sticky lg:top-24 lg:self-start">
           {loading && <p className="text-sm text-white/60">Loading filters…</p>}
           {error && <p className="text-sm text-red-400">{error}</p>}
@@ -381,7 +230,7 @@ const AccessoriesCategoriesPage = () => {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 };
 

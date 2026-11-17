@@ -7,6 +7,7 @@ const ToiletProductPage = () => (
     categoryLabel="Toilets"
     api={toiletsApi}
     shopPath="/products/toilets/shop-toilets"
+    backPath="/products/toilets/categories"
   />
 );
 

@@ -89,7 +89,7 @@ const ShopWashbasinsPage = () => {
   };
 
   return (
-    <>
+    <div className="flow-root bg-black">
       <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
         <h1 className="text-4xl font-semibold text-white md:text-5xl">
           {subcategoryName || "View Washbasins"}
@@ -201,7 +201,7 @@ const ShopWashbasinsPage = () => {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 };
 

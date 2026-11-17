@@ -211,7 +211,7 @@ const BathroomCollectionPage = () => {
   };
 
   return (
-    <>
+    <div className="isolate flow-root overflow-clip">
       <CategoryPageHeader
         categoryId="bathroom-collection"
         title="Bathroom Collection"
@@ -258,7 +258,7 @@ const BathroomCollectionPage = () => {
       </div>
 
       <BackToTopButton />
-    </>
+    </div>
   );
 };
 

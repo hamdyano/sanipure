@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
 import { showErrorToast, showSuccessToast } from "../lib/toast";
+import { HERO_FADE_LAYER, HERO_FADE_PAGE } from "../lib/heroFade";
 import heroImage from "../assets/who we are photos/Factory 1.png";
 // Arkan 205 — same photo as on the Projects page.
 import projectImage from "../assets/projects photos/project 3.JPG";
@@ -142,20 +143,22 @@ const FindUsPage = () => {
   };
 
   return (
-    <div className="bg-black">
+    <div className={`${HERO_FADE_PAGE} bg-black`}>
       {/* Hero */}
-      <section className="relative flex h-[360px] items-end justify-center overflow-hidden pb-10 md:h-[480px] md:pb-14">
+      <section className="relative flex h-[360px] items-end justify-center pb-10 md:h-[480px] md:pb-14">
         {/* The SANIPURE sign sits high on the building (about 13–25% down the
             photo), so the crop leans to the top to keep it in view on wide
-            screens. The photo fades to black at the bottom, where the title
-            sits, and stays bright above so the sign still reads. */}
-        <img
-          src={heroImage}
-          alt="The Sanipure factory"
-          className="absolute inset-0 h-full w-full object-cover object-[center_10%]"
-        />
-        <div className="absolute inset-0 bg-black/15" />
-        <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black via-black/70 to-transparent" />
+            screens. The photo darkens toward the title and stays bright above
+            so the sign still reads, then fades out past the bottom of the hero
+            (lib/heroFade.ts). */}
+        <div className={HERO_FADE_LAYER}>
+          <img
+            src={heroImage}
+            alt="The Sanipure factory"
+            className="h-full w-full object-cover object-[center_10%]"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.15)_20%,rgba(0,0,0,0.75)_45%)]" />
+        </div>
         <RevealSection className="relative px-6 text-center">
           <h1 className="font-brand text-4xl font-semibold uppercase text-white md:text-6xl">Contact Us</h1>
           <p className="mt-1 font-brand text-base uppercase text-white/85 md:text-2xl">

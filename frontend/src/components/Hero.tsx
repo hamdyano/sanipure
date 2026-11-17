@@ -1,25 +1,30 @@
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import heroVideo from "../assets/hero  video.mp4";
+import { HERO_FADE_LAYER } from "../lib/heroFade";
 
+// The video fades out past the bottom of the hero (see lib/heroFade.ts);
+// HomePage's wrapper provides the isolate/overflow-clip it needs.
 const Hero = () => {
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-black">
-      <video
-        className="absolute inset-0 h-full w-full object-cover"
-        src={heroVideo}
-        autoPlay
-        muted
-        loop
-        playsInline
-      />
+    <section className="relative h-screen w-full">
+      <div className={HERO_FADE_LAYER}>
+        <video
+          className="h-full w-full object-cover"
+          src={heroVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
 
-      <motion.div
-        className="absolute inset-0 bg-white/10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      />
+        <motion.div
+          className="absolute inset-0 bg-white/10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        />
+      </div>
 
       <motion.div
         className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
@@ -55,7 +60,3 @@ const Hero = () => {
 export default Hero;
 
 
-
-/*exceptional
-          quality, and contemporary design for homeowners in addition to the
-          residential and commercial projects. */

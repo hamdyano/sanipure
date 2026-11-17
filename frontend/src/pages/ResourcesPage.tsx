@@ -10,6 +10,7 @@ import technicalImage from "../assets/Resources photos/Technical Documents.png";
 import platformsImage from "../assets/articles photos/article 3.jpg";
 import guidesImage from "../assets/Resources photos/Guides.jpg";
 import needSomethingElseImage from "../assets/Resources photos/Need Something Else.jpg";
+import { HERO_FADE_LAYER, HERO_FADE_PAGE } from "../lib/heroFade";
 
 interface Resource {
   id: string;
@@ -157,7 +158,7 @@ const ResourcesPage = () => {
       : "text-[clamp(56px,13vw,200px)]";
 
   return (
-    <div className="bg-black">
+    <div className={`${HERO_FADE_PAGE} bg-black`}>
       {/* Hero slider */}
       <section
         ref={heroRef}
@@ -172,32 +173,35 @@ const ResourcesPage = () => {
         }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="relative h-[calc(100svh-72px)] min-h-[560px] overflow-hidden bg-black"
+        className="relative h-[calc(100svh-72px)] min-h-[560px] overflow-x-clip"
       >
         <h1 className="sr-only">Resources</h1>
 
-        <AnimatePresence initial={false}>
-          <motion.div
-            key={active.id}
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.9, ease: "easeInOut" }}
-          >
-            <img
-              src={active.image}
-              alt=""
-              style={{ objectPosition: active.imagePosition }}
-              className="h-full w-full animate-[design-zoom_7s_ease-out_forwards] object-cover motion-reduce:animate-none"
-            />
-          </motion.div>
-        </AnimatePresence>
+        {/* The slide photos fade out past the bottom of the hero
+            (lib/heroFade.ts); the layer clips the slow zoom itself. */}
+        <div className={HERO_FADE_LAYER}>
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={active.id}
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.9, ease: "easeInOut" }}
+            >
+              <img
+                src={active.image}
+                alt=""
+                style={{ objectPosition: active.imagePosition }}
+                className="h-full w-full animate-[design-zoom_7s_ease-out_forwards] object-cover motion-reduce:animate-none"
+              />
+            </motion.div>
+          </AnimatePresence>
 
-        {/* Muted, moody grade like the reference, darker toward the edges. */}
-        <div className="absolute inset-0 bg-black/45" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_center,transparent,rgba(0,0,0,0.55))]" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black to-transparent" />
+          {/* Muted, moody grade like the reference, darker toward the edges. */}
+          <div className="absolute inset-0 bg-black/45" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_center,transparent,rgba(0,0,0,0.55))]" />
+        </div>
 
         {/* Category tabs, top right — the reference's small nav row. */}
         <div

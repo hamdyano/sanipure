@@ -4,10 +4,11 @@ import WhySanipure from "../components/WhySanipure";
 import CategoryCarousel3 from "../components/CategoryCarousel3";
 import NewDesignSection from "../components/NewDesignSection";
 import Articles from "../components/Articles";
+import { HERO_FADE_PAGE } from "../lib/heroFade";
 
 const HomePage = () => {
   return (
-    <div className="flow-root bg-black">
+    <div className={`${HERO_FADE_PAGE} bg-black`}>
       <Hero />
       <WhySanipure />
       {/* <CategoryCarousel2 /> */}

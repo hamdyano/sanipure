@@ -78,6 +78,10 @@ interface ProductManagerProps {
   // file) shown on the product's public detail page. Only toilets use this
   // today; other categories keep the plain filter-attributes form.
   showDisplaySection?: boolean;
+  // Shows the "For Required Items" part of the display section. Off for
+  // categories whose products have no companion items. Hiding it only hides
+  // the editor: any required items a product already has are kept on save.
+  showRequiredItems?: boolean;
 }
 
 const inputClasses =
@@ -114,6 +118,7 @@ const ProductManager = ({
   api,
   onClose,
   showDisplaySection = false,
+  showRequiredItems = true,
 }: ProductManagerProps) => {
   const [myProducts, setMyProducts] = useState<Product[]>([]);
   const [loadingMine, setLoadingMine] = useState(true);
@@ -930,7 +935,7 @@ const ProductManager = ({
         </div>
       )}
 
-      {showDisplaySection && (
+      {showDisplaySection && showRequiredItems && (
         <div className="mt-10 border-t border-white/10 pt-8">
           <div className="mb-6 flex items-center justify-between gap-4">
             <h4 className="text-sm font-semibold uppercase tracking-wide text-white/60">

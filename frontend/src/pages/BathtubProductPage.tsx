@@ -7,6 +7,7 @@ const BathtubProductPage = () => (
     categoryLabel="Bathtubs"
     api={bathtubsApi}
     shopPath="/products/bathtubs/shop-bathtubs"
+    backPath="/products/bathtubs/categories"
   />
 );
 

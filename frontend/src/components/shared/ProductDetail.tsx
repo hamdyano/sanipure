@@ -7,6 +7,7 @@ import WishlistButton from "./WishlistButton";
 import { CATEGORIES } from "../../data/categories";
 import type { CatalogResponse, Product, ProductDisplayColor } from "../../api/clientApi";
 import { toSizeEntries } from "../../api/clientApi";
+import backgroundPattern from "../../assets/background Pattern.png";
 
 interface CategoryApi {
   getAll: () => Promise<CatalogResponse>;
@@ -21,6 +22,12 @@ interface ProductDetailProps {
   api: CategoryApi;
   /** Shop page the product belongs to; product pages live under it. */
   shopPath: string;
+  /**
+   * Where "Back to …" goes, when that isn't shopPath: toilets, washbasins and
+   * bathtubs keep their product pages under the old shop-* pages, but the
+   * page people browse from is the category page with the filter sidebar.
+   */
+  backPath?: string;
 }
 
 const MAX_RECOMMENDATIONS = 6;
@@ -32,27 +39,27 @@ const productImage = (product: Product) => {
   return product.display?.images?.[0] ?? product.display?.colors?.find((c) => c.image)?.image;
 };
 
-/** Faint wide curves behind the item grids, like the reference design. */
-const BackgroundWaves = () => (
-  <svg
+/**
+ * The brand stripe pattern (assets/background Pattern.png) as faint light
+ * bands behind the item grids, like the reference design. The PNG is dark
+ * stripes on transparency, so it's used as a mask over a faint white fill:
+ * the stripes come out light on the black page, and their strength is just
+ * the fill's opacity. It spans the full screen width, stretched a little
+ * taller than the file so the bands run through both item sections.
+ */
+const BackgroundPattern = () => (
+  <div
     aria-hidden
-    viewBox="0 0 1440 900"
-    preserveAspectRatio="none"
-    className="pointer-events-none absolute inset-x-0 top-[18%] h-[70%] w-full"
-  >
-    <path
-      d="M0 160 C 300 120, 520 260, 820 250 S 1250 140, 1440 190 L1440 300 C 1200 260, 1000 360, 760 360 S 260 240, 0 280 Z"
-      fill="rgba(255,255,255,0.045)"
-    />
-    <path
-      d="M0 470 C 260 420, 560 560, 860 540 S 1260 420, 1440 470 L1440 560 C 1220 520, 1020 640, 780 640 S 280 520, 0 570 Z"
-      fill="rgba(255,255,255,0.04)"
-    />
-    <path
-      d="M0 720 C 320 680, 600 800, 900 780 S 1280 690, 1440 720 L1440 800 C 1180 780, 980 870, 720 860 S 240 770, 0 810 Z"
-      fill="rgba(255,255,255,0.035)"
-    />
-  </svg>
+    className="pointer-events-none absolute left-1/2 top-24 -z-10 aspect-[3902/1820] w-screen -translate-x-1/2 bg-white/[0.08]"
+    style={{
+      maskImage: `url("${backgroundPattern}")`,
+      WebkitMaskImage: `url("${backgroundPattern}")`,
+      maskSize: "100% 100%",
+      WebkitMaskSize: "100% 100%",
+      maskRepeat: "no-repeat",
+      WebkitMaskRepeat: "no-repeat",
+    }}
+  />
 );
 
 /**
@@ -61,7 +68,13 @@ const BackgroundWaves = () => (
  * technical sheet), then the product's required items and a few other
  * products from the same category to recommend.
  */
-const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDetailProps) => {
+const ProductDetail = ({
+  categoryId,
+  categoryLabel,
+  api,
+  shopPath,
+  backPath = shopPath,
+}: ProductDetailProps) => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const requestedColor = searchParams.get("color");
@@ -143,7 +156,7 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
       <RevealSection className="bg-black px-6 py-28 text-center">
         <p className="text-sm text-white/60">This product couldn't be found.</p>
         <Link
-          to={shopPath}
+          to={backPath}
           className="mt-6 inline-block border border-white px-8 py-3 text-sm font-medium uppercase tracking-wide text-white transition-colors hover:bg-white hover:text-black"
         >
           Back to {categoryLabel}
@@ -154,15 +167,16 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
 
   return (
     <div className="relative overflow-hidden bg-black pb-20 md:pb-28">
-      <BackgroundWaves />
-
       <div className="relative mx-auto max-w-6xl px-4 pt-8 md:px-6 md:pt-10">
-        <Link to={shopPath} className="text-sm text-white/60 transition-colors hover:text-white">
+        <Link to={backPath} className="text-sm text-white/60 transition-colors hover:text-white">
           ← Back to {categoryLabel}
         </Link>
 
         {/* Product card */}
-        <section className={`mt-4 grid grid-cols-1 gap-6 rounded-3xl bg-black p-5 ring-1 ring-white/10 [color-scheme:dark] md:grid-cols-[96px_1fr] md:p-7 lg:grid-cols-[104px_1fr_minmax(280px,340px)] lg:gap-8`}>
+        {/* Light gray card (#d2d3d5, inner panels #b7b8ba) so transparent PNG
+            cut-outs of white sanitaryware sit straight on it, lifted by a drop
+            shadow instead of a box of their own. */}
+        <section className="mt-4 grid grid-cols-1 gap-6 rounded-3xl bg-[#d2d3d5] p-5 [color-scheme:light] md:grid-cols-[96px_1fr] md:p-7 lg:grid-cols-[104px_1fr_minmax(280px,340px)] lg:gap-8">
           {/* Thumbnails: a row under the photo on phones, a column on the left otherwise. */}
           {gallery.length > 1 && (
             <div className="order-2 flex gap-3 overflow-x-auto md:order-none md:max-h-[460px] md:flex-col md:overflow-y-auto md:overflow-x-visible">
@@ -172,8 +186,8 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
                   type="button"
                   onClick={() => pick(image, activeColor)}
                   aria-label={`Show photo ${index + 1}`}
-                  className={`h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-black ring-offset-2 ring-offset-black transition md:h-24 md:w-24 lg:h-[100px] lg:w-[100px] ${
-                    activeImage === image ? "ring-2 ring-white/80" : "hover:ring-2 hover:ring-white/30"
+                  className={`h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[#c4c5c8] ring-offset-2 ring-offset-[#d2d3d5] transition md:h-24 md:w-24 lg:h-[100px] lg:w-[100px] ${
+                    activeImage === image ? "ring-2 ring-black/70" : "hover:ring-2 hover:ring-black/25"
                   }`}
                 >
                   <img
@@ -196,17 +210,17 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
               <img
                 src={activeImage}
                 alt={product.name}
-                className="max-h-full max-w-full object-contain drop-shadow-[0_24px_30px_rgba(0,0,0,0.25)]"
+                className="max-h-full max-w-full object-contain drop-shadow-[0_22px_26px_rgba(0,0,0,0.28)]"
               />
             ) : (
-              <span className="text-sm text-white/55">No image</span>
+              <span className="text-sm text-black/50">No image</span>
             )}
           </div>
 
           {/* Spec sheet */}
           <div className="order-3 flex flex-col md:col-span-2 md:order-none lg:col-span-1 lg:pt-4">
             <div className="flex items-start justify-between gap-4">
-              <h1 className="font-brand text-3xl font-bold leading-tight md:text-4xl text-white">
+              <h1 className="font-brand text-3xl font-bold leading-tight text-black md:text-4xl">
                 {product.name}
               </h1>
               <WishlistButton
@@ -216,19 +230,19 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
               />
             </div>
             {display?.productCode && (
-              <span className="mt-2 w-fit rounded px-2 py-0.5 font-brand text-xs font-semibold italic bg-white/15 text-white">
+              <span className="mt-2 w-fit rounded bg-[#7a7b7e] px-2 py-0.5 font-brand text-xs font-semibold italic text-white">
                 {display.productCode}
               </span>
             )}
             {display?.description && (
-              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-white/80">
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-black/75">
                 {display.description}
               </p>
             )}
 
             {display?.colors && display.colors.length > 0 && (
-              <div className="mt-6 rounded-2xl p-4 ring-1 ring-white/15">
-                <p className="font-brand text-sm font-semibold text-white">Color / Finish</p>
+              <div className="mt-6 rounded-2xl bg-[#b7b8ba] p-4 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.4)]">
+                <p className="font-brand text-sm font-semibold text-black">Color / Finish</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {display.colors.map((color, index) => {
                     const isActive = activeColor?.name === color.name && activeColor?.image === color.image;
@@ -240,24 +254,24 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
                         title={[color.name, color.code].filter(Boolean).join(" ")}
                         aria-label={[color.name, color.code].filter(Boolean).join(" ")}
                         aria-pressed={isActive}
-                        className={`flex h-11 w-12 items-center justify-center overflow-hidden rounded-lg bg-black p-0.5 ring-offset-2 ring-offset-black transition ${
-                          isActive ? "ring-2 ring-white/80" : "hover:ring-2 hover:ring-white/30"
+                        className={`flex h-11 w-12 items-center justify-center overflow-hidden rounded-lg bg-[#d2d3d5] p-0.5 ring-offset-2 ring-offset-[#b7b8ba] transition ${
+                          isActive ? "ring-2 ring-black/70" : "hover:ring-2 hover:ring-black/25"
                         }`}
                       >
                         {color.image ? (
                           <img src={color.image} alt="" className="max-h-full max-w-full object-contain" />
                         ) : (
-                          <span className="text-[10px] font-semibold text-white/55">{color.name.slice(0, 2)}</span>
+                          <span className="text-[10px] font-semibold text-black/55">{color.name.slice(0, 2)}</span>
                         )}
                       </button>
                     );
                   })}
                 </div>
                 {(activeColor?.name || activeColor?.code) && (
-                  <p className="mt-3 font-brand text-sm font-bold text-white">
+                  <p className="mt-3 font-brand text-sm font-bold text-black">
                     {activeColor.name}
                     {activeColor.code && (
-                      <span className={`font-semibold text-white/55 ${activeColor.name ? "ml-2" : ""}`}>
+                      <span className={`font-semibold text-black/55 ${activeColor.name ? "ml-2" : ""}`}>
                         {activeColor.code}
                       </span>
                     )}
@@ -268,10 +282,10 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
 
             {display?.types && display.types.length > 0 && (
               <div className="mt-6">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-white">Type</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-black">Type</p>
                 <div className="mt-1.5 flex flex-wrap gap-2">
                   {display.types.map((type) => (
-                    <span key={type} className="rounded-sm border px-3 py-1 text-xs border-white/40 text-white">
+                    <span key={type} className="rounded-sm border border-black/40 px-3 py-1 text-xs text-black">
                       {type}
                     </span>
                   ))}
@@ -281,15 +295,15 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
 
             {display?.sizes && display.sizes.length > 0 && (
               <div className="mt-4">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-white">Size</p>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-black">Size</p>
                 <div className="mt-1.5 flex flex-wrap gap-2">
                   {toSizeEntries(display.sizes).map((size, index) => (
                     <span
                       key={`${size.name}-${index}`}
-                      className="rounded-sm border px-3 py-1 text-xs border-white/40 text-white"
+                      className="rounded-sm border border-black/40 px-3 py-1 text-xs text-black"
                     >
                       {size.name}
-                      {size.code && <span className="ml-1.5 text-white/55">{size.code}</span>}
+                      {size.code && <span className="ml-1.5 text-black/55">{size.code}</span>}
                     </span>
                   ))}
                 </div>
@@ -301,7 +315,7 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
                 href={display.designFile}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-7 w-fit rounded px-3 py-1.5 font-brand text-sm font-bold uppercase italic transition-colors bg-white text-black hover:bg-white/80"
+                className="mt-7 w-fit rounded bg-[#7a7b7e] px-3 py-1.5 font-brand text-sm font-bold uppercase italic text-white transition-colors hover:bg-black"
               >
                 Download Technical Sheet
               </a>
@@ -309,7 +323,12 @@ const ProductDetail = ({ categoryId, categoryLabel, api, shopPath }: ProductDeta
           </div>
         </section>
 
-        <div className="mx-auto mt-10 flex max-w-5xl flex-col gap-16 md:mt-12 md:gap-20">
+        {/* `isolate` keeps the pattern's -z-10 inside this block: above the
+            page's black, below the items. */}
+        <div className="relative isolate mx-auto mt-10 flex max-w-5xl flex-col gap-16 md:mt-12 md:gap-20">
+          {((display?.requiredItems?.length ?? 0) > 0 || recommendations.length > 0) && (
+            <BackgroundPattern />
+          )}
           {display?.requiredItems && display.requiredItems.length > 0 && (
             <RequiredItems items={display.requiredItems} />
           )}

@@ -99,7 +99,7 @@ const WashbasinsCategoriesPage = () => {
   };
 
   return (
-    <>
+    <div className="isolate flow-root overflow-clip bg-black">
       <CategoryPageHeader
         categoryId="washbasins"
         title="Washbasins"
@@ -222,7 +222,7 @@ const WashbasinsCategoriesPage = () => {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 };
 

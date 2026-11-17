@@ -22,7 +22,13 @@ type CategorySlug =
   | "public-bathrooms"
   | "accessories";
 
-const CATEGORIES: { slug: CategorySlug; label: string; api: typeof washbasinsApi }[] = [
+const CATEGORIES: {
+  slug: CategorySlug;
+  label: string;
+  api: typeof washbasinsApi;
+  /** Hide the "For Required Items" section of the product form. */
+  noRequiredItems?: boolean;
+}[] = [
   { slug: "washbasins", label: "Washbasins", api: washbasinsApi },
   { slug: "toilets", label: "Toilets", api: toiletsApi },
   { slug: "bathtubs", label: "Bathtubs", api: bathtubsApi },
@@ -35,11 +41,13 @@ const CATEGORIES: { slug: CategorySlug; label: string; api: typeof washbasinsApi
     slug: "public-bathrooms",
     label: "Public Bathrooms",
     api: publicBathroomsApi,
+    noRequiredItems: true,
   },
   {
     slug: "accessories",
     label: "Accessories & Furniture",
     api: accessoriesApi,
+    noRequiredItems: true,
   },
 ];
 
@@ -85,7 +93,7 @@ const DashboardPage = () => {
             >
               <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
             </svg>
-            Leads Report
+            Sales Leads
           </Link>
         </div>
 
@@ -129,6 +137,7 @@ const DashboardPage = () => {
             api={activeConfig.api}
             onClose={() => setActiveCategory(null)}
             showDisplaySection
+            showRequiredItems={!activeConfig.noRequiredItems}
           />
         )}
       </section>
