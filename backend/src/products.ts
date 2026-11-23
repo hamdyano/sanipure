@@ -216,6 +216,9 @@ const collectFileUrls = (attributes: unknown): Set<string> => {
 // a leftover file isn't worth failing the request over, so errors here are
 // only logged. URLs that aren't from our bucket are ignored.
 export const deleteStorageObjects = async (urls: Iterable<string>) => {
+  // Local dev shares this bucket with the live site, so set
+  // SKIP_STORAGE_DELETE=true there to never remove files live products use.
+  if (process.env.SKIP_STORAGE_DELETE === "true") return;
   const marker = `/object/public/${PRODUCT_IMAGES_BUCKET}/`;
   const objectPaths: string[] = [];
   for (const url of urls) {

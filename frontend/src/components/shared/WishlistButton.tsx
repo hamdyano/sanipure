@@ -69,7 +69,7 @@ const WishlistButton = ({ productId, productName, className = "" }: WishlistButt
       aria-label={label}
       aria-pressed={saved}
       title={saved ? "Remove from wishlist" : "Add to wishlist"}
-      className={`flex h-9 w-9 items-center justify-center rounded-md bg-white text-black shadow-md transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${className}`}
+      className={`flex h-9 w-9 items-center justify-center rounded-md bg-white ${saved ? "text-pink-500" : "text-black"} shadow-md transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${className}`}
     >
       <svg
         viewBox="0 0 24 24"
