@@ -1,4 +1,5 @@
 import apiClient, {
+  getCatalog,
   getProduct,
   type CatalogResponse,
   type Product,
@@ -9,12 +10,7 @@ const CATEGORY = "concealed-flush-tank";
 
 // Read (all) — GET /api/products?category=concealed-flush-tank
 // Public, no auth required.
-export const getConcealedFlushTanks = async (): Promise<CatalogResponse> => {
-  const { data } = await apiClient.get<CatalogResponse>("/products", {
-    params: { category: CATEGORY },
-  });
-  return data;
-};
+export const getConcealedFlushTanks = async (): Promise<CatalogResponse> => getCatalog(CATEGORY);
 
 // Read (one) — GET /api/products/concealed-flush-tank/:id
 // Public, no auth required — powers the concealed flush tank product page.

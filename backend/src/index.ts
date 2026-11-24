@@ -48,7 +48,32 @@ app.use(
 
   
 
-app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+const FRONTEND_DIST = path.join(__dirname, "../../frontend/dist");
+
+// The built site's JS, CSS, photos and videos. Vite puts a hash of the
+// content in every file name here, so a changed file always has a new name
+// and browsers can keep these for a year without asking again. (Asking again
+// didn't work anyway: Apache adds "-gzip" to the ETag of files it compresses,
+// so the check never matched and the whole file was downloaded each visit.)
+app.use(
+  "/assets",
+  express.static(path.join(FRONTEND_DIST, "assets"), { maxAge: "1y", immutable: true })
+);
+// A missing file is a plain 404, not the React app's index.html.
+app.use("/assets", (req, res) => {
+  res.status(404).end();
+});
+
+// Everything else keeps its name between deploys. index.html is checked on
+// every visit, since it's what points to the current JS and CSS files.
+app.use(
+  express.static(FRONTEND_DIST, {
+    maxAge: "1d",
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith(".html")) res.setHeader("Cache-Control", "no-cache");
+    },
+  })
+);
 
 // Uploaded product photos, PDFs and profile photos (see storage.ts). File
 // names are unique and never reused, so browsers may cache them for long.
@@ -67,6 +92,20 @@ app.use("/uploads", (req, res) => {
   res.status(404).end();
 });
 
+
+// API replies can hold personal data (profile, wishlist, leads), so nothing
+// may store them unless a route below says otherwise.
+app.use("/api", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
+
+// For the public catalog: browsers keep a copy but check it's still current,
+// which costs a tiny "304 Not Modified" instead of the full reply.
+const checkBeforeReuse = (req: Request, res: Response, next: NextFunction) => {
+  res.setHeader("Cache-Control", "no-cache");
+  next();
+};
 
 app.get("/api/test", async (req, res) => {
   res.json({ message: "Test successful!" });
@@ -90,8 +129,9 @@ const getCatalog = (category: string): CatalogEntry | undefined =>
     ? productCatalog[category]
     : undefined;
 
-// Products can only be added to one of the shop categories above —
-// otherwise createProduct would create a Category row for any slug sent.
+// Products can only be read from or added to one of the shop categories above
+// — otherwise createProduct would create a Category row, and getDbProducts a
+// cache entry, for any slug sent.
 const requireKnownCategory = (req: Request, res: Response, next: NextFunction) => {
   if (!getCatalog(String(req.params.category))) {
     res.status(404).json({ message: `Unknown category "${req.params.category}"` });
@@ -100,7 +140,7 @@ const requireKnownCategory = (req: Request, res: Response, next: NextFunction) =
   next();
 };
 
-app.get("/api/products", async (req, res) => {
+app.get("/api/products", checkBeforeReuse, async (req, res) => {
   const category = String(req.query.category || "");
   const catalog = getCatalog(category);
   if (!catalog) {
@@ -130,7 +170,7 @@ app.post(
   uploadDesignFile
 );
 app.post("/api/products/:category", requireAuth, requireKnownCategory, createProduct);
-app.get("/api/products/:category/:id", getProductById);
+app.get("/api/products/:category/:id", requireKnownCategory, checkBeforeReuse, getProductById);
 app.put("/api/products/:category/:id", requireAuth, updateProduct);
 app.delete("/api/products/:category/:id", requireAuth, deleteProduct);
 
@@ -150,7 +190,9 @@ app.get("/api/leads", requireAuth, getLeads);
 // SPA fallback: any non-API route should load the React app, which then
 // handles routing (e.g. /products/washbasins) on the client via React Router.
 app.get(/^\/(?!api\/).*$/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
+  res.sendFile(path.join(FRONTEND_DIST, "index.html"), {
+    headers: { "Cache-Control": "no-cache" },
+  });
 });
 
 // Without this, an error thrown/passed to next() before reaching a route's

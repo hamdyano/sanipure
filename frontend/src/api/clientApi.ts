@@ -1,4 +1,5 @@
 import axios from "axios";
+import { clearCatalogCache, findFreshProduct, loadCatalog } from "./catalogCache";
 
 const apiClient = axios.create({
   baseURL: "/api",
@@ -27,6 +28,24 @@ apiClient.interceptors.request.use((config) => {
 
   return config;
 });
+
+// Adding, editing or deleting a product makes the cached catalogs outdated.
+// Also done when the request fails: the change may have been saved even if
+// the reply never arrived.
+const clearCatalogAfterChange = (config?: { method?: string; url?: string }) => {
+  if (config?.method !== "get" && config?.url?.startsWith("/products/")) clearCatalogCache();
+};
+
+apiClient.interceptors.response.use(
+  (response) => {
+    clearCatalogAfterChange(response.config);
+    return response;
+  },
+  (err) => {
+    if (axios.isAxiosError(err)) clearCatalogAfterChange(err.config);
+    return Promise.reject(err);
+  },
+);
 
 export default apiClient;
 
@@ -148,14 +167,28 @@ export const uploadProductFile = async (file: File): Promise<string> =>
     return data.url;
   });
 
+// Read (all) — GET /api/products?category=:category
+// Public, no auth required. Cached in memory for a short time (catalogCache.ts).
+export const getCatalog = (category: string): Promise<CatalogResponse> =>
+  loadCatalog(category, async () => {
+    const { data } = await apiClient.get<CatalogResponse>("/products", {
+      params: { category },
+    });
+    return data;
+  });
+
 // Read (one) — GET /api/products/:category/:id
 // Public, no auth required — powers a product's public detail page (linked
 // from its shop grid card), which shows the "For Display" spec-sheet data
-// alongside its filter attributes.
+// alongside its filter attributes. Catalog entries are the same full record,
+// so a product whose catalog was just loaded needs no request.
 export const getProduct = async (
   category: string,
   id: string,
 ): Promise<Product> => {
+  const cached = findFreshProduct(category, id);
+  if (cached) return cached;
+
   const { data } = await apiClient.get<Product>(`/products/${category}/${id}`);
   return data;
 };

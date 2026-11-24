@@ -1,60 +1,17 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
 import FilterSidebar from "../components/shared/FilterSidebar";
 import toiletsImage from "../assets/categories photos/Toilets photo.jpg";
-import type { ProductDisplay } from "../api/clientApi";
+import type { Product } from "../api/clientApi";
+import { useCatalog } from "../lib/useCatalog";
 import WishlistButton from "../components/shared/WishlistButton";
-
-interface Filter {
-  id: string;
-  label: string;
-  options: string[];
-}
-
-interface Product {
-  id: string;
-  name: string;
-  display?: ProductDisplay;
-  [attribute: string]: string | string[] | ProductDisplay | undefined;
-}
-
-interface CatalogResponse {
-  category: string;
-  filters: Filter[];
-  products: Product[];
-}
 
 const ShopToiletsPage = () => {
   const [searchParams] = useSearchParams();
   const subcategoryName = searchParams.get("subcategory");
-  const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { catalog, loading, error } = useCatalog("toilets");
   const [selected, setSelected] = useState<Record<string, string[]>>({});
-
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch("/api/products?category=toilets")
-      .then((res) => {
-        if (!res.ok) throw new Error(`Request failed (${res.status})`);
-        return res.json() as Promise<CatalogResponse>;
-      })
-      .then((data) => {
-        if (!cancelled) setCatalog(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load products");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const toggleOption = (filterId: string, option: string) => {
     setSelected((prev) => {

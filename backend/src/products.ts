@@ -2,7 +2,14 @@ import multer from "multer";
 import type { Request, Response } from "express";
 import { prisma } from "./prisma";
 import type { AuthedRequest } from "./authMiddleware";
+import { createMemoryCache } from "./cache";
 import { deleteUploads, isUploadUrl, saveUpload } from "./storage";
+
+type DbProduct = { id: string; name: string } & Record<string, unknown>;
+
+// Each category's products, so browsing the shop doesn't query the database
+// every time. Cleared whenever a product is created, updated or deleted.
+const catalogCache = createMemoryCache<DbProduct[]>(60_000);
 
 // Files are held in memory first so their type can be checked before
 // anything is written to disk (see makeUploadHandler and storage.ts).
@@ -293,6 +300,8 @@ export const createProduct = async (req: AuthedRequest, res: Response) => {
       },
     });
 
+    catalogCache.clear();
+
     res.status(201).json({
       id: product.id,
       name: product.name,
@@ -338,6 +347,8 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
       data: { name: name.trim(), attributes: attributes as any },
     });
 
+    catalogCache.clear();
+
     // Only after the save succeeds, so a failed update never leaves the
     // product pointing at files that were already deleted.
     const stillUsed = collectFileUrls(updated.attributes);
@@ -372,6 +383,7 @@ export const deleteProduct = async (req: AuthedRequest, res: Response) => {
     }
 
     await prisma.product.delete({ where: { id } });
+    catalogCache.clear();
 
     await deleteStorageObjects(collectFileUrls(existing.attributes));
 
@@ -422,27 +434,14 @@ export const getProductById = async (req: Request, res: Response) => {
     const category = String(req.params.category);
     const id = String(req.params.id);
 
-    const categoryRecord = await prisma.category.findUnique({
-      where: { slug: category },
-    });
-    if (!categoryRecord) {
-      res.status(404).json({ message: "Product not found" });
-      return;
-    }
-
-    const product = await prisma.product.findFirst({
-      where: { id, categoryId: categoryRecord.id },
-    });
+    const products = await getDbProducts(category);
+    const product = products.find((p) => p.id === id);
     if (!product) {
       res.status(404).json({ message: "Product not found" });
       return;
     }
 
-    res.json({
-      id: product.id,
-      name: product.name,
-      ...(product.attributes as Record<string, unknown>),
-    });
+    res.json(product);
   } catch (err) {
     console.error("getProductById failed:", err);
     res.status(500).json({ message: "Something went wrong loading the product" });
@@ -452,7 +451,7 @@ export const getProductById = async (req: Request, res: Response) => {
 // Products created through the admin form, shaped to match the stub
 // products (id, name, ...attributes) so they can be appended to the
 // in-memory catalog's product list with no frontend changes needed.
-export const getDbProducts = async (categorySlug: string) => {
+const loadDbProducts = async (categorySlug: string): Promise<DbProduct[]> => {
   const categoryRecord = await prisma.category.findUnique({
     where: { slug: categorySlug },
   });
@@ -469,3 +468,8 @@ export const getDbProducts = async (categorySlug: string) => {
     ...(row.attributes as Record<string, unknown>),
   }));
 };
+
+// Only call this with a known category (see requireKnownCategory in
+// index.ts), so the cache can't be filled with made-up slugs.
+export const getDbProducts = (categorySlug: string): Promise<DbProduct[]> =>
+  catalogCache.get(categorySlug, () => loadDbProducts(categorySlug));

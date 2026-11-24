@@ -1,4 +1,5 @@
 import apiClient, {
+  getCatalog,
   getProduct,
   type CatalogResponse,
   type Product,
@@ -9,12 +10,7 @@ const CATEGORY = "public-bathrooms";
 
 // Read (all) — GET /api/products?category=public-bathrooms
 // Public, no auth required.
-export const getPublicBathrooms = async (): Promise<CatalogResponse> => {
-  const { data } = await apiClient.get<CatalogResponse>("/products", {
-    params: { category: CATEGORY },
-  });
-  return data;
-};
+export const getPublicBathrooms = async (): Promise<CatalogResponse> => getCatalog(CATEGORY);
 
 // Read (one) — GET /api/products/public-bathrooms/:id
 // Public, no auth required — powers the public bathrooms product page.
