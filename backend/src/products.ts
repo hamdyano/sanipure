@@ -2,11 +2,10 @@ import multer from "multer";
 import type { Request, Response } from "express";
 import { prisma } from "./prisma";
 import type { AuthedRequest } from "./authMiddleware";
-import { supabase, PRODUCT_IMAGES_BUCKET } from "./supabase";
+import { deleteUploads, isUploadUrl, saveUpload } from "./storage";
 
-// Files are held in memory (not written to local disk) so they can be
-// streamed straight to Supabase Storage — Render's filesystem is ephemeral
-// and wipes local uploads on every redeploy/restart.
+// Files are held in memory first so their type can be checked before
+// anything is written to disk (see makeUploadHandler and storage.ts).
 export const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
@@ -20,16 +19,18 @@ export const uploadFile = multer({
   limits: { fileSize: 20 * 1024 * 1024 },
 });
 
-// Raster formats only — an SVG (or HTML, etc.) can carry script, and the
-// bucket serves files publicly with whatever content type was uploaded.
+// Raster formats only — an SVG (or HTML, etc.) can carry script, and
+// uploaded files are served publicly from our own site.
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
 const ALLOWED_DESIGN_FILE_TYPES = ["application/pdf"];
 
-// Every URL a product stores (photo, gallery, colors, design file) must be a
-// plain http(s) link — anything else (e.g. "javascript:") is dropped.
+// Every URL a product stores (photo, gallery, colors, design file) must be
+// either one of our own uploads ("/uploads/<file>") or a plain http(s) link —
+// anything else (e.g. "javascript:") is dropped.
 export const httpUrl = (value: unknown): string | undefined => {
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
+  if (isUploadUrl(trimmed)) return trimmed;
   return /^https?:\/\//i.test(trimmed) ? trimmed : undefined;
 };
 
@@ -211,32 +212,16 @@ const collectFileUrls = (attributes: unknown): Set<string> => {
   return urls;
 };
 
-// Best-effort cleanup of previously-uploaded Supabase Storage objects once
-// they're no longer referenced (replaced, removed, or the product deleted) —
-// a leftover file isn't worth failing the request over, so errors here are
-// only logged. URLs that aren't from our bucket are ignored.
+// Best-effort cleanup of previously-uploaded files once they're no longer
+// referenced (replaced, removed, or the product deleted) — a leftover file
+// isn't worth failing the request over, so errors are only logged (see
+// deleteUploads in storage.ts). Links that aren't our uploads are ignored.
 export const deleteStorageObjects = async (urls: Iterable<string>) => {
-  // Local dev shares this bucket with the live site, so set
-  // SKIP_STORAGE_DELETE=true there to never remove files live products use.
-  if (process.env.SKIP_STORAGE_DELETE === "true") return;
-  const marker = `/object/public/${PRODUCT_IMAGES_BUCKET}/`;
-  const objectPaths: string[] = [];
-  for (const url of urls) {
-    const index = url.indexOf(marker);
-    if (index !== -1) objectPaths.push(url.slice(index + marker.length));
-  }
-  if (!objectPaths.length) return;
-
-  const { error } = await supabase.storage
-    .from(PRODUCT_IMAGES_BUCKET)
-    .remove(objectPaths);
-  if (error) {
-    console.error("Failed to delete old product files from storage:", error);
-  }
+  await deleteUploads(urls);
 };
 
-// Uploads a single file to the product-images Supabase Storage bucket and
-// returns its public URL. Used by the admin product form before
+// Saves a single uploaded file on the server (see storage.ts) and returns
+// its public URL. Used by the admin product form before
 // create/update, decoupled from saving the product itself.
 const makeUploadHandler =
   (allowedTypes: string[], wrongTypeMessage: string) =>
@@ -251,27 +236,9 @@ const makeUploadHandler =
         return;
       }
 
-      // Only keep a plain extension like ".jpg" from the client's file name.
-      const ext = /\.[a-z0-9]{1,8}$/i.exec(req.file.originalname)?.[0] ?? "";
-      const objectPath = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+      const url = await saveUpload(req.file.buffer, req.file.mimetype);
 
-      const { error } = await supabase.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .upload(objectPath, req.file.buffer, {
-          contentType: req.file.mimetype,
-        });
-
-      if (error) {
-        console.error("Supabase Storage upload failed:", error);
-        res.status(500).json({ message: "Failed to upload file" });
-        return;
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(objectPath);
-
-      res.status(201).json({ url: publicUrl });
+      res.status(201).json({ url });
     } catch (err) {
       console.error("upload failed:", err);
       res.status(500).json({ message: "Something went wrong uploading the file" });
@@ -291,7 +258,7 @@ export const uploadDesignFile = makeUploadHandler(
 // Creates a product under the given category (from the route param), taking
 // whatever attribute fields were submitted (all optional — filter selects the
 // admin left blank simply won't be present in req.body) plus an optional
-// "image" field, which is a plain Supabase Storage public URL string already
+// "image" field, which is a URL string (e.g. "/uploads/<file>") already
 // uploaded via uploadImage above. The category row is created on first use
 // so this works without needing to pre-seed Category rows for every shop
 // category. Requires auth (see requireAuth) so the product is tied to its
@@ -340,7 +307,7 @@ export const createProduct = async (req: AuthedRequest, res: Response) => {
 // Updates a product, but only if the signed-in user is the one who created
 // it. File URLs in the body are expected to be either the existing public
 // URLs (unchanged) or new ones from uploadImage/uploadDesignFile; once the
-// update is saved, any old Supabase Storage object no longer referenced is
+// update is saved, any old uploaded file no longer referenced is
 // cleaned up.
 export const updateProduct = async (req: AuthedRequest, res: Response) => {
   try {
@@ -390,7 +357,7 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
 };
 
 // Deletes a product, but only if the signed-in user is the one who created
-// it. Also removes all of its uploaded files from Supabase Storage.
+// it. Also removes all of its uploaded files from the server.
 export const deleteProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const id = String(req.params.id);

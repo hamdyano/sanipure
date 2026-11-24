@@ -27,6 +27,7 @@ import {
   upload,
   uploadFile,
 } from "./products";
+import { UPLOADS_DIR } from "./storage";
 
 
 
@@ -48,6 +49,23 @@ app.use(
   
 
 app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+
+// Uploaded product photos, PDFs and profile photos (see storage.ts). File
+// names are unique and never reused, so browsers may cache them for long.
+// nosniff stops a browser from treating a file as anything other than its
+// declared type.
+app.use(
+  "/uploads",
+  express.static(UPLOADS_DIR, {
+    maxAge: "30d",
+    immutable: true,
+    setHeaders: (res) => res.setHeader("X-Content-Type-Options", "nosniff"),
+  })
+);
+// A missing upload is a plain 404, not the React app's index.html.
+app.use("/uploads", (req, res) => {
+  res.status(404).end();
+});
 
 
 app.get("/api/test", async (req, res) => {

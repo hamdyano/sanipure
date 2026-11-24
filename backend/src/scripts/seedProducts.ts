@@ -1,5 +1,5 @@
 // Adds a ready-made set of products to a shop category, exactly as the admin
-// dashboard would: each photo goes to the product-images Supabase bucket, then
+// dashboard would: each photo is saved to the uploads folder (storage.ts), then
 // a Product row is created with its filter attributes, main image and display
 // details (description + gallery). Each set's photos live in its own folder
 // under frontend/src/assets.
@@ -16,7 +16,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { prisma } from "../prisma";
-import { supabase, PRODUCT_IMAGES_BUCKET } from "../supabase";
+import { saveUpload } from "../storage";
 
 const ASSETS_DIR = path.resolve(__dirname, "../../../frontend/src/assets");
 
@@ -122,14 +122,14 @@ const SETS: Record<string, SeedSet> = {
 
 const uploadImage = async (filePath: string): Promise<string> => {
   const buffer = await readFile(filePath);
-  // Same naming as the dashboard upload (makeUploadHandler in products.ts).
+  // Same storage as the dashboard upload (makeUploadHandler in products.ts).
   const ext = path.extname(filePath).toLowerCase();
-  const objectPath = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-  const { error } = await supabase.storage
-    .from(PRODUCT_IMAGES_BUCKET)
-    .upload(objectPath, buffer, { contentType: ext === ".png" ? "image/png" : "image/jpeg" });
-  if (error) throw new Error(`Uploading ${path.basename(filePath)} failed: ${error.message}`);
-  return supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(objectPath).data.publicUrl;
+  const contentType = ext === ".png" ? "image/png" : "image/jpeg";
+  try {
+    return await saveUpload(buffer, contentType);
+  } catch (err) {
+    throw new Error(`Uploading ${path.basename(filePath)} failed: ${(err as Error).message}`);
+  }
 };
 
 const main = async () => {
