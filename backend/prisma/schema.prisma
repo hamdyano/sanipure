@@ -61,12 +61,25 @@ model Product {
   @@index([createdById])
 }
 
-// Admin sign-up / sign-in accounts.
+// What an account may do:
+//  - visitor: own profile and wishlist only (every new account)
+//  - data_entry: also adds products, edits or deletes their own, and sees the
+//    sales leads
+//  - admin: also edits or deletes anyone's products, and chooses who is data
+//    entry
+enum Role {
+  visitor
+  data_entry
+  admin
+}
+
+// Sign-up / sign-in accounts.
 model User {
   id           String         @id @default(cuid())
   username     String
   email        String         @unique
   passwordHash String
+  role         Role           @default(visitor)
   // Optional profile details the user can fill in from the /profile page.
   fullName     String?
   phone        String?

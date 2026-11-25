@@ -9,7 +9,7 @@ import {
   isValidPhone,
   signOut,
   updateProfile,
-  uploadProductImage,
+  uploadProfileImage,
   type Profile,
   type ProfileInput,
 } from "../api/clientApi";
@@ -200,7 +200,7 @@ const ProfilePage = () => {
 
     setUploading(true);
     try {
-      setField("avatarUrl", await uploadProductImage(file));
+      setField("avatarUrl", await uploadProfileImage(file));
     } catch (err) {
       reportError(err);
     } finally {

@@ -110,6 +110,9 @@ export interface Product {
 
 export type ProductInput = Omit<Product, "id">;
 
+/** A product as listed on the dashboard; admins also get who added it. */
+export type ManagedProduct = Product & { addedBy?: { name: string; email: string } };
+
 export interface CatalogResponse {
   category: string;
   filters: ProductFilter[];
@@ -220,11 +223,25 @@ export const isValidEmail = (email: string) => {
   return trimmed.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
 };
 
+// What an account may do (enforced by the backend on every request; here it
+// only decides what to show). Same values as enum Role in schema.prisma.
+export type UserRole = "visitor" | "data_entry" | "admin";
+
 export interface AuthUser {
   id: string;
   username: string;
   email: string;
+  /** Missing for a session started before roles existed, until it refreshes. */
+  role?: UserRole;
 }
+
+// The dashboard's name, which depends on the role; null for visitors, who
+// don't have one.
+export const dashboardLabel = (role: UserRole | undefined): string | null => {
+  if (role === "admin") return "Dashboard";
+  if (role === "data_entry") return "Adding Data";
+  return null;
+};
 
 export interface AuthResponse {
   token: string;
@@ -280,6 +297,7 @@ export const resetPassword = async (payload: ResetPasswordInput): Promise<void> 
 // ---------------------------------------------------------------------------
 
 export interface Profile extends AuthUser {
+  role: UserRole;
   fullName: string | null;
   phone: string | null;
   jobTitle: string | null;
@@ -301,22 +319,49 @@ export interface ProfileInput {
 }
 
 // Keeps the cached signed-in user (shown in the Header) in step with the
-// profile, e.g. after the username is changed.
-const syncStoredUser = (profile: Profile) => {
-  const token = getAuthToken();
-  if (!token) return;
-  persistAuth(token, { id: profile.id, username: profile.username, email: profile.email });
+// profile, e.g. after the username or role is changed.
+// Skipped if someone else signed in (or out) while the request was running.
+const syncStoredUser = (profile: Profile, token: string | null) => {
+  if (!token || token !== getAuthToken()) return;
+  persistAuth(token, {
+    id: profile.id,
+    username: profile.username,
+    email: profile.email,
+    role: profile.role,
+  });
 };
 
 export const getProfile = async (): Promise<Profile> => {
+  const token = getAuthToken();
   const { data } = await apiClient.get<Profile>("/profile");
-  syncStoredUser(data);
+  syncStoredUser(data, token);
   return data;
 };
 
+// Picks up a role changed by an admin since the visitor signed in. Once per
+// page load is enough, and a failure just leaves the session as it was.
+let sessionRefreshed = false;
+export const refreshSessionOnce = () => {
+  if (sessionRefreshed || !getAuthToken()) return;
+  sessionRefreshed = true;
+  getProfile().catch(() => {});
+};
+
+// Upload — POST /api/profile/upload-image. Stores a profile photo and returns
+// its URL, to be sent as avatarUrl. Open to every signed-in user, unlike
+// uploadProductImage.
+export const uploadProfileImage = async (file: File): Promise<string> =>
+  withUploadRetry(async () => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const { data } = await apiClient.post<{ url: string }>("/profile/upload-image", formData);
+    return data.url;
+  });
+
 export const updateProfile = async (payload: ProfileInput): Promise<Profile> => {
+  const token = getAuthToken();
   const { data } = await apiClient.put<Profile>("/profile", payload);
-  syncStoredUser(data);
+  syncStoredUser(data, token);
   return data;
 };
 
@@ -348,7 +393,7 @@ export const removeWishlistItem = async (productId: string): Promise<void> => {
 };
 
 // ---------------------------------------------------------------------------
-// Leads report — GET /api/leads (backend/src/leads.ts). Auth required.
+// Leads report — GET /api/leads (backend/src/leads.ts). Data entry and admins only.
 // One entry per user, with every product they saved to their wishlist.
 // ---------------------------------------------------------------------------
 
@@ -371,6 +416,39 @@ export interface Lead {
 
 export const getLeads = async (): Promise<Lead[]> => {
   const { data } = await apiClient.get<Lead[]>("/leads");
+  return data;
+};
+
+// ---------------------------------------------------------------------------
+// Data entry accounts — /api/users (backend/src/users.ts). Admin only.
+// ---------------------------------------------------------------------------
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  productCount: number;
+}
+
+export const getDataEntryTeam = async (): Promise<TeamMember[]> => {
+  const { data } = await apiClient.get<TeamMember[]>("/users/data-entry");
+  return data;
+};
+
+// Visitor accounts whose email contains the text.
+export const searchVisitors = async (query: string): Promise<TeamMember[]> => {
+  const { data } = await apiClient.get<TeamMember[]>("/users/search", { params: { q: query } });
+  return data;
+};
+
+export const setUserRole = async (
+  id: string,
+  role: "visitor" | "data_entry",
+): Promise<TeamMember> => {
+  const { data } = await apiClient.put<TeamMember>(`/users/${encodeURIComponent(id)}/role`, {
+    role,
+  });
   return data;
 };
 

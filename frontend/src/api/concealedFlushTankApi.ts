@@ -2,6 +2,7 @@ import apiClient, {
   getCatalog,
   getProduct,
   type CatalogResponse,
+  type ManagedProduct,
   type Product,
   type ProductInput,
 } from "./clientApi";
@@ -20,8 +21,8 @@ export const getConcealedFlushTankById = async (id: string): Promise<Product> =>
 // Read (mine) — GET /api/products/concealed-flush-tank/mine
 // Auth required. The signed-in user's own concealed flush tanks, for the
 // dashboard list (with edit/delete actions).
-export const getMyConcealedFlushTanks = async (): Promise<Product[]> => {
-  const { data } = await apiClient.get<Product[]>(`/products/${CATEGORY}/mine`);
+export const getMyConcealedFlushTanks = async (): Promise<ManagedProduct[]> => {
+  const { data } = await apiClient.get<ManagedProduct[]>(`/products/${CATEGORY}/mine`);
   return data;
 };
 

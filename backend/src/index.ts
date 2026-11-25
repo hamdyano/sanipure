@@ -11,8 +11,9 @@ import { concealedFlushTankShop } from "./ConcealedFlushTankShop";
 import { publicBathroomsShop } from "./PublicBathroomsShop";
 import { accessoriesShop } from "./AccessoriesShop";
 import { resetPassword, signIn, signUp } from "./auth";
-import { requireAuth } from "./authMiddleware";
-import { getProfile, updateProfile } from "./profile";
+import { requireAuth, requireRole } from "./authMiddleware";
+import { getProfile, limitAvatarUploads, updateProfile, uploadAvatar } from "./profile";
+import { getDataEntryTeam, searchVisitors, setUserRole } from "./users";
 import { addToWishlist, getWishlist, removeFromWishlist } from "./wishlist";
 import { getLeads } from "./leads";
 import {
@@ -156,23 +157,28 @@ app.get("/api/products", checkBeforeReuse, async (req, res) => {
   });
 });
 
-app.get("/api/products/:category/mine", requireAuth, getMyProducts);
+// Who may use a route (see enum Role in schema.prisma). Admins can do
+// everything data entry can.
+const dataEntry = requireRole("data_entry", "admin");
+const adminOnly = requireRole("admin");
+
+app.get("/api/products/:category/mine", dataEntry, getMyProducts);
 app.post(
   "/api/products/upload-image",
-  requireAuth,
+  dataEntry,
   upload.single("image"),
   uploadImage
 );
 app.post(
   "/api/products/upload-file",
-  requireAuth,
+  dataEntry,
   uploadFile.single("file"),
   uploadDesignFile
 );
-app.post("/api/products/:category", requireAuth, requireKnownCategory, createProduct);
+app.post("/api/products/:category", dataEntry, requireKnownCategory, createProduct);
 app.get("/api/products/:category/:id", requireKnownCategory, checkBeforeReuse, getProductById);
-app.put("/api/products/:category/:id", requireAuth, updateProduct);
-app.delete("/api/products/:category/:id", requireAuth, deleteProduct);
+app.put("/api/products/:category/:id", dataEntry, updateProduct);
+app.delete("/api/products/:category/:id", dataEntry, deleteProduct);
 
 app.post("/api/auth/signup", signUp);
 app.post("/api/auth/signin", signIn);
@@ -180,12 +186,23 @@ app.post("/api/auth/reset-password", resetPassword);
 
 app.get("/api/profile", requireAuth, getProfile);
 app.put("/api/profile", requireAuth, updateProfile);
+app.post(
+  "/api/profile/upload-image",
+  requireAuth,
+  limitAvatarUploads,
+  upload.single("image"),
+  uploadAvatar
+);
 
 app.get("/api/wishlist", requireAuth, getWishlist);
 app.post("/api/wishlist/:productId", requireAuth, addToWishlist);
 app.delete("/api/wishlist/:productId", requireAuth, removeFromWishlist);
 
-app.get("/api/leads", requireAuth, getLeads);
+app.get("/api/leads", dataEntry, getLeads);
+
+app.get("/api/users/data-entry", adminOnly, getDataEntryTeam);
+app.get("/api/users/search", adminOnly, searchVisitors);
+app.put("/api/users/:id/role", adminOnly, setUserRole);
 
 // SPA fallback: any non-API route should load the React app, which then
 // handles routing (e.g. /products/washbasins) on the client via React Router.

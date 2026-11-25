@@ -39,8 +39,8 @@ interface Lead {
 // GET /api/leads — the "Leads Report" on the dashboard: one entry per user who
 // saved products to their wishlist, with their contact details and every
 // product they saved. Users with the most recent save come first, and each
-// user's products are newest first. Open to any signed-in user, like the
-// rest of the dashboard.
+// user's products are newest first. Data entry and admins only (see
+// index.ts).
 export const getLeads = async (_req: AuthedRequest, res: Response) => {
   try {
     const items = await prisma.wishlistItem.findMany({

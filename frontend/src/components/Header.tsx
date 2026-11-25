@@ -6,7 +6,9 @@ import { useHeaderVisibility } from "../hooks/useHeaderVisibility";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import {
   AUTH_CHANGED_EVENT,
+  dashboardLabel,
   getStoredUser,
+  refreshSessionOnce,
   signOut,
   type AuthUser,
 } from "../api/clientApi";
@@ -22,6 +24,20 @@ const navItems = [
   { label: "Contact Us", to: "/contact-us" },
 ];
 
+const SignInIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.5}
+    aria-hidden="true"
+    className="h-6 w-6"
+  >
+    <circle cx="12" cy="7.6" r="4.75" />
+    <path d="M3.5 22.4v-3.1a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v3.1" />
+  </svg>
+);
+
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(() => getStoredUser());
@@ -31,11 +47,13 @@ const Header = () => {
   const prefersReducedMotion = usePrefersReducedMotion();
   const navigate = useNavigate();
   const visible = isOpen || scrollVisible;
+  const dashboardName = dashboardLabel(user?.role);
 
   useEffect(() => {
     const refreshUser = () => setUser(getStoredUser());
     window.addEventListener(AUTH_CHANGED_EVENT, refreshUser);
     window.addEventListener("storage", refreshUser);
+    refreshSessionOnce();
     return () => {
       window.removeEventListener(AUTH_CHANGED_EVENT, refreshUser);
       window.removeEventListener("storage", refreshUser);
@@ -116,13 +134,15 @@ const Header = () => {
                       >
                         My Profile
                       </Link>
-                      <Link
-                        to="/dashboard"
-                        onClick={() => setDropdownOpen(false)}
-                        className="block px-4 py-2 text-sm font-medium uppercase tracking-[0.02em] text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-                      >
-                        Dashboard
-                      </Link>
+                      {dashboardName && (
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm font-medium uppercase tracking-[0.02em] text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                        >
+                          {dashboardName}
+                        </Link>
+                      )}
                       <button
                         type="button"
                         onClick={handleSignOut}
@@ -138,9 +158,11 @@ const Header = () => {
                   type="button"
                   onClick={() => openAuthPrompt()}
                   aria-haspopup="dialog"
-                  className="whitespace-nowrap text-sm font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
+                  aria-label="Sign In"
+                  title="Sign In"
+                  className="block text-white/90 transition-colors hover:text-white"
                 >
-                  Admin
+                  <SignInIcon />
                 </button>
               )}
             </li>
@@ -214,15 +236,17 @@ const Header = () => {
                   My Profile
                 </Link>
               </li>
-              <li className="border-b border-white/10">
-                <Link
-                  to="/dashboard"
-                  onClick={() => setIsOpen(false)}
-                  className="block py-4 text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
-                >
-                  Dashboard
-                </Link>
-              </li>
+              {dashboardName && (
+                <li className="border-b border-white/10">
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="block py-4 text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
+                  >
+                    {dashboardName}
+                  </Link>
+                </li>
+              )}
               <li className="border-b border-white/10">
                 <button
                   type="button"
@@ -242,9 +266,10 @@ const Header = () => {
                   openAuthPrompt();
                 }}
                 aria-haspopup="dialog"
-                className="block w-full py-4 text-left text-base font-medium uppercase tracking-[0.02em] text-white/90 transition-colors hover:text-white"
+                aria-label="Sign In"
+                className="block w-full py-4 text-white/90 transition-colors hover:text-white"
               >
-                Admin
+                <SignInIcon />
               </button>
             </li>
           )}

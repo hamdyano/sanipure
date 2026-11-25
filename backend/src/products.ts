@@ -28,7 +28,8 @@ export const uploadFile = multer({
 
 // Raster formats only — an SVG (or HTML, etc.) can carry script, and
 // uploaded files are served publicly from our own site.
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+export const IMAGE_TYPE_MESSAGE = "Please choose a JPG, PNG, WEBP, GIF or AVIF image.";
 const ALLOWED_DESIGN_FILE_TYPES = ["application/pdf"];
 
 // Every URL a product stores (photo, gallery, colors, design file) must be
@@ -43,7 +44,7 @@ export const httpUrl = (value: unknown): string | undefined => {
 
 // Keys the API itself sets on every product response ({ id, name, ...attributes }),
 // so a submitted attribute must never be stored under one of them.
-const RESERVED_ATTRIBUTE_KEYS = new Set(["id", "name", "display"]);
+const RESERVED_ATTRIBUTE_KEYS = new Set(["id", "name", "display", "addedBy"]);
 
 const parseAttributes = (rawAttributes: Record<string, unknown>) => {
   const attributes: Record<string, string> = {};
@@ -254,7 +255,7 @@ const makeUploadHandler =
 
 export const uploadImage = makeUploadHandler(
   ALLOWED_IMAGE_TYPES,
-  "Please choose a JPG, PNG, WEBP, GIF or AVIF image."
+  IMAGE_TYPE_MESSAGE
 );
 
 export const uploadDesignFile = makeUploadHandler(
@@ -268,8 +269,8 @@ export const uploadDesignFile = makeUploadHandler(
 // "image" field, which is a URL string (e.g. "/uploads/<file>") already
 // uploaded via uploadImage above. The category row is created on first use
 // so this works without needing to pre-seed Category rows for every shop
-// category. Requires auth (see requireAuth) so the product is tied to its
-// creator.
+// category. Data entry and admins only (see requireRole in index.ts); the
+// product is tied to its creator.
 export const createProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const category = String(req.params.category);
@@ -313,8 +314,12 @@ export const createProduct = async (req: AuthedRequest, res: Response) => {
   }
 };
 
-// Updates a product, but only if the signed-in user is the one who created
-// it. File URLs in the body are expected to be either the existing public
+// Admins manage every product; data entry only the ones they added.
+const canManage = (req: AuthedRequest, product: { createdById: string | null }) =>
+  req.userRole === "admin" || product.createdById === req.userId;
+
+// Updates a product, if the signed-in user may manage it (it still belongs to
+// whoever added it). File URLs in the body are expected to be either the existing public
 // URLs (unchanged) or new ones from uploadImage/uploadDesignFile; once the
 // update is saved, any old uploaded file no longer referenced is
 // cleaned up.
@@ -326,7 +331,7 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
       res.status(404).json({ message: "Product not found" });
       return;
     }
-    if (existing.createdById !== req.userId) {
+    if (!canManage(req, existing)) {
       res.status(403).json({ message: "You can only edit products you added" });
       return;
     }
@@ -367,8 +372,7 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
   }
 };
 
-// Deletes a product, but only if the signed-in user is the one who created
-// it. Also removes all of its uploaded files from the server.
+// Deletes a product, if the signed-in user may manage it. Also removes all of its uploaded files from the server.
 export const deleteProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const id = String(req.params.id);
@@ -377,7 +381,7 @@ export const deleteProduct = async (req: AuthedRequest, res: Response) => {
       res.status(404).json({ message: "Product not found" });
       return;
     }
-    if (existing.createdById !== req.userId) {
+    if (!canManage(req, existing)) {
       res.status(403).json({ message: "You can only delete products you added" });
       return;
     }
@@ -394,8 +398,9 @@ export const deleteProduct = async (req: AuthedRequest, res: Response) => {
   }
 };
 
-// The signed-in user's own products for a category — shown on the dashboard
-// above the "Add" button, with edit/delete actions.
+// The products of a category the signed-in user may manage — shown on the
+// dashboard with edit/delete actions. For admins that's every product, each
+// with who added it.
 export const getMyProducts = async (req: AuthedRequest, res: Response) => {
   try {
     const category = String(req.params.category);
@@ -407,8 +412,13 @@ export const getMyProducts = async (req: AuthedRequest, res: Response) => {
       return;
     }
 
+    const isAdmin = req.userRole === "admin";
     const rows = await prisma.product.findMany({
-      where: { categoryId: categoryRecord.id, createdById: req.userId },
+      where: {
+        categoryId: categoryRecord.id,
+        ...(isAdmin ? {} : { createdById: req.userId }),
+      },
+      include: { createdBy: { select: { username: true, fullName: true, email: true } } },
       orderBy: { createdAt: "desc" },
     });
 
@@ -417,6 +427,14 @@ export const getMyProducts = async (req: AuthedRequest, res: Response) => {
         id: row.id,
         name: row.name,
         ...(row.attributes as Record<string, unknown>),
+        ...(isAdmin && row.createdBy
+          ? {
+              addedBy: {
+                name: row.createdBy.fullName || row.createdBy.username,
+                email: row.createdBy.email,
+              },
+            }
+          : {}),
       }))
     );
   } catch (err) {

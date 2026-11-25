@@ -2,6 +2,7 @@ import apiClient, {
   getCatalog,
   getProduct,
   type CatalogResponse,
+  type ManagedProduct,
   type Product,
   type ProductInput,
 } from "./clientApi";
@@ -20,8 +21,8 @@ export const getPublicBathroomById = async (id: string): Promise<Product> =>
 // Read (mine) — GET /api/products/public-bathrooms/mine
 // Auth required. The signed-in user's own public bathroom products, for the
 // dashboard list (with edit/delete actions).
-export const getMyPublicBathrooms = async (): Promise<Product[]> => {
-  const { data } = await apiClient.get<Product[]>(`/products/${CATEGORY}/mine`);
+export const getMyPublicBathrooms = async (): Promise<ManagedProduct[]> => {
+  const { data } = await apiClient.get<ManagedProduct[]>(`/products/${CATEGORY}/mine`);
   return data;
 };
 

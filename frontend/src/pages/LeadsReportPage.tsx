@@ -3,7 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import RevealSection from "../components/shared/RevealSection";
 import { CATEGORIES } from "../data/categories";
-import { getLeads, isAuthenticated, signOut, type Lead } from "../api/clientApi";
+import {
+  dashboardLabel,
+  getLeads,
+  getStoredUser,
+  isAuthenticated,
+  signOut,
+  type Lead,
+} from "../api/clientApi";
 import { productPagePath } from "../lib/productPaths";
 import { showErrorToast } from "../lib/toast";
 
@@ -93,6 +100,9 @@ const LeadsReportPage = () => {
           signOut();
           showErrorToast("Your session expired. Please sign in again.");
           navigate("/admin", { replace: true, state: { from: "/dashboard/leads" } });
+        } else if (axios.isAxiosError(err) && err.response?.status === 403) {
+          showErrorToast("Your account doesn't have access to this page.");
+          navigate("/profile", { replace: true });
         } else {
           setLoadFailed(true);
         }
@@ -215,7 +225,7 @@ const LeadsReportPage = () => {
             to="/dashboard"
             className="text-sm text-white/60 transition-colors hover:text-white"
           >
-            ← Back to Dashboard
+            ← Back to {dashboardLabel(getStoredUser()?.role) ?? "Dashboard"}
           </Link>
           {leads && leads.length > 0 && (
             <div className="flex flex-wrap items-center gap-4">

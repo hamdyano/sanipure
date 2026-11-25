@@ -319,9 +319,9 @@ const AdminPage = () => {
   return (
     <>
       <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
-        <h1 className="text-4xl font-semibold text-white md:text-5xl">Admin</h1>
+        <h1 className="text-4xl font-semibold text-white md:text-5xl">Sign In</h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
-          Sign in to manage Sanipure, or create a new account.
+          Sign in to your Sanipure account, or create a new one.
         </p>
       </RevealSection>
 

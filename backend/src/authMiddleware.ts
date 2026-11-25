@@ -1,5 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { prisma } from "./prisma";
+import type { Role } from "./generated/prisma/client";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -7,9 +9,10 @@ if (!JWT_SECRET) {
 }
 
 // Augment Request with the signed-in user's id, set by requireAuth below
-// once the Bearer token has been verified.
+// once the Bearer token has been verified, and their role, set by requireRole.
 export interface AuthedRequest extends Request {
   userId?: string;
+  userRole?: Role;
 }
 
 export const requireAuth = (
@@ -32,3 +35,26 @@ export const requireAuth = (
     res.status(401).json({ message: "Session expired. Please sign in again." });
   }
 };
+
+// Only lets accounts with one of these roles through. The role is read from
+// the database on every request rather than kept in the token, so taking
+// someone off the data entry team works immediately, even while signed in.
+export const requireRole = (...allowed: Role[]) => [
+  requireAuth,
+  async (req: AuthedRequest, res: Response, next: NextFunction) => {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId! },
+      select: { role: true },
+    });
+    if (!user) {
+      res.status(401).json({ message: "Your account no longer exists. Please sign in again." });
+      return;
+    }
+    if (!allowed.includes(user.role)) {
+      res.status(403).json({ message: "Your account doesn't have permission to do this." });
+      return;
+    }
+    req.userRole = user.role;
+    next();
+  },
+];

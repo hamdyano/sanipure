@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import axios from "axios";
 import type {
   CatalogResponse,
+  ManagedProduct,
   Product,
   ProductDisplay,
   ProductDisplaySize,
@@ -63,7 +64,7 @@ interface Filter {
 
 export interface ProductManagerApi {
   getAll: () => Promise<CatalogResponse>;
-  getMine: () => Promise<Product[]>;
+  getMine: () => Promise<ManagedProduct[]>;
   create: (payload: ProductInput) => Promise<Product>;
   update: (id: string, payload: ProductInput) => Promise<Product>;
   remove: (id: string) => Promise<void>;
@@ -73,6 +74,8 @@ interface ProductManagerProps {
   categoryLabel: string;
   api: ProductManagerApi;
   onClose: () => void;
+  // For admins the list holds everyone's products, each with who added it.
+  isAdmin?: boolean;
   // Renders the "For Display" section below the filter attributes — the
   // full spec-sheet data (colors, gallery photos, types, sizes, design
   // file) shown on the product's public detail page. Only toilets use this
@@ -117,10 +120,11 @@ const ProductManager = ({
   categoryLabel,
   api,
   onClose,
+  isAdmin = false,
   showDisplaySection = false,
   showRequiredItems = true,
 }: ProductManagerProps) => {
-  const [myProducts, setMyProducts] = useState<Product[]>([]);
+  const [myProducts, setMyProducts] = useState<ManagedProduct[]>([]);
   const [loadingMine, setLoadingMine] = useState(true);
 
   const [filters, setFilters] = useState<Filter[]>([]);
@@ -527,7 +531,9 @@ const ProductManager = ({
   return (
     <div className="rounded-2xl border border-white/10 bg-[#0d0d0d] p-8">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-white">Your {categoryLabel}</h2>
+        <h2 className="text-2xl font-semibold text-white">
+          {isAdmin ? "All" : "Your"} {categoryLabel}
+        </h2>
         <button
           type="button"
           onClick={onClose}
@@ -563,6 +569,14 @@ const ProductManager = ({
                   <p className="truncate text-xs text-white/50">
                     {describeProduct(product, filters) || "No attributes set"}
                   </p>
+                  {isAdmin && (
+                    <p
+                      className="mt-1 truncate text-xs text-white/40"
+                      title={product.addedBy?.email}
+                    >
+                      Added by {product.addedBy?.name ?? "a deleted account"}
+                    </p>
+                  )}
                 </div>
                 <div className="mt-auto flex items-center gap-2">
                   <button

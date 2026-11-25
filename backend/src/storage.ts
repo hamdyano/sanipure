@@ -36,10 +36,15 @@ export const isUploadUrl = (value: string) =>
   SAFE_FILE_NAME.test(value.slice(UPLOADS_URL_PREFIX.length));
 
 // Saves a file and returns its public URL path, e.g. "/uploads/1795...-123.jpg".
-export const saveUpload = async (buffer: Buffer, contentType: string): Promise<string> => {
+// The optional prefix goes in front of the generated file name.
+export const saveUpload = async (
+  buffer: Buffer,
+  contentType: string,
+  prefix = ""
+): Promise<string> => {
   const ext = EXTENSION_BY_TYPE[contentType];
   if (!ext) throw new Error(`Unsupported file type: ${contentType}`);
-  const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+  const fileName = `${prefix}${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
   await mkdir(UPLOADS_DIR, { recursive: true });
   await writeFile(path.join(UPLOADS_DIR, fileName), buffer);
   return `${UPLOADS_URL_PREFIX}${fileName}`;

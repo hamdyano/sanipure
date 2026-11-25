@@ -1,8 +1,17 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import RevealSection from "../components/shared/RevealSection";
+import DataEntryTeam from "../components/dashboard/DataEntryTeam";
 import ProductManager from "../components/dashboard/ProductManager";
-import { isAuthenticated } from "../api/clientApi";
+import {
+  dashboardLabel,
+  getProfile,
+  isAuthenticated,
+  signOut,
+  type UserRole,
+} from "../api/clientApi";
+import { showErrorToast } from "../lib/toast";
 import washbasinsApi from "../api/washbasinsApi";
 import toiletsApi from "../api/toiletsApi";
 import bathtubsApi from "../api/bathtubsApi";
@@ -55,22 +64,92 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<CategorySlug | null>(null);
 
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate("/admin", { replace: true });
-    }
-  }, [navigate]);
+  // Asked from the server each time rather than taken from the session, which
+  // may be older than a role change. Null until the answer arrives.
+  const [role, setRole] = useState<UserRole | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
+  const checkAccess = useCallback(
+    (isCancelled: () => boolean) => {
+      const toSignIn = () =>
+        navigate("/admin", { replace: true, state: { from: "/dashboard" } });
+      if (!isAuthenticated()) {
+        toSignIn();
+        return;
+      }
+      getProfile().then(
+        (profile) => {
+          if (isCancelled()) return;
+          if (profile.role === "visitor") {
+            showErrorToast("Your account doesn't have access to this page.");
+            navigate("/profile", { replace: true });
+            return;
+          }
+          setRole(profile.role);
+        },
+        (err: unknown) => {
+          if (isCancelled()) return;
+          const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+          if (status === 401 || status === 404) {
+            signOut();
+            showErrorToast("Please sign in again.");
+            toSignIn();
+          } else {
+            setLoadFailed(true);
+          }
+        },
+      );
+    },
+    [navigate],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    checkAccess(() => cancelled);
+    return () => {
+      cancelled = true;
+    };
+  }, [checkAccess]);
+
+  const retry = () => {
+    setLoadFailed(false);
+    checkAccess(() => false);
+  };
+
+  if (!role) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-black px-6 text-center">
+        {loadFailed ? (
+          <>
+            <p className="text-white/70">Couldn't load this page.</p>
+            <button
+              type="button"
+              onClick={retry}
+              className="rounded-full border border-white/30 px-6 py-2 text-sm text-white transition-colors hover:border-white"
+            >
+              Try again
+            </button>
+          </>
+        ) : (
+          <p className="text-white/60">Loading…</p>
+        )}
+      </div>
+    );
+  }
+
+  const isAdmin = role === "admin";
   const activeConfig = CATEGORIES.find((c) => c.slug === activeCategory);
 
   return (
     <>
       <RevealSection className="bg-black px-6 pb-4 pt-20 text-center md:pt-28">
         <h1 className="text-4xl font-semibold text-white md:text-5xl">
-          Dashboard
+          {dashboardLabel(role)}
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
-          Manage Sanipure's products.
+          {isAdmin
+            ? "Manage Sanipure's products and data entry accounts."
+            : "Add and manage your Sanipure products."}
         </p>
       </RevealSection>
 
@@ -96,6 +175,8 @@ const DashboardPage = () => {
             Sales Leads
           </Link>
         </div>
+
+        {isAdmin && <DataEntryTeam />}
 
         <div className="mb-12 flex flex-wrap justify-center gap-4">
           {CATEGORIES.map((category) => {
@@ -136,6 +217,7 @@ const DashboardPage = () => {
             categoryLabel={activeConfig.label}
             api={activeConfig.api}
             onClose={() => setActiveCategory(null)}
+            isAdmin={isAdmin}
             showDisplaySection
             showRequiredItems={!activeConfig.noRequiredItems}
           />

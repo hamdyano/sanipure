@@ -2,6 +2,7 @@ import apiClient, {
   getCatalog,
   getProduct,
   type CatalogResponse,
+  type ManagedProduct,
   type Product,
   type ProductInput,
 } from "./clientApi";
@@ -20,8 +21,8 @@ export const getWashbasinById = async (id: string): Promise<Product> =>
 // Read (mine) — GET /api/products/washbasins/mine
 // Auth required. The signed-in user's own washbasins, for the dashboard
 // list (with edit/delete actions) above the "Add Washbasins" button.
-export const getMyWashbasins = async (): Promise<Product[]> => {
-  const { data } = await apiClient.get<Product[]>(`/products/${CATEGORY}/mine`);
+export const getMyWashbasins = async (): Promise<ManagedProduct[]> => {
+  const { data } = await apiClient.get<ManagedProduct[]>(`/products/${CATEGORY}/mine`);
   return data;
 };
 

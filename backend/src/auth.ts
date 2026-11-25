@@ -3,6 +3,7 @@ import { createHash, timingSafeEqual } from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { prisma } from "./prisma";
+import type { Role } from "./generated/prisma/client";
 import {
   PASSWORD_MIN_LENGTH,
   PHONE_MAX_LENGTH,
@@ -19,10 +20,11 @@ if (!JWT_SECRET) {
 
 const SALT_ROUNDS = 10;
 
-const toPublicUser = (user: { id: string; username: string; email: string }) => ({
+const toPublicUser = (user: { id: string; username: string; email: string; role: Role }) => ({
   id: user.id,
   username: user.username,
   email: user.email,
+  role: user.role,
 });
 
 // Request bodies are untrusted JSON — a number or object here would otherwise
@@ -77,6 +79,8 @@ export const signUp = async (req: Request, res: Response) => {
       return;
     }
 
+    // Every new account is a visitor (the schema default); a role sent in the
+    // request is never used.
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await prisma.user.create({
       data: { username, email, phone, passwordHash },
