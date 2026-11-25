@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import CategoryPageHeader from "../components/shared/CategoryPageHeader";
 import FilterSidebar from "../components/shared/FilterSidebar";
+import ShapePicker from "../components/shared/ShapePicker";
 import RevealSection from "../components/shared/RevealSection";
 import heroImage from "../assets/categories photos/7th category.jpg";
 import wallHungFrameImage from "../assets/concealed flush tank shop photos/wall hung frame.jpg";
@@ -199,34 +200,12 @@ const ConcealedFlushTankCategoriesPage = () => {
             </div>
           </div>
 
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-white/60">Shape</h3>
-            <div className="mt-3 flex flex-wrap gap-3">
-              {ACTUATOR_SHAPES.map((shape) => {
-                const active = isPicked("shape", shape);
-                return (
-                  <button
-                    key={shape}
-                    type="button"
-                    onClick={() => pickActuatorOption("shape", shape)}
-                    aria-pressed={active}
-                    className={`flex items-center gap-3 rounded-full border py-2 pl-3 pr-5 text-sm font-medium transition-colors ${
-                      active
-                        ? "border-white bg-white text-black"
-                        : "border-white/15 text-white hover:border-white/50"
-                    }`}
-                  >
-                    <span
-                      className={`h-5 w-5 shrink-0 border-2 border-current ${
-                        shape === "Round" ? "rounded-full" : "rounded-[3px]"
-                      }`}
-                    />
-                    {shape}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <ShapePicker
+            label="Shape"
+            shapes={ACTUATOR_SHAPES}
+            isPicked={(shape) => isPicked("shape", shape)}
+            onPick={(shape) => pickActuatorOption("shape", shape)}
+          />
         </div>
       </section>
 
@@ -245,6 +224,7 @@ const ConcealedFlushTankCategoriesPage = () => {
               onClear={() => setSelected({})}
               getCount={getCount}
               resultCount={filteredProducts.length}
+              showShapes={false}
             />
           )}
         </aside>

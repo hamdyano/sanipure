@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ShapePicker from "./ShapePicker";
 
 interface Filter {
   id: string;
@@ -13,6 +14,8 @@ interface FilterSidebarProps {
   onClear: () => void;
   getCount: (filterId: string, option: string) => number;
   resultCount: number;
+  /** Off for a page that shows the category's shapes elsewhere. */
+  showShapes?: boolean;
 }
 
 const FilterSidebar = ({
@@ -22,6 +25,7 @@ const FilterSidebar = ({
   onClear,
   getCount,
   resultCount,
+  showShapes = true,
 }: FilterSidebarProps) => {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
@@ -33,8 +37,21 @@ const FilterSidebar = ({
     (selected[filter.id] ?? []).map((option) => ({ filterId: filter.id, option }))
   );
 
+  const shapeFilter = showShapes ? filters.find((filter) => filter.id === "shape") : undefined;
+
   return (
     <div>
+      {shapeFilter && (
+        <div className="mb-6">
+          <ShapePicker
+            label={shapeFilter.label}
+            shapes={shapeFilter.options}
+            isPicked={(shape) => (selected[shapeFilter.id] ?? []).includes(shape)}
+            onPick={(shape) => onToggle(shapeFilter.id, shape)}
+          />
+        </div>
+      )}
+
       <p className="text-sm font-medium text-white/60">
         {resultCount} {resultCount === 1 ? "Result" : "Results"}
       </p>

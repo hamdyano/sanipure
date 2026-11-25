@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import heroVideo from "../assets/hero  video.mp4";
-import { HERO_FADE_LAYER } from "../lib/heroFade";
+import { HERO_FADE_LAYER_RAISED } from "../lib/heroFade";
 
 // The video fades out past the bottom of the hero (see lib/heroFade.ts);
 // HomePage's wrapper provides the isolate/overflow-clip it needs.
 const Hero = () => {
   return (
     <section className="relative h-screen w-full">
-      <div className={HERO_FADE_LAYER}>
+      <div className={HERO_FADE_LAYER_RAISED}>
         <video
           className="h-full w-full object-cover"
           src={heroVideo}

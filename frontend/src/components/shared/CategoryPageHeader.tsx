@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import RevealSection from "./RevealSection";
 import { CATEGORIES } from "../../data/categories";
-import { HERO_FADE_LAYER } from "../../lib/heroFade";
+import { HERO_FADE_LAYER_RAISED } from "../../lib/heroFade";
 
 interface CategoryPageHeaderProps {
   /** Id of the category whose page this is (see data/categories.ts). */
@@ -36,7 +36,7 @@ const CategoryPageHeader = ({
           top of the filters and products. It sits at -z-10, so the page's own
           content draws on top of it; the page wrapper must be `isolate` (and
           `overflow-clip`, so a short page can't spill it into the footer). */}
-      <div className={HERO_FADE_LAYER}>
+      <div className={HERO_FADE_LAYER_RAISED}>
         <img src={image} alt={imageAlt} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-black/55" />
       </div>

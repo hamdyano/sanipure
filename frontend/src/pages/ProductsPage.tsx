@@ -10,7 +10,7 @@ import publicBathroomsImage from "../assets/categories photos/Public Bathrooms p
 import bathroomCollectionImage from "../assets/categories photos/Bathroom collection photo.jpg";
 import concealedFlushTankImage from "../assets/categories photos/7th category.jpg";
 import heroImage from "../assets/products page photos/hero section.jpg";
-import { HERO_FADE_LAYER } from "../lib/heroFade";
+import { HERO_FADE_LAYER_RAISED } from "../lib/heroFade";
 
 interface Category {
   name: string;
@@ -156,7 +156,7 @@ const ProductsPage = () => {
         {/* The photo runs on past the bottom of the hero and fades out over the
             top of the category cards. It sits at -z-10 so the cards draw on top
             of it (the wrapper above is `isolate` + `overflow-clip` for this). */}
-        <div className={HERO_FADE_LAYER}>
+        <div className={HERO_FADE_LAYER_RAISED}>
           <img
             src={heroImage}
             alt="Luxury bathroom with a freestanding bathtub, marble washbasin counter and wall-hung toilet"

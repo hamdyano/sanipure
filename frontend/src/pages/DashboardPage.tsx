@@ -35,8 +35,6 @@ const CATEGORIES: {
   slug: CategorySlug;
   label: string;
   api: typeof washbasinsApi;
-  /** Hide the "For Required Items" section of the product form. */
-  noRequiredItems?: boolean;
 }[] = [
   { slug: "washbasins", label: "Washbasins", api: washbasinsApi },
   { slug: "toilets", label: "Toilets", api: toiletsApi },
@@ -50,13 +48,11 @@ const CATEGORIES: {
     slug: "public-bathrooms",
     label: "Public Bathrooms",
     api: publicBathroomsApi,
-    noRequiredItems: true,
   },
   {
     slug: "accessories",
     label: "Accessories & Furniture",
     api: accessoriesApi,
-    noRequiredItems: true,
   },
 ];
 
@@ -219,7 +215,6 @@ const DashboardPage = () => {
             onClose={() => setActiveCategory(null)}
             isAdmin={isAdmin}
             showDisplaySection
-            showRequiredItems={!activeConfig.noRequiredItems}
           />
         )}
       </section>

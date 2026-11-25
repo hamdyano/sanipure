@@ -16,8 +16,14 @@
  * - the section right after the hero has no opaque background of its own,
  *   or it would cut the fade off with a hard edge.
  */
-export const HERO_FADE_LAYER =
-  "pointer-events-none absolute inset-x-0 top-0 -z-10 h-[calc(100%+18rem)] overflow-hidden mask-b-from-[calc(100%-26rem)] mask-b-to-100%";
+const FADE =
+  "pointer-events-none absolute inset-x-0 top-0 -z-10 overflow-hidden mask-b-from-[calc(100%-26rem)] mask-b-to-100%";
+
+export const HERO_FADE_LAYER = `${FADE} h-[calc(100%+18rem)]`;
+
+/** The same fade, but ending 6rem higher. Used by the Home, Products,
+ *  category and Contact Us pages. */
+export const HERO_FADE_LAYER_RAISED = `${FADE} h-[calc(100%+12rem)]`;
 
 /** Classes for the page wrapper that holds a fading hero. */
 export const HERO_FADE_PAGE = "isolate flow-root overflow-clip";

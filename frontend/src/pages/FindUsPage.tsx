@@ -2,7 +2,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import RevealSection from "../components/shared/RevealSection";
 import { showErrorToast, showSuccessToast } from "../lib/toast";
-import { HERO_FADE_LAYER, HERO_FADE_PAGE } from "../lib/heroFade";
+import { HERO_FADE_LAYER_RAISED, HERO_FADE_PAGE } from "../lib/heroFade";
 import heroImage from "../assets/who we are photos/Factory 1.png";
 // Arkan 205 — same photo as on the Projects page.
 import projectImage from "../assets/projects photos/project 3.JPG";
@@ -151,7 +151,7 @@ const FindUsPage = () => {
             screens. The photo darkens toward the title and stays bright above
             so the sign still reads, then fades out past the bottom of the hero
             (lib/heroFade.ts). */}
-        <div className={HERO_FADE_LAYER}>
+        <div className={HERO_FADE_LAYER_RAISED}>
           <img
             src={heroImage}
             alt="The Sanipure factory"

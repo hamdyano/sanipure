@@ -70,28 +70,6 @@ export const GLAZE_COLORS: Record<string, string> = {
 // from the old website's "Series" category (sanipure-eg.com, path=97).
 export const BATHROOM_SERIES: CollectionSeries[] = [
   {
-    id: "flora",
-    name: "Flora",
-    description:
-      "Flora was designed to meet your basic needs consistently with its durable and long-lasting quality. Let Flora's timeless and effortless style shine through in your bathroom.",
-    cover: floraCover,
-    pieces: [
-      {
-        name: "Pedestal Washbasin",
-        group: "Washbasin",
-        image: floraCover,
-        sizes: ["60"],
-        colors: ["White", "Pergamon"],
-      },
-      {
-        name: "Close-Coupled Toilet",
-        group: "Toilet",
-        image: floraCloseCoupledToilet,
-        colors: ["White", "Pergamon"],
-      },
-    ],
-  },
-  {
     id: "kepler",
     name: "Kepler",
     description:
@@ -138,118 +116,6 @@ export const BATHROOM_SERIES: CollectionSeries[] = [
         sizes: ["54 × 40"],
         colors: ["White", "Pergamon", "Black"],
         features: ["HydroJet"],
-      },
-    ],
-  },
-  {
-    id: "libra",
-    name: "Libra",
-    description:
-      "Inspired by the harmony and elegance of the Libra sign, Libra brings balance to your bathroom design. With its sleek contours and perfectly symmetrical structure, it is a testament to both functionality and aesthetics.",
-    cover: libraCover,
-    pieces: [
-      {
-        name: "Toilet & Pedestal Washbasin",
-        group: "Set",
-        image: libraCover,
-        colors: ["White", "Pergamon"],
-        note: "Floor-standing toilet with a matching pedestal washbasin.",
-      },
-    ],
-  },
-  {
-    id: "magnus",
-    name: "Magnus",
-    description:
-      "Smart sanitaryware with modern features. Magnus brings advanced HydroJet technology for water saving, soft-close seats and a rimless design for easier cleaning, combining comfort and elegance. Also available in a striking matte-black finish.",
-    cover: magnusWallHungToilet,
-    pieces: [
-      {
-        name: "Floor-Standing Washbasin",
-        group: "Washbasin",
-        image: magnusFloorStandingWashbasin,
-        sizes: ["60"],
-      },
-      {
-        name: "Wall-Mounted Washbasin",
-        group: "Washbasin",
-        image: magnusWallMountedWashbasin,
-        sizes: ["60"],
-      },
-      {
-        name: "Floor-Standing Toilet with Tank",
-        group: "Toilet",
-        image: magnusFloorStandingToilet,
-        sizes: ["65 × 36"],
-        colors: ["White", "Pergamon"],
-        features: ["HydroJet", "Rimless", "Soft Close"],
-      },
-      {
-        name: "Wall-Hung Toilet",
-        group: "Toilet",
-        image: magnusWallHungToilet,
-        sizes: ["54 × 40"],
-        features: ["HydroJet", "Rimless", "Soft Close"],
-      },
-      {
-        name: "Wall-Hung Bidet",
-        group: "Bidet",
-        image: magnusWallHungBidet,
-        sizes: ["54 × 36"],
-        colors: ["White", "Pergamon"],
-      },
-      {
-        name: "Magnus Black",
-        group: "Set",
-        image: magnusBlack,
-        colors: ["Black"],
-        note: "The Magnus collection in a matte-black finish.",
-      },
-    ],
-  },
-  {
-    id: "rosetta",
-    name: "Rosetta",
-    description:
-      "Asserting a superior standard, our Rosetta series is intricate yet subtle. With its unassuming air of simplicity, Rosetta is an instant classic. The standard being set is not exclusive to its design; its durability plays a vital role in establishing it as a timeless selection.",
-    cover: rosettaPedestal,
-    pieces: [
-      {
-        name: "Pedestal Washbasin",
-        group: "Washbasin",
-        image: rosettaPedestal,
-        sizes: ["60 × 48", "55 × 44"],
-      },
-      {
-        name: "Half-Pedestal Washbasin",
-        group: "Washbasin",
-        image: rosettaHalfPedestal,
-        sizes: ["45 × 36.5"],
-      },
-      {
-        name: "Close-Coupled Toilet",
-        group: "Toilet",
-        image: rosettaCloseCoupledToilet,
-        sizes: ["61 × 36"],
-        colors: ["White", "Pergamon"],
-        features: ["HydroJet"],
-      },
-      {
-        name: "Wall-Hung Toilet",
-        group: "Toilet",
-        image: rosettaWallHungToilet,
-        colors: ["White", "Pergamon"],
-      },
-      {
-        name: "Back-to-Wall Toilet",
-        group: "Toilet",
-        image: rosettaBackToWallToilet,
-        colors: ["White", "Pergamon"],
-      },
-      {
-        name: "Combi Toilet",
-        group: "Toilet",
-        image: rosettaCombiToilet,
       },
     ],
   },
@@ -312,6 +178,56 @@ export const BATHROOM_SERIES: CollectionSeries[] = [
     ],
   },
   {
+    id: "magnus",
+    name: "Magnus",
+    description:
+      "Smart sanitaryware with modern features. Magnus brings advanced HydroJet technology for water saving, soft-close seats and a rimless design for easier cleaning, combining comfort and elegance. Also available in a striking matte-black finish.",
+    cover: magnusWallHungToilet,
+    pieces: [
+      {
+        name: "Floor-Standing Washbasin",
+        group: "Washbasin",
+        image: magnusFloorStandingWashbasin,
+        sizes: ["60"],
+      },
+      {
+        name: "Wall-Mounted Washbasin",
+        group: "Washbasin",
+        image: magnusWallMountedWashbasin,
+        sizes: ["60"],
+      },
+      {
+        name: "Floor-Standing Toilet with Tank",
+        group: "Toilet",
+        image: magnusFloorStandingToilet,
+        sizes: ["65 × 36"],
+        colors: ["White", "Pergamon"],
+        features: ["HydroJet", "Rimless", "Soft Close"],
+      },
+      {
+        name: "Wall-Hung Toilet",
+        group: "Toilet",
+        image: magnusWallHungToilet,
+        sizes: ["54 × 40"],
+        features: ["HydroJet", "Rimless", "Soft Close"],
+      },
+      {
+        name: "Wall-Hung Bidet",
+        group: "Bidet",
+        image: magnusWallHungBidet,
+        sizes: ["54 × 36"],
+        colors: ["White", "Pergamon"],
+      },
+      {
+        name: "Magnus Black",
+        group: "Set",
+        image: magnusBlack,
+        colors: ["Black"],
+        note: "The Magnus collection in a matte-black finish.",
+      },
+    ],
+  },
+  {
     id: "vega",
     name: "Vega",
     description:
@@ -363,6 +279,90 @@ export const BATHROOM_SERIES: CollectionSeries[] = [
         group: "Set",
         image: vegaPlatinumSet,
         note: "A high-gloss finish that brings brilliance to every detail.",
+      },
+    ],
+  },
+  {
+    id: "libra",
+    name: "Libra",
+    description:
+      "Inspired by the harmony and elegance of the Libra sign, Libra brings balance to your bathroom design. With its sleek contours and perfectly symmetrical structure, it is a testament to both functionality and aesthetics.",
+    cover: libraCover,
+    pieces: [
+      {
+        name: "Toilet & Pedestal Washbasin",
+        group: "Set",
+        image: libraCover,
+        colors: ["White", "Pergamon"],
+        note: "Floor-standing toilet with a matching pedestal washbasin.",
+      },
+    ],
+  },
+  {
+    id: "rosetta",
+    name: "Rosetta",
+    description:
+      "Asserting a superior standard, our Rosetta series is intricate yet subtle. With its unassuming air of simplicity, Rosetta is an instant classic. The standard being set is not exclusive to its design; its durability plays a vital role in establishing it as a timeless selection.",
+    cover: rosettaPedestal,
+    pieces: [
+      {
+        name: "Pedestal Washbasin",
+        group: "Washbasin",
+        image: rosettaPedestal,
+        sizes: ["60 × 48", "55 × 44"],
+      },
+      {
+        name: "Half-Pedestal Washbasin",
+        group: "Washbasin",
+        image: rosettaHalfPedestal,
+        sizes: ["45 × 36.5"],
+      },
+      {
+        name: "Close-Coupled Toilet",
+        group: "Toilet",
+        image: rosettaCloseCoupledToilet,
+        sizes: ["61 × 36"],
+        colors: ["White", "Pergamon"],
+        features: ["HydroJet"],
+      },
+      {
+        name: "Wall-Hung Toilet",
+        group: "Toilet",
+        image: rosettaWallHungToilet,
+        colors: ["White", "Pergamon"],
+      },
+      {
+        name: "Back-to-Wall Toilet",
+        group: "Toilet",
+        image: rosettaBackToWallToilet,
+        colors: ["White", "Pergamon"],
+      },
+      {
+        name: "Combi Toilet",
+        group: "Toilet",
+        image: rosettaCombiToilet,
+      },
+    ],
+  },
+  {
+    id: "flora",
+    name: "Flora",
+    description:
+      "Flora was designed to meet your basic needs consistently with its durable and long-lasting quality. Let Flora's timeless and effortless style shine through in your bathroom.",
+    cover: floraCover,
+    pieces: [
+      {
+        name: "Pedestal Washbasin",
+        group: "Washbasin",
+        image: floraCover,
+        sizes: ["60"],
+        colors: ["White", "Pergamon"],
+      },
+      {
+        name: "Close-Coupled Toilet",
+        group: "Toilet",
+        image: floraCloseCoupledToilet,
+        colors: ["White", "Pergamon"],
       },
     ],
   },
