@@ -38,7 +38,7 @@ export const createAccessory = async (payload: ProductInput): Promise<Product> =
 };
 
 // Update — PUT /api/products/accessories/:id
-// Auth required, and only the product's creator may update it.
+// Data entry or admin only; any of them may update any product.
 export const updateAccessory = async (
   id: string,
   payload: ProductInput,
@@ -51,7 +51,7 @@ export const updateAccessory = async (
 };
 
 // Delete — DELETE /api/products/accessories/:id
-// Auth required, and only the product's creator may delete it.
+// Data entry or admin only; any of them may delete any product.
 export const deleteAccessory = async (id: string): Promise<void> => {
   await apiClient.delete(`/products/${CATEGORY}/${id}`);
 };

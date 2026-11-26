@@ -38,7 +38,7 @@ export const createConcealedFlushTank = async (payload: ProductInput): Promise<P
 };
 
 // Update — PUT /api/products/concealed-flush-tank/:id
-// Auth required, and only the product's creator may update it.
+// Data entry or admin only; any of them may update any product.
 export const updateConcealedFlushTank = async (
   id: string,
   payload: ProductInput,
@@ -51,7 +51,7 @@ export const updateConcealedFlushTank = async (
 };
 
 // Delete — DELETE /api/products/concealed-flush-tank/:id
-// Auth required, and only the product's creator may delete it.
+// Data entry or admin only; any of them may delete any product.
 export const deleteConcealedFlushTank = async (id: string): Promise<void> => {
   await apiClient.delete(`/products/${CATEGORY}/${id}`);
 };

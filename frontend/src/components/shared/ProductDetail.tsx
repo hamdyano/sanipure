@@ -50,7 +50,7 @@ const productImage = (product: Product) => {
 const BackgroundPattern = () => (
   <div
     aria-hidden
-    className="pointer-events-none absolute left-1/2 top-24 -z-10 aspect-[3902/1820] w-screen -translate-x-1/2 bg-white/[0.08]"
+    className="pointer-events-none absolute left-1/2 top-24 -z-10 aspect-[3902/1456] w-screen -translate-x-1/2 bg-white/[0.08]"
     style={{
       maskImage: `url("${backgroundPattern}")`,
       WebkitMaskImage: `url("${backgroundPattern}")`,

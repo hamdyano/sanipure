@@ -19,6 +19,7 @@ import { getLeads } from "./leads";
 import {
   createProduct,
   deleteProduct,
+  dismissDeletedProduct,
   getDbProducts,
   getMyProducts,
   getProductById,
@@ -179,6 +180,7 @@ app.post("/api/products/:category", dataEntry, requireKnownCategory, createProdu
 app.get("/api/products/:category/:id", requireKnownCategory, checkBeforeReuse, getProductById);
 app.put("/api/products/:category/:id", dataEntry, updateProduct);
 app.delete("/api/products/:category/:id", dataEntry, deleteProduct);
+app.delete("/api/products/:category/:id/history", dataEntry, dismissDeletedProduct);
 
 app.post("/api/auth/signup", signUp);
 app.post("/api/auth/signin", signIn);

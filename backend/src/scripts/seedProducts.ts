@@ -161,7 +161,10 @@ const main = async () => {
 
   const category = await prisma.category.findUnique({ where: { slug } });
   const existing = category
-    ? await prisma.product.findMany({ where: { categoryId: category.id }, select: { name: true } })
+    ? await prisma.product.findMany({
+        where: { categoryId: category.id, deletedAt: null },
+        select: { name: true },
+      })
     : [];
   const existingNames = new Set(existing.map((p) => p.name.trim().toLowerCase()));
   const toCreate = set.products.filter((p) => !existingNames.has(p.name.toLowerCase()));

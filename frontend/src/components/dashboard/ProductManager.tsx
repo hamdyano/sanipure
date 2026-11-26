@@ -4,12 +4,18 @@ import type {
   CatalogResponse,
   ManagedProduct,
   Product,
+  ProductChange,
   ProductDisplay,
   ProductDisplaySize,
   ProductInput,
   ProductRequiredItem,
 } from "../../api/clientApi";
-import { toSizeEntries, uploadProductFile, uploadProductImage } from "../../api/clientApi";
+import {
+  dismissDeletedProduct,
+  toSizeEntries,
+  uploadProductFile,
+  uploadProductImage,
+} from "../../api/clientApi";
 import {
   showErrorToast,
   showSuccessToast,
@@ -71,11 +77,11 @@ export interface ProductManagerApi {
 }
 
 interface ProductManagerProps {
+  // The category's slug, e.g. "toilets".
+  category: string;
   categoryLabel: string;
   api: ProductManagerApi;
   onClose: () => void;
-  // For admins the list holds everyone's products, each with who added it.
-  isAdmin?: boolean;
   // Renders the "For Display" section below the filter attributes — the
   // full spec-sheet data (colors, gallery photos, types, sizes, design
   // file) shown on the product's public detail page. Only toilets use this
@@ -112,11 +118,28 @@ const describeProduct = (product: Product, filters: Filter[]) =>
     .filter((value): value is string => typeof value === "string" && value.length > 0)
     .join(" · ");
 
+const formatChangeTime = (at: string) =>
+  new Date(at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+
+// "Edited by a@b.com · 26 Nov 2026, 14:05" under a product, or the same with
+// "Deleted by" on a deleted product's card.
+const ChangeStamp = ({ change }: { change: ProductChange }) => (
+  <p
+    className={`mt-1 text-xs ${change.action === "deleted" ? "text-red-300/80" : "text-white/40"}`}
+  >
+    <span className="block truncate" title={change.email ?? undefined}>
+      {change.action === "deleted" ? "Deleted" : "Edited"} by{" "}
+      {change.email ?? "a removed account"}
+    </span>
+    <span className="block">{formatChangeTime(change.at)}</span>
+  </p>
+);
+
 const ProductManager = ({
+  category,
   categoryLabel,
   api,
   onClose,
-  isAdmin = false,
   showDisplaySection = false,
 }: ProductManagerProps) => {
   const [myProducts, setMyProducts] = useState<ManagedProduct[]>([]);
@@ -523,11 +546,25 @@ const ProductManager = ({
     }
   };
 
+  // The × on a deleted product's card: removes the card for everyone. It's
+  // taken off the list straight away rather than reloading the whole list.
+  const handleDismiss = async (product: Product) => {
+    setDeletingId(product.id);
+    try {
+      await dismissDeletedProduct(category, product.id);
+      setMyProducts((prev) => prev.filter((p) => p.id !== product.id));
+    } catch (err) {
+      reportError(err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="rounded-2xl border border-white/10 bg-[#0d0d0d] p-8">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-semibold text-white">
-          {isAdmin ? "All" : "Your"} {categoryLabel}
+          All {categoryLabel}
         </h2>
         <button
           type="button"
@@ -540,7 +577,48 @@ const ProductManager = ({
 
       {!loadingMine && myProducts.length > 0 && (
         <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {myProducts.map((product) => (
+          {myProducts.map((product) =>
+            product.lastChange?.action === "deleted" ? (
+            <div
+              key={product.id}
+              className="flex flex-col overflow-hidden rounded-xl border border-dashed border-red-500/30 bg-black"
+            >
+              <div className="flex aspect-square w-full items-center justify-center bg-red-500/5 text-xs uppercase tracking-wide text-red-300/60">
+                Deleted
+              </div>
+              <div className="flex flex-1 flex-col p-4">
+                <p className="truncate text-sm font-medium text-white/50 line-through">
+                  {product.name}
+                </p>
+                <div className="flex items-end gap-2">
+                  <div className="min-w-0 flex-1">
+                    <ChangeStamp change={product.lastChange} />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDismiss(product)}
+                    disabled={deletingId === product.id}
+                    aria-label={`Remove "${product.name}" from the list`}
+                    title="Remove from the list"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-red-500/40 text-red-300 transition-colors hover:border-red-400 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            ) : (
             <div
               key={product.id}
               className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-black"
@@ -564,14 +642,13 @@ const ProductManager = ({
                   <p className="truncate text-xs text-white/50">
                     {describeProduct(product, filters) || "No attributes set"}
                   </p>
-                  {isAdmin && (
-                    <p
-                      className="mt-1 truncate text-xs text-white/40"
-                      title={product.addedBy?.email}
-                    >
-                      Added by {product.addedBy?.name ?? "a deleted account"}
-                    </p>
-                  )}
+                  <p
+                    className="mt-1 truncate text-xs text-white/40"
+                    title={product.addedBy?.email}
+                  >
+                    Added by {product.addedBy?.name ?? "a deleted account"}
+                  </p>
+                  {product.lastChange && <ChangeStamp change={product.lastChange} />}
                 </div>
                 <div className="mt-auto flex items-center gap-2">
                   <button
@@ -592,7 +669,8 @@ const ProductManager = ({
                 </div>
               </div>
             </div>
-          ))}
+            )
+          )}
         </div>
       )}
 

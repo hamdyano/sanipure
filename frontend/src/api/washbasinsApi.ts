@@ -39,7 +39,7 @@ export const createWashbasin = async (payload: ProductInput): Promise<Product> =
 };
 
 // Update — PUT /api/products/washbasins/:id
-// Auth required, and only the product's creator may update it. Same JSON
+// Data entry or admin only; any of them may update any product. Same JSON
 // shape as create; omitting "image" keeps the existing photo.
 export const updateWashbasin = async (
   id: string,
@@ -53,7 +53,7 @@ export const updateWashbasin = async (
 };
 
 // Delete — DELETE /api/products/washbasins/:id
-// Auth required, and only the product's creator may delete it.
+// Data entry or admin only; any of them may delete any product.
 export const deleteWashbasin = async (id: string): Promise<void> => {
   await apiClient.delete(`/products/${CATEGORY}/${id}`);
 };

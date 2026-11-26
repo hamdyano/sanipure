@@ -44,7 +44,7 @@ export const httpUrl = (value: unknown): string | undefined => {
 
 // Keys the API itself sets on every product response ({ id, name, ...attributes }),
 // so a submitted attribute must never be stored under one of them.
-const RESERVED_ATTRIBUTE_KEYS = new Set(["id", "name", "display", "addedBy"]);
+const RESERVED_ATTRIBUTE_KEYS = new Set(["id", "name", "display", "addedBy", "lastChange"]);
 
 const parseAttributes = (rawAttributes: Record<string, unknown>) => {
   const attributes: Record<string, string> = {};
@@ -314,25 +314,18 @@ export const createProduct = async (req: AuthedRequest, res: Response) => {
   }
 };
 
-// Admins manage every product; data entry only the ones they added.
-const canManage = (req: AuthedRequest, product: { createdById: string | null }) =>
-  req.userRole === "admin" || product.createdById === req.userId;
-
-// Updates a product, if the signed-in user may manage it (it still belongs to
-// whoever added it). File URLs in the body are expected to be either the existing public
-// URLs (unchanged) or new ones from uploadImage/uploadDesignFile; once the
-// update is saved, any old uploaded file no longer referenced is
-// cleaned up.
+// Updates a product. Any data entry account or admin may edit any product
+// (see requireRole in index.ts); each edit records the editor's email and
+// the time, shown on the dashboard. A deleted product can't be edited. File
+// URLs in the body are expected to be either the existing public URLs
+// (unchanged) or new ones from uploadImage/uploadDesignFile; once the update
+// is saved, any old uploaded file no longer referenced is cleaned up.
 export const updateProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const id = String(req.params.id);
     const existing = await prisma.product.findUnique({ where: { id } });
-    if (!existing) {
+    if (!existing || existing.deletedAt) {
       res.status(404).json({ message: "Product not found" });
-      return;
-    }
-    if (!canManage(req, existing)) {
-      res.status(403).json({ message: "You can only edit products you added" });
       return;
     }
 
@@ -346,11 +339,22 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
     const display = sanitizeDisplay(rawDisplay);
     if (display) attributes.display = display;
 
-    const updated = await prisma.product.update({
-      where: { id },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data: { name: name.trim(), attributes: attributes as any },
+    // Only if no one deleted it in the meantime.
+    const { count } = await prisma.product.updateMany({
+      where: { id, deletedAt: null },
+      data: {
+        name: name.trim(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        attributes: attributes as any,
+        lastEditedAt: new Date(),
+        lastEditedByEmail: req.userEmail ?? null,
+      },
     });
+    if (count === 0) {
+      res.status(404).json({ message: "Product not found" });
+      return;
+    }
+    const updated = await prisma.product.findUniqueOrThrow({ where: { id } });
 
     catalogCache.clear();
 
@@ -372,21 +376,37 @@ export const updateProduct = async (req: AuthedRequest, res: Response) => {
   }
 };
 
-// Deletes a product, if the signed-in user may manage it. Also removes all of its uploaded files from the server.
+// Deletes a product. Any data entry account or admin may delete any product.
+// The row is kept, marked with who deleted it and when, so the dashboard can
+// show that in the product's old place. It leaves the shop, product pages and
+// everyone's wishlists, and all of its uploaded files are removed from the
+// server.
 export const deleteProduct = async (req: AuthedRequest, res: Response) => {
   try {
     const id = String(req.params.id);
     const existing = await prisma.product.findUnique({ where: { id } });
-    if (!existing) {
+    if (!existing || existing.deletedAt) {
       res.status(404).json({ message: "Product not found" });
       return;
     }
-    if (!canManage(req, existing)) {
-      res.status(403).json({ message: "You can only delete products you added" });
+
+    const [{ count }] = await prisma.$transaction([
+      // Only if no one deleted it in the meantime. Its attributes are cleared
+      // since they point at the files removed below.
+      prisma.product.updateMany({
+        where: { id, deletedAt: null },
+        data: {
+          attributes: {},
+          deletedAt: new Date(),
+          deletedByEmail: req.userEmail ?? null,
+        },
+      }),
+      prisma.wishlistItem.deleteMany({ where: { productId: id } }),
+    ]);
+    if (count === 0) {
+      res.status(404).json({ message: "Product not found" });
       return;
     }
-
-    await prisma.product.delete({ where: { id } });
     catalogCache.clear();
 
     await deleteStorageObjects(collectFileUrls(existing.attributes));
@@ -398,9 +418,28 @@ export const deleteProduct = async (req: AuthedRequest, res: Response) => {
   }
 };
 
-// The products of a category the signed-in user may manage — shown on the
-// dashboard with edit/delete actions. For admins that's every product, each
-// with who added it.
+// Removes what's left of a deleted product for good, so its "Deleted by …"
+// card disappears from the dashboard for everyone. Any data entry account or
+// admin may do this; products that aren't deleted are left alone.
+export const dismissDeletedProduct = async (req: AuthedRequest, res: Response) => {
+  try {
+    const { count } = await prisma.product.deleteMany({
+      where: { id: String(req.params.id), deletedAt: { not: null } },
+    });
+    if (count === 0) {
+      res.status(404).json({ message: "Deleted product not found" });
+      return;
+    }
+    res.status(204).end();
+  } catch (err) {
+    console.error("dismissDeletedProduct failed:", err);
+    res.status(500).json({ message: "Something went wrong removing the deleted product" });
+  }
+};
+
+// Every product of a category, for the dashboard, newest first, each with who
+// added it and its last change: who edited it and when, or, for a deleted
+// product (which stays in its place on the list), who deleted it and when.
 export const getMyProducts = async (req: AuthedRequest, res: Response) => {
   try {
     const category = String(req.params.category);
@@ -412,22 +451,28 @@ export const getMyProducts = async (req: AuthedRequest, res: Response) => {
       return;
     }
 
-    const isAdmin = req.userRole === "admin";
     const rows = await prisma.product.findMany({
-      where: {
-        categoryId: categoryRecord.id,
-        ...(isAdmin ? {} : { createdById: req.userId }),
-      },
+      where: { categoryId: categoryRecord.id },
       include: { createdBy: { select: { username: true, fullName: true, email: true } } },
       orderBy: { createdAt: "desc" },
     });
+
+    const lastChange = (row: (typeof rows)[number]) => {
+      if (row.deletedAt) {
+        return { action: "deleted", email: row.deletedByEmail, at: row.deletedAt };
+      }
+      if (row.lastEditedAt) {
+        return { action: "edited", email: row.lastEditedByEmail, at: row.lastEditedAt };
+      }
+      return undefined;
+    };
 
     res.json(
       rows.map((row) => ({
         id: row.id,
         name: row.name,
         ...(row.attributes as Record<string, unknown>),
-        ...(isAdmin && row.createdBy
+        ...(row.createdBy
           ? {
               addedBy: {
                 name: row.createdBy.fullName || row.createdBy.username,
@@ -435,6 +480,7 @@ export const getMyProducts = async (req: AuthedRequest, res: Response) => {
               },
             }
           : {}),
+        ...(lastChange(row) ? { lastChange: lastChange(row) } : {}),
       }))
     );
   } catch (err) {
@@ -476,7 +522,7 @@ const loadDbProducts = async (categorySlug: string): Promise<DbProduct[]> => {
   if (!categoryRecord) return [];
 
   const rows = await prisma.product.findMany({
-    where: { categoryId: categoryRecord.id },
+    where: { categoryId: categoryRecord.id, deletedAt: null },
     orderBy: { createdAt: "asc" },
   });
 

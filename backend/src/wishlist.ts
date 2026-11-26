@@ -24,7 +24,7 @@ const withProduct = {
 export const getWishlist = async (req: AuthedRequest, res: Response) => {
   try {
     const items = await prisma.wishlistItem.findMany({
-      where: { userId: req.userId! },
+      where: { userId: req.userId!, product: { deletedAt: null } },
       include: withProduct,
       orderBy: { createdAt: "desc" },
     });
@@ -44,7 +44,7 @@ export const addToWishlist = async (req: AuthedRequest, res: Response) => {
 
     const [user, product] = await Promise.all([
       prisma.user.findUnique({ where: { id: userId }, select: { id: true } }),
-      prisma.product.findUnique({ where: { id: productId }, select: { id: true } }),
+      prisma.product.findUnique({ where: { id: productId, deletedAt: null }, select: { id: true } }),
     ]);
     if (!user) {
       res.status(401).json({ message: "Your account no longer exists. Please sign in again." });

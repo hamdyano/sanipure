@@ -38,7 +38,7 @@ export const createPublicBathroom = async (payload: ProductInput): Promise<Produ
 };
 
 // Update — PUT /api/products/public-bathrooms/:id
-// Auth required, and only the product's creator may update it.
+// Data entry or admin only; any of them may update any product.
 export const updatePublicBathroom = async (
   id: string,
   payload: ProductInput,
@@ -51,7 +51,7 @@ export const updatePublicBathroom = async (
 };
 
 // Delete — DELETE /api/products/public-bathrooms/:id
-// Auth required, and only the product's creator may delete it.
+// Data entry or admin only; any of them may delete any product.
 export const deletePublicBathroom = async (id: string): Promise<void> => {
   await apiClient.delete(`/products/${CATEGORY}/${id}`);
 };

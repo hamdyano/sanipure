@@ -9,10 +9,12 @@ if (!JWT_SECRET) {
 }
 
 // Augment Request with the signed-in user's id, set by requireAuth below
-// once the Bearer token has been verified, and their role, set by requireRole.
+// once the Bearer token has been verified, and their role and email, set by
+// requireRole.
 export interface AuthedRequest extends Request {
   userId?: string;
   userRole?: Role;
+  userEmail?: string;
 }
 
 export const requireAuth = (
@@ -44,7 +46,7 @@ export const requireRole = (...allowed: Role[]) => [
   async (req: AuthedRequest, res: Response, next: NextFunction) => {
     const user = await prisma.user.findUnique({
       where: { id: req.userId! },
-      select: { role: true },
+      select: { role: true, email: true },
     });
     if (!user) {
       res.status(401).json({ message: "Your account no longer exists. Please sign in again." });
@@ -55,6 +57,7 @@ export const requireRole = (...allowed: Role[]) => [
       return;
     }
     req.userRole = user.role;
+    req.userEmail = user.email;
     next();
   },
 ];

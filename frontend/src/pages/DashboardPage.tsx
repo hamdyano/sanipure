@@ -145,7 +145,7 @@ const DashboardPage = () => {
         <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
           {isAdmin
             ? "Manage Sanipure's products and data entry accounts."
-            : "Add and manage your Sanipure products."}
+            : "Add and manage Sanipure's products."}
         </p>
       </RevealSection>
 
@@ -210,10 +210,10 @@ const DashboardPage = () => {
         {activeConfig && (
           <ProductManager
             key={activeConfig.slug}
+            category={activeConfig.slug}
             categoryLabel={activeConfig.label}
             api={activeConfig.api}
             onClose={() => setActiveCategory(null)}
-            isAdmin={isAdmin}
             showDisplaySection
           />
         )}

@@ -110,8 +110,21 @@ export interface Product {
 
 export type ProductInput = Omit<Product, "id">;
 
-/** A product as listed on the dashboard; admins also get who added it. */
-export type ManagedProduct = Product & { addedBy?: { name: string; email: string } };
+/** The last edit or delete of a product: who did it (their email) and when. */
+export interface ProductChange {
+  action: "edited" | "deleted";
+  email: string | null;
+  at: string;
+}
+
+/**
+ * A product as listed on the dashboard, with who added it and its last
+ * change. A deleted product stays on the list with lastChange.action "deleted".
+ */
+export type ManagedProduct = Product & {
+  addedBy?: { name: string; email: string };
+  lastChange?: ProductChange;
+};
 
 export interface CatalogResponse {
   category: string;
@@ -179,6 +192,13 @@ export const getCatalog = (category: string): Promise<CatalogResponse> =>
     });
     return data;
   });
+
+// Dismiss — DELETE /api/products/:category/:id/history
+// Data entry or admin only. Removes a deleted product's "Deleted by …" card
+// from the dashboard for everyone.
+export const dismissDeletedProduct = async (category: string, id: string): Promise<void> => {
+  await apiClient.delete(`/products/${category}/${id}/history`);
+};
 
 // Read (one) — GET /api/products/:category/:id
 // Public, no auth required — powers a product's public detail page (linked

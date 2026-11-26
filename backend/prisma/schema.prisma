@@ -57,16 +57,27 @@ model Product {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
+  // Who last edited the product from the dashboard, and when. The email is
+  // copied at the time of the edit, so the record stays even if that account
+  // changes or is removed.
+  lastEditedAt      DateTime?
+  lastEditedByEmail String?
+
+  // Deleting a product from the dashboard only marks it deleted: it drops out
+  // of the shop, product pages and wishlists, and its files are removed, but
+  // it stays on the dashboard in its old place showing who deleted it and when.
+  deletedAt      DateTime?
+  deletedByEmail String?
+
   @@index([categoryId])
   @@index([createdById])
 }
 
 // What an account may do:
 //  - visitor: own profile and wishlist only (every new account)
-//  - data_entry: also adds products, edits or deletes their own, and sees the
-//    sales leads
-//  - admin: also edits or deletes anyone's products, and chooses who is data
-//    entry
+//  - data_entry: also adds products, edits or deletes any product (each change
+//    is stamped with their email and the time), and sees the sales leads
+//  - admin: also chooses who is data entry
 enum Role {
   visitor
   data_entry
